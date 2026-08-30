@@ -2,10 +2,10 @@
   <section class="hero">
     <div class="hero__content">
       <span class="hero__eyebrow">MediShop</span>
-      <h1>Equipamentos médicos e cursos para profissionais da saúde</h1>
+      <h1>Cursos presenciais para profissionais da saúde</h1>
       <p>
-        Encontre equipamentos essenciais, cursos presenciais e soluções para
-        clínicas, equipes e estudantes da área médica.
+        Encontre cursos presenciais para desenvolver sua prática e evoluir na
+        área da saúde.
       </p>
     </div>
   </section>
@@ -32,14 +32,6 @@
             (click)="setFilter('all')"
           >
             Todos
-          </button>
-
-          <button
-            type="button"
-            [class.active]="selectedFilter() === 'equipment'"
-            (click)="setFilter('equipment')"
-          >
-            Equipamentos
           </button>
 
           <button
@@ -85,7 +77,7 @@
                 </span>
               </div>
 
-              <h3>{{ product.nome }}</h3>
+              <h3><a [routerLink]="['/curso', product.id]">{{ product.nome }}</a></h3>
               <p>{{ product.description || 'Item disponível para compra no catálogo MediShop.' }}</p>
 
               @if (product.tipoProduto === 'course') {
@@ -99,13 +91,19 @@
               <div class="product-card__footer">
                 <strong>{{ formatPrice(product.preco) }}</strong>
 
-                <button
-                  type="button"
-                  [disabled]="!canAddToCart(product)"
-                  (click)="addToCart(product)"
-                >
-                  {{ canAddToCart(product) ? 'Adicionar' : 'Indisponível' }}
-                </button>
+                @if (product.tipoProduto === 'course') {
+                  <a class="product-card__details" [routerLink]="['/curso', product.id]">
+                    Ver detalhes
+                  </a>
+                } @else {
+                  <button
+                    type="button"
+                    [disabled]="!canAddToCart(product)"
+                    (click)="addToCart(product)"
+                  >
+                    {{ canAddToCart(product) ? 'Adicionar' : 'Indisponível' }}
+                  </button>
+                }
               </div>
             </div>
           </article>

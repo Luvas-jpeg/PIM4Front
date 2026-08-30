@@ -9,7 +9,7 @@ const API_URL = 'http://localhost:5278/api';
 export class ProductService {
     private readonly http = inject(HttpClient);
 
-    getAll(tipo?: 'equipment' | 'course'): Observable<Product[]> {
+    getAll(tipo?: 'course'): Observable<Product[]> {
         const url = tipo ? `${API_URL}/Products?tipo=${tipo}` : `${API_URL}/Products`;
         return this.http.get<Product[]>(url);
     }

@@ -1,13 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
 import { Product } from '../../core/models/product.models';
 import { ProductService } from '../../core/services/product.service';
 
-type ProductFilter = 'all' | 'equipment' | 'course';
+type ProductFilter = 'all' | 'course';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -32,7 +33,7 @@ export class Home {
     const search = this.searchTerm().trim().toLowerCase();
 
     return this.products().filter((product) => {
-      const matchesFilter = filter === 'all' || product.tipoProduto === filter;
+      const matchesFilter = filter === 'all' || product.tipoProduto === 'course';
       const searchableText = [
         product.nome,
         product.description,

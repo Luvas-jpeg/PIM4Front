@@ -6,7 +6,7 @@ export interface CreateOrderItem {
 export interface CreateOrderRequest {
     itens: CreateOrderItem[];
     valorFrete: number;
-    paymentMethod: 'credit' | 'debit' | 'pix';
+    paymentMethod: 'credit_card' | 'debit_card' | 'pix';
     installments?: number | null;
     promoCode: string;
 }
@@ -30,6 +30,9 @@ export interface Order {
     id: number;
     dataPedido: string;
     status: string;
+    paymentStatus?: string;
+    gatewayPaymentId?: string | null;
+    paidAt?: string | null;
     total: number;
     valorFrete: number;
     paymentMethod: string;

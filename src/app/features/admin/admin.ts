@@ -4,7 +4,7 @@ import { finalize } from 'rxjs';
 import { Order } from '../../core/models/order.models';
 import { Product, ProductRequest } from '../../core/models/product.models';
 import { PromoCode, PromoCodeRequest } from '../../core/models/promo-codes.models';
-import { Student, StudentRequest } from '../../core/models/student.models';
+import { Student } from '../../core/models/student.models';
 import { OrderService } from '../../core/services/order.service';
 import { ProductService } from '../../core/services/product.service';
 import { PromoCodeService } from '../../core/services/promo-code.service';
@@ -12,9 +12,8 @@ import { StudentService } from '../../core/services/student.service';
 
 type AdminTab = 'dashboard' | 'products' | 'classes' | 'coupons' | 'orders';
 type Period = 'day' | 'week' | 'month' | 'year';
-type ProductType = 'equipment' | 'course';
+type ProductType = 'course';
 type DiscountType = 'percentage' | 'fixed';
-type StudentStatus = 'active' | 'completed' | 'cancelled';
 
 interface RevenueChartPoint {
   label: string;
@@ -61,17 +60,17 @@ export class Admin {
   readonly loading = signal(false);
   readonly savingProduct = signal(false);
   readonly savingCoupon = signal(false);
-  readonly savingStudent = signal(false);
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
   readonly editingProductId = signal<number | null>(null);
   readonly editingCouponId = signal<number | null>(null);
-  readonly editingStudentId = signal<number | null>(null);
+  readonly selectedCourse = signal<Product | null>(null);
+  readonly activeFormModal = signal<'course' | 'coupon' | null>(null);
 
   readonly productForm = this.formBuilder.group({
     nome: this.formBuilder.control('', [Validators.required]),
     preco: this.formBuilder.control(0, [Validators.required, Validators.min(0.01)]),
-    tipoProduto: this.formBuilder.control<ProductType>('equipment', [Validators.required]),
+    tipoProduto: this.formBuilder.control<ProductType>('course', [Validators.required]),
     estoque: this.formBuilder.control(0, [Validators.required, Validators.min(0)]),
     description: this.formBuilder.control(''),
     image: this.formBuilder.control(''),
@@ -90,16 +89,6 @@ export class Admin {
     isActive: this.formBuilder.control(true),
     usageLimit: this.formBuilder.control<number | null>(null),
     usageCount: this.formBuilder.control(0),
-  });
-
-  readonly studentForm = this.formBuilder.group({
-    name: this.formBuilder.control('', [Validators.required]),
-    email: this.formBuilder.control('', [Validators.required, Validators.email]),
-    phone: this.formBuilder.control(''),
-    courseId: this.formBuilder.control('', [Validators.required]),
-    courseName: this.formBuilder.control('', [Validators.required]),
-    enrollmentDate: this.formBuilder.control(new Date().toISOString().slice(0, 10)),
-    status: this.formBuilder.control<StudentStatus>('active', [Validators.required]),
   });
 
   readonly courses = computed(() =>
@@ -256,7 +245,7 @@ export class Admin {
     this.error.set(null);
 
     this.productService.getAll().subscribe({
-      next: products => this.products.set(products),
+      next: products => this.products.set(products.filter(product => product.tipoProduto === 'course')),
       error: () => this.error.set('Nao foi possivel carregar produtos.'),
     });
 
@@ -307,6 +296,7 @@ export class Admin {
           ? products.map(current => current.id === product.id ? product : current)
           : [product, ...products]);
         this.resetProductForm();
+        this.closeFormModal();
         this.success.set('Produto salvo com sucesso.');
       },
       error: response => this.error.set(response.error?.message ?? 'Nao foi possivel salvar o produto.'),
@@ -315,10 +305,11 @@ export class Admin {
 
   editProduct(product: Product): void {
     this.editingProductId.set(product.id);
+    this.activeFormModal.set('course');
     this.productForm.setValue({
       nome: product.nome,
       preco: product.preco,
-      tipoProduto: product.tipoProduto,
+      tipoProduto: 'course',
       estoque: product.estoque,
       description: product.description ?? '',
       image: product.image ?? '',
@@ -344,7 +335,7 @@ export class Admin {
     this.productForm.reset({
       nome: '',
       preco: 0,
-      tipoProduto: 'equipment',
+      tipoProduto: 'course',
       estoque: 0,
       description: '',
       image: '',
@@ -353,6 +344,20 @@ export class Admin {
       location: '',
       instructor: '',
     });
+  }
+
+  openCourseModal(): void {
+    this.resetProductForm();
+    this.activeFormModal.set('course');
+  }
+
+  openCouponModal(): void {
+    this.resetCouponForm();
+    this.activeFormModal.set('coupon');
+  }
+
+  closeFormModal(): void {
+    this.activeFormModal.set(null);
   }
 
   saveCoupon(): void {
@@ -386,6 +391,7 @@ export class Admin {
           ? coupons.map(current => current.id === coupon.id ? coupon : current)
           : [coupon, ...coupons]);
         this.resetCouponForm();
+        this.closeFormModal();
         this.success.set('Cupom salvo com sucesso.');
       },
       error: response => this.error.set(response.error?.message ?? 'Nao foi possivel salvar o cupom.'),
@@ -394,6 +400,7 @@ export class Admin {
 
   editCoupon(coupon: PromoCode): void {
     this.editingCouponId.set(coupon.id);
+    this.activeFormModal.set('coupon');
     this.couponForm.setValue({
       code: coupon.code,
       discount: coupon.discount,
@@ -430,83 +437,16 @@ export class Admin {
     });
   }
 
-  saveStudent(): void {
-    this.error.set(null);
-    this.success.set(null);
-
-    if (this.studentForm.invalid) {
-      this.studentForm.markAllAsTouched();
-      this.error.set('Revise os dados da turma.');
-      return;
-    }
-
-    const request: StudentRequest = this.studentForm.getRawValue();
-    const editingId = this.editingStudentId();
-    const action = editingId
-      ? this.studentService.update(editingId, request)
-      : this.studentService.create(request);
-
-    this.savingStudent.set(true);
-
-    action.pipe(finalize(() => this.savingStudent.set(false))).subscribe({
-      next: student => {
-        this.students.update(students => editingId
-          ? students.map(current => current.id === student.id ? student : current)
-          : [student, ...students]);
-        this.resetStudentForm();
-        this.success.set('Turma atualizada com sucesso.');
-      },
-      error: response => this.error.set(response.error?.message ?? 'Nao foi possivel salvar a turma.'),
-    });
+  studentsForCourse(courseId: number): Student[] {
+    return this.students().filter(student => student.courseId === String(courseId));
   }
 
-  editStudent(student: Student): void {
-    this.editingStudentId.set(student.id);
-    this.studentForm.setValue({
-      name: student.name,
-      email: student.email,
-      phone: student.phone,
-      courseId: student.courseId,
-      courseName: student.courseName,
-      enrollmentDate: student.enrollmentDate,
-      status: student.status,
-    });
+  openClassModal(course: Product): void {
+    this.selectedCourse.set(course);
   }
 
-  deleteStudent(id: number): void {
-    this.studentService.delete(id).subscribe({
-      next: () => {
-        this.students.update(students => students.filter(student => student.id !== id));
-        this.success.set('Registro removido.');
-      },
-      error: () => this.error.set('Nao foi possivel remover o registro.'),
-    });
-  }
-
-  selectCourse(courseId: string): void {
-    const course = this.courses().find(product => String(product.id) === courseId);
-
-    if (!course) {
-      return;
-    }
-
-    this.studentForm.patchValue({
-      courseId: String(course.id),
-      courseName: course.nome,
-    });
-  }
-
-  resetStudentForm(): void {
-    this.editingStudentId.set(null);
-    this.studentForm.reset({
-      name: '',
-      email: '',
-      phone: '',
-      courseId: '',
-      courseName: '',
-      enrollmentDate: new Date().toISOString().slice(0, 10),
-      status: 'active',
-    });
+  closeClassModal(): void {
+    this.selectedCourse.set(null);
   }
 
   updateOrderStatus(order: Order, status: string): void {

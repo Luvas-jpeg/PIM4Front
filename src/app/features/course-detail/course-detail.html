@@ -1,0 +1,42 @@
+<main class="course-detail-page">
+  <div class="course-detail-shell">
+    <a routerLink="/catalogo" class="back-link">Voltar ao catalogo</a>
+
+    @if (loading()) {
+      <div class="state">Carregando curso...</div>
+    } @else if (error()) {
+      <div class="state state--error">{{ error() }}</div>
+    } @else if (course(); as course) {
+      <section class="course-detail">
+        <div class="course-detail__media">
+          <img [src]="imageUrl(course)" [alt]="course.nome" (error)="setFallbackImage($event)" />
+        </div>
+
+        <div class="course-detail__content">
+          <span class="course-detail__type">{{ course.category || 'Curso presencial' }}</span>
+          <h1>{{ course.nome }}</h1>
+          <p class="course-detail__description">{{ course.description }}</p>
+
+          <div class="course-facts">
+            <div><span>Data e horario</span><strong>{{ course.date }}</strong></div>
+            <div><span>Local</span><strong>{{ course.location }}</strong></div>
+            <div><span>Instrutor</span><strong>{{ course.instructor }}</strong></div>
+            <div><span>Disponibilidade</span><strong>{{ course.estoque }} vaga(s)</strong></div>
+          </div>
+
+          <div class="course-purchase">
+            <strong class="course-price">{{ course.preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
+            <div class="quantity-control">
+              <button type="button" aria-label="Diminuir quantidade" (click)="decreaseQuantity()">-</button>
+              <span>{{ quantity() }}</span>
+              <button type="button" aria-label="Aumentar quantidade" (click)="increaseQuantity()">+</button>
+            </div>
+            <button type="button" class="primary-button" [disabled]="course.estoque < 1" (click)="addToCart()">
+              {{ course.estoque > 0 ? 'Inscrever-se agora' : 'Turma lotada' }}
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+</main>

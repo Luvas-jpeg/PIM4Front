@@ -65,17 +65,17 @@
               </label>
 
               <label>
-                <input type="radio" formControlName="paymentMethod" value="debit" />
+                <input type="radio" formControlName="paymentMethod" value="debit_card" />
                 <span>Debito</span>
               </label>
 
               <label>
-                <input type="radio" formControlName="paymentMethod" value="credit" />
+                <input type="radio" formControlName="paymentMethod" value="credit_card" />
                 <span>Credito</span>
               </label>
             </div>
 
-            @if (paymentMethod.value === 'credit') {
+            @if (paymentMethod.value === 'credit_card') {
               <label class="field">
                 <span>Parcelas</span>
                 <select formControlName="installments">

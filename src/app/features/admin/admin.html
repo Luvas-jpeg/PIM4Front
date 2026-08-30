@@ -3,7 +3,7 @@
     <div>
       <span class="section-label">Administracao</span>
       <h1>Painel da loja</h1>
-      <p>Gerencie produtos, turmas, cupons e acompanhe o faturamento.</p>
+      <p>Cadastre cursos, acompanhe turmas, cupons e pedidos.</p>
     </div>
   </section>
 
@@ -13,7 +13,7 @@
         Dashboard
       </button>
       <button type="button" [class.active]="activeTab() === 'products'" (click)="setTab('products')">
-        Produtos
+      Cursos
       </button>
       <button type="button" [class.active]="activeTab() === 'classes'" (click)="setTab('classes')">
         Turmas
@@ -175,14 +175,17 @@
     }
 
     @if (activeTab() === 'products') {
-      <section class="management-grid">
-        <form class="panel" [formGroup]="productForm" (ngSubmit)="saveProduct()">
+      <section class="panel">
+        <form class="panel creation-form" [class.creation-form--open]="activeFormModal() === 'course'" [formGroup]="productForm" (ngSubmit)="saveProduct()">
           <div class="panel__header">
             <div>
-              <span class="section-label">Catalogo</span>
-              <h2>{{ editingProductId() ? 'Editar produto' : 'Adicionar produto' }}</h2>
+              <span class="section-label">Catalogo de cursos</span>
+              <h2>{{ editingProductId() ? 'Editar curso' : 'Adicionar curso' }}</h2>
             </div>
-            <button type="button" class="ghost-button" (click)="resetProductForm()">Limpar</button>
+            <div class="form-actions">
+              <button type="button" class="ghost-button" (click)="resetProductForm()">Limpar</button>
+              <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
+            </div>
           </div>
 
           <label class="field">
@@ -193,10 +196,7 @@
           <div class="form-grid">
             <label class="field">
               <span>Tipo</span>
-              <select formControlName="tipoProduto">
-                <option value="equipment">Equipamento</option>
-                <option value="course">Curso</option>
-              </select>
+              <input type="text" value="Curso" readonly />
             </label>
 
             <label class="field">
@@ -205,12 +205,12 @@
             </label>
 
             <label class="field">
-              <span>Estoque/vagas</span>
+              <span>Quantidade de vagas</span>
               <input type="number" min="0" formControlName="estoque" />
             </label>
 
             <label class="field">
-              <span>Categoria</span>
+              <span>Categoria do curso</span>
               <input type="text" formControlName="category" />
             </label>
           </div>
@@ -227,8 +227,8 @@
 
           <div class="form-grid">
             <label class="field">
-              <span>Data do curso</span>
-              <input type="text" formControlName="date" />
+              <span>Data e horario</span>
+              <input type="datetime-local" formControlName="date" />
             </label>
 
             <label class="field">
@@ -243,7 +243,7 @@
           </div>
 
           <button type="submit" class="primary-button" [disabled]="savingProduct()">
-            {{ savingProduct() ? 'Salvando...' : 'Salvar produto' }}
+            {{ savingProduct() ? 'Salvando...' : 'Salvar curso' }}
           </button>
         </form>
 
@@ -251,8 +251,9 @@
           <div class="panel__header">
             <div>
               <span class="section-label">Lista</span>
-              <h2>Produtos cadastrados</h2>
+              <h2>Cursos cadastrados</h2>
             </div>
+            <button type="button" class="primary-button" (click)="openCourseModal()">Adicionar curso</button>
           </div>
 
           <div class="table">
@@ -260,7 +261,7 @@
               <article class="table-row">
                 <div>
                   <strong>{{ product.nome }}</strong>
-                  <span>{{ product.tipoProduto === 'course' ? 'Curso' : 'Equipamento' }} - {{ formatPrice(product.preco) }}</span>
+                  <span>Curso - {{ formatPrice(product.preco) }}</span>
                 </div>
                 <span>{{ product.estoque }}</span>
                 <div class="actions">
@@ -277,108 +278,45 @@
     }
 
     @if (activeTab() === 'classes') {
-      <section class="management-grid">
-        <form class="panel" [formGroup]="studentForm" (ngSubmit)="saveStudent()">
-          <div class="panel__header">
-            <div>
-              <span class="section-label">Turmas</span>
-              <h2>{{ editingStudentId() ? 'Editar inscricao' : 'Adicionar aluno/turma' }}</h2>
-            </div>
-            <button type="button" class="ghost-button" (click)="resetStudentForm()">Limpar</button>
+      <section class="panel classes-panel">
+        <div class="panel__header">
+          <div>
+            <span class="section-label">Inscricoes</span>
+            <h2>Turmas e alunos matriculados</h2>
           </div>
+        </div>
 
-          <label class="field">
-            <span>Curso</span>
-            <select
-              formControlName="courseId"
-              (change)="selectCourse($any($event.target).value)"
-            >
-              <option value="">Selecione</option>
-              @for (course of courses(); track course.id) {
-                <option [value]="course.id">{{ course.nome }}</option>
-              }
-            </select>
-          </label>
-
-          <label class="field">
-            <span>Nome do curso</span>
-            <input type="text" formControlName="courseName" />
-          </label>
-
-          <div class="form-grid">
-            <label class="field">
-              <span>Aluno</span>
-              <input type="text" formControlName="name" />
-            </label>
-
-            <label class="field">
-              <span>Email</span>
-              <input type="email" formControlName="email" />
-            </label>
-
-            <label class="field">
-              <span>Telefone</span>
-              <input type="tel" formControlName="phone" />
-            </label>
-
-            <label class="field">
-              <span>Data</span>
-              <input type="date" formControlName="enrollmentDate" />
-            </label>
-
-            <label class="field">
-              <span>Status</span>
-              <select formControlName="status">
-                <option value="active">Ativo</option>
-                <option value="completed">Concluido</option>
-                <option value="cancelled">Cancelado</option>
-              </select>
-            </label>
-          </div>
-
-          <button type="submit" class="primary-button" [disabled]="savingStudent()">
-            {{ savingStudent() ? 'Salvando...' : 'Salvar turma' }}
-          </button>
-        </form>
-
-        <section class="panel">
-          <div class="panel__header">
-            <div>
-              <span class="section-label">Inscricoes</span>
-              <h2>Alunos por curso</h2>
-            </div>
-          </div>
-
-          <div class="table">
-            @for (student of students(); track student.id) {
-              <article class="table-row">
-                <div>
-                  <strong>{{ student.name }}</strong>
-                  <span>{{ student.courseName }} - {{ student.status }}</span>
-                </div>
-                <span>{{ student.enrollmentDate }}</span>
-                <div class="actions">
-                  <button type="button" (click)="editStudent(student)">Editar</button>
-                  <button type="button" class="danger" (click)="deleteStudent(student.id)">Excluir</button>
-                </div>
-              </article>
-            } @empty {
-              <p class="muted">Nenhuma turma registrada.</p>
-            }
-          </div>
-        </section>
+        <div class="class-list">
+          @for (course of courses(); track course.id) {
+            <button type="button" class="class-card" (click)="openClassModal(course)">
+              <span class="class-card__type">Curso presencial</span>
+              <strong class="class-card__title">{{ course.nome }}</strong>
+              <span>{{ course.date }}</span>
+              <span>{{ course.location }}</span>
+              <span class="class-card__footer">
+                <b>{{ course.estoque }} vagas restantes</b>
+                <b>{{ studentsForCourse(course.id).length }} matriculado(s) <span aria-hidden="true">→</span></b>
+              </span>
+            </button>
+          } @empty {
+            <p class="muted">Nenhum curso cadastrado.</p>
+          }
+        </div>
       </section>
     }
 
     @if (activeTab() === 'coupons') {
-      <section class="management-grid">
-        <form class="panel" [formGroup]="couponForm" (ngSubmit)="saveCoupon()">
+      <section class="panel">
+        <form class="panel creation-form" [class.creation-form--open]="activeFormModal() === 'coupon'" [formGroup]="couponForm" (ngSubmit)="saveCoupon()">
           <div class="panel__header">
             <div>
               <span class="section-label">Promocoes</span>
               <h2>{{ editingCouponId() ? 'Editar cupom' : 'Adicionar cupom' }}</h2>
             </div>
-            <button type="button" class="ghost-button" (click)="resetCouponForm()">Limpar</button>
+            <div class="form-actions">
+              <button type="button" class="ghost-button" (click)="resetCouponForm()">Limpar</button>
+              <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
+            </div>
           </div>
 
           <div class="form-grid">
@@ -432,6 +370,7 @@
               <span class="section-label">Cupons</span>
               <h2>Codigos cadastrados</h2>
             </div>
+            <button type="button" class="primary-button" (click)="openCouponModal()">Adicionar cupom</button>
           </div>
 
           <div class="table">
@@ -487,3 +426,47 @@
     }
   </section>
 </main>
+
+@if (selectedCourse(); as course) {
+  <div class="modal-backdrop" role="presentation" (click)="closeClassModal()">
+    <section
+      class="class-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="class-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="class-modal__header">
+        <div>
+          <span class="section-label">Turma</span>
+          <h2 id="class-modal-title">{{ course.nome }}</h2>
+          <p>{{ course.date }} - {{ course.location }}</p>
+          <p>Instrutor: {{ course.instructor }}</p>
+        </div>
+        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeClassModal()">X</button>
+      </div>
+
+      <div class="class-modal__summary">
+        <span><b>{{ studentsForCourse(course.id).length }}</b> matriculado(s)</span>
+        <span><b>{{ course.estoque }}</b> vaga(s) restante(s)</span>
+      </div>
+
+      <div class="class-modal__students">
+        @for (student of studentsForCourse(course.id); track student.id) {
+          <div class="class-student">
+            <div>
+              <strong>{{ student.name }}</strong>
+              <span>{{ student.email }}</span>
+              @if (student.phone) {
+                <span>{{ student.phone }}</span>
+              }
+            </div>
+            <strong>{{ student.status }}</strong>
+          </div>
+        } @empty {
+          <p class="muted">Nenhum aluno matriculado nesta turma.</p>
+        }
+      </div>
+    </section>
+  </div>
+}

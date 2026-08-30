@@ -9,8 +9,10 @@ const API_URL = 'http://localhost:5278/api';
 export class OrderService {
   private readonly http = inject(HttpClient);
 
-  create(request: CreateOrderRequest): Observable<CreateOrderResponse> {
-    return this.http.post<CreateOrderResponse>(`${API_URL}/Orders`, request);
+  create(request: CreateOrderRequest, idempotencyKey: string): Observable<CreateOrderResponse> {
+    return this.http.post<CreateOrderResponse>(`${API_URL}/Orders`, request, {
+      headers: { 'Idempotency-Key': idempotencyKey },
+    });
   }
 
   getMyOrders(): Observable<Order[]> {

@@ -1,48 +1,80 @@
 <main class="landing-page">
   <section class="store-hero">
     <div class="store-hero__content">
-      <span class="section-label">MediShop</span>
-      <h1>Equipamentos medicos e cursos para profissionais da saude</h1>
+      <span class="hero-kicker">MediShop | Sua loja de saude</span>
+      <h1>Cuide da sua carreira com os produtos certos.</h1>
       <p>
-        Compre equipamentos essenciais, encontre capacitacoes presenciais e
-        organize seus pedidos em uma plataforma pensada para a area da saude.
+        Cursos presenciais para estudantes e profissionais que querem evoluir
+        na area da saude.
       </p>
 
       <div class="hero-actions">
-        <a routerLink="/catalogo" class="primary-link">Comprar produtos</a>
-        <a routerLink="/catalogo" class="secondary-link">Ver cursos</a>
+        <a routerLink="/catalogo" class="primary-link">Explorar catalogo</a>
+        <a routerLink="/catalogo" class="secondary-link">Encontrar um curso</a>
+      </div>
+
+      <div class="hero-proof">
+        <span>Compra segura</span>
+        <span>Produtos selecionados</span>
+        <span>Suporte especializado</span>
       </div>
     </div>
   </section>
 
+  <section class="store-section benefits" aria-label="Beneficios da loja">
+    <article>
+      <span class="benefit-icon">01</span>
+      <div>
+        <h2>Escolha com confianca</h2>
+        <p>Catalogo organizado para facilitar sua decisao.</p>
+      </div>
+    </article>
+    <article>
+      <span class="benefit-icon">02</span>
+      <div>
+        <h2>Aprenda na pratica</h2>
+        <p>Cursos presenciais com instrutores experientes.</p>
+      </div>
+    </article>
+    <article>
+      <span class="benefit-icon">03</span>
+      <div>
+        <h2>Pedido simplificado</h2>
+        <p>Do carrinho ao acompanhamento em poucos passos.</p>
+      </div>
+    </article>
+  </section>
+
   <section class="store-section categories">
-    <article>
-      <span>{{ equipmentCount() }}</span>
-      <h2>Equipamentos</h2>
-      <p>Itens para atendimento, clinicas, estudantes e equipes de saude.</p>
-    </article>
+    <div class="section-header">
+      <div>
+        <span class="section-label">Compre por categoria</span>
+        <h2>Encontre o que voce precisa</h2>
+      </div>
+    </div>
 
-    <article>
-      <span>{{ courseCount() }}</span>
-      <h2>Cursos</h2>
-      <p>Capacitacoes para desenvolver pratica e seguranca profissional.</p>
-    </article>
+    <div class="category-grid">
+      <a routerLink="/catalogo" class="category-card category-card--equipment">
+        <span class="category-card__eyebrow">Formacao profissional</span>
+        <strong>Cursos praticos</strong>
+        <span>Ver cursos <b aria-hidden="true">→</b></span>
+      </a>
 
-    <article>
-      <span>24h</span>
-      <h2>Pedido online</h2>
-      <p>Carrinho, checkout e acompanhamento em um fluxo simples.</p>
-    </article>
+      <a routerLink="/catalogo" class="category-card category-card--courses">
+        <span class="category-card__eyebrow">Turmas presenciais</span>
+        <strong>Proximas turmas</strong>
+        <span>Ver turmas <b aria-hidden="true">→</b></span>
+      </a>
+    </div>
   </section>
 
   <section class="store-section">
     <div class="section-header">
       <div>
         <span class="section-label">Destaques</span>
-        <h2>Produtos e cursos em evidencia</h2>
+        <h2>Mais procurados</h2>
       </div>
-
-      <a routerLink="/catalogo" class="text-link">Catalogo completo</a>
+      <a routerLink="/catalogo" class="text-link">Ver catalogo completo</a>
     </div>
 
     @if (loading()) {
@@ -54,20 +86,21 @@
         @for (product of featuredProducts(); track product.id) {
           <article class="featured-card">
             <div class="featured-card__media">
-              <img
-                [src]="imageUrl(product)"
-                [alt]="product.nome"
-                loading="eager"
-                decoding="async"
-                (error)="setFallbackImage($event)"
-              />
+              <img [src]="imageUrl(product)" [alt]="product.nome" loading="eager"
+                decoding="async" (error)="setFallbackImage($event)" />
             </div>
-
             <div class="featured-card__body">
-              <span>{{ product.tipoProduto === 'course' ? 'Curso' : 'Equipamento' }}</span>
+              <span class="featured-card__type">{{ product.tipoProduto === 'course' ? 'Curso' : 'Equipamento' }}</span>
               <h3>{{ product.nome }}</h3>
               <p>{{ product.description || 'Item disponivel no catalogo MediShop.' }}</p>
-              <strong>{{ formatPrice(product.preco) }}</strong>
+              <div class="featured-card__footer">
+                <strong>{{ formatPrice(product.preco) }}</strong>
+                @if (product.tipoProduto === 'course') {
+                  <a [routerLink]="['/curso', product.id]">Ver detalhes</a>
+                } @else {
+                  <a routerLink="/catalogo">Ver catalogo</a>
+                }
+              </div>
             </div>
           </article>
         }
@@ -77,24 +110,26 @@
 
   <section class="trust-band">
     <div>
-      <span class="section-label">Confianca</span>
-      <h2>Uma loja preparada para compras da area da saude</h2>
+      <span class="section-label">Sobre a MediShop</span>
+      <h2>Uma experiencia feita para a rotina da saude</h2>
       <p>
-        A MediShop reune catalogo, cursos, carrinho, controle de pedidos e area
-        administrativa para entregar uma experiencia organizada do inicio ao fim.
+        Reunimos produtos e capacitacao em um so lugar para voce comprar melhor,
+        aprender mais e evoluir profissionalmente.
       </p>
     </div>
-
     <div class="trust-list">
-      <span>Compra de equipamentos</span>
-      <span>Inscricao em cursos</span>
-      <span>Cupons promocionais</span>
-      <span>Conta com endereco de entrega</span>
+      <span><b>✓</b> Compra de equipamentos</span>
+      <span><b>✓</b> Inscricao em cursos</span>
+      <span><b>✓</b> Cupons promocionais</span>
+      <span><b>✓</b> Acompanhamento de pedidos</span>
     </div>
   </section>
 
   <section class="cta-section">
-    <h2>Pronto para escolher seus produtos?</h2>
+    <div>
+      <span class="section-label">Comece agora</span>
+      <h2>Encontre o proximo passo da sua jornada.</h2>
+    </div>
     <a routerLink="/catalogo" class="primary-link">Ir para o catalogo</a>
   </section>
 </main>

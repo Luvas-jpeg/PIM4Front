@@ -10,7 +10,7 @@ import { CreateOrderRequest } from '../../core/models/order.models';
 import { PromoCode } from '../../core/models/promo-codes.models';
 import { UpdateProfileRequest, User } from '../../core/models/auth.models';
 
-type PaymentMethod = 'credit' | 'debit' | 'pix';
+type PaymentMethod = 'credit_card' | 'debit_card' | 'pix';
 
 @Component({
   selector: 'app-checkout',
@@ -219,7 +219,7 @@ export class Checkout {
     }
 
     const paymentMethod = this.form.controls.paymentMethod.value;
-    const installments = paymentMethod === 'credit'
+    const installments = paymentMethod === 'credit_card'
       ? this.form.controls.installments.value
       : null;
 
@@ -236,7 +236,7 @@ export class Checkout {
 
     this.submitting.set(true);
 
-    this.orderService.create(request)
+    this.orderService.create(request, crypto.randomUUID())
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
         next: (response) => {
