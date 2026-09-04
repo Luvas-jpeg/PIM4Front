@@ -47,6 +47,12 @@ export class Checkout {
     this.items().some(item => item.product.tipoProduto === 'equipment')
   );
 
+  readonly hasUnassignedCourse = computed(() =>
+    this.items().some(item =>
+      item.product.tipoProduto === 'course' && !item.courseClass
+    )
+  );
+
   readonly hasAddress = computed(() => this.isAddressComplete(this.user()));
 
   readonly shipping = computed(() => {
@@ -206,6 +212,11 @@ export class Checkout {
       return;
     }
 
+    if (this.hasUnassignedCourse()) {
+      this.error.set('Selecione uma turma para cada curso antes de finalizar.');
+      return;
+    }
+
     if (this.hasEquipment() && !this.hasAddress()) {
       this.openAddressModal();
       this.error.set('Cadastre o endereco para calcular o frete.');
@@ -226,6 +237,7 @@ export class Checkout {
     const request: CreateOrderRequest = {
       itens: this.items().map(item => ({
         produtoId: item.product.id,
+        turmaId: item.courseClass?.id ?? null,
         quantidade: item.quantity,
       })),
       valorFrete: this.shipping(),

@@ -22,7 +22,7 @@
     } @else {
       <div class="cart-layout">
         <div class="cart-items" aria-label="Itens do carrinho">
-          @for (item of items(); track item.product.id) {
+          @for (item of items(); track item.product.id + '-' + (item.courseClass?.id ?? 'legacy')) {
             <article class="cart-item">
               <div class="cart-item__media">
                 <img
@@ -47,9 +47,13 @@
 
                 @if (item.product.tipoProduto === 'course') {
                   <div class="course-info">
-                    <span>{{ item.product.date }}</span>
-                    <span>{{ item.product.location }}</span>
-                    <span>{{ item.product.instructor }}</span>
+                    @if (item.courseClass; as courseClass) {
+                      <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                      <span>{{ courseClass.local }}</span>
+                      <span>{{ courseClass.instructor }}</span>
+                    } @else {
+                      <span>Turma a definir</span>
+                    }
                   </div>
                 }
               </div>
@@ -69,7 +73,7 @@
                   <input
                     type="number"
                     min="1"
-                    [max]="item.product.estoque"
+                    [max]="availableQuantity(item)"
                     [value]="item.quantity"
                     (change)="updateQuantity(item, $any($event.target).value)"
                   />
@@ -77,7 +81,7 @@
                   <button
                     type="button"
                     aria-label="Aumentar quantidade"
-                    [disabled]="item.quantity >= item.product.estoque"
+                    [disabled]="item.quantity >= availableQuantity(item)"
                     (click)="increase(item)"
                   >
                     +
@@ -91,7 +95,7 @@
                 <button
                   type="button"
                   class="remove-button"
-                  (click)="remove(item.product.id)"
+                  (click)="remove(item)"
                 >
                   Remover
                 </button>

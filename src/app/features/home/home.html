@@ -14,7 +14,7 @@
     <div class="catalog__header">
       <div>
         <span class="section-label">Catálogo</span>
-        <h2>Produtos e cursos disponíveis</h2>
+        <h2>Cursos disponíveis</h2>
       </div>
 
       <div class="catalog__controls">
@@ -25,23 +25,6 @@
           (input)="updateSearch($any($event.target).value)"
         />
 
-        <div class="filters" aria-label="Filtros de catálogo">
-          <button
-            type="button"
-            [class.active]="selectedFilter() === 'all'"
-            (click)="setFilter('all')"
-          >
-            Todos
-          </button>
-
-          <button
-            type="button"
-            [class.active]="selectedFilter() === 'course'"
-            (click)="setFilter('course')"
-          >
-            Cursos
-          </button>
-        </div>
       </div>
     </div>
 
@@ -49,61 +32,38 @@
       <div class="state">Carregando catálogo...</div>
     } @else if (error()) {
       <div class="state state--error">{{ error() }}</div>
-    } @else if (filteredProducts().length === 0) {
-      <div class="state">Nenhum item encontrado.</div>
+    } @else if (filteredCourses().length === 0) {
+      <div class="state">Nenhum curso encontrado.</div>
     } @else {
       <div class="product-grid">
-        @for (product of filteredProducts(); track product.id; let index = $index) {
+        @for (course of filteredCourses(); track course.id) {
           <article class="product-card">
             <div class="product-card__media">
               <img
-                [src]="imageUrl(product)"
-                [alt]="product.nome"
+                [src]="imageUrl(course)"
+                [alt]="course.nome"
                 loading="eager"
                 decoding="async"
                 (error)="setFallbackImage($event)"
               />
 
-              <span class="product-card__badge">
-                {{ product.tipoProduto === 'course' ? 'Curso' : 'Equipamento' }}
-              </span>
+              <span class="product-card__badge">Curso</span>
             </div>
 
             <div class="product-card__body">
               <div class="product-card__meta">
-                <span>{{ product.category || 'Saúde' }}</span>
-                <span>
-                  {{ product.tipoProduto === 'course' ? product.estoque + ' vagas' : product.estoque + ' em estoque' }}
-                </span>
+                <span>{{ course.category || 'Saúde' }}</span>
+                <span>{{ course.classes.length }} turma(s)</span>
               </div>
 
-              <h3><a [routerLink]="['/curso', product.id]">{{ product.nome }}</a></h3>
-              <p>{{ product.description || 'Item disponível para compra no catálogo MediShop.' }}</p>
-
-              @if (product.tipoProduto === 'course') {
-                <div class="course-info">
-                  <span>{{ product.date }}</span>
-                  <span>{{ product.location }}</span>
-                  <span>{{ product.instructor }}</span>
-                </div>
-              }
+              <h3><a [routerLink]="['/curso', course.id]">{{ course.nome }}</a></h3>
+              <p>{{ course.description || 'Curso presencial disponível no catálogo.' }}</p>
 
               <div class="product-card__footer">
-                <strong>{{ formatPrice(product.preco) }}</strong>
-
-                @if (product.tipoProduto === 'course') {
-                  <a class="product-card__details" [routerLink]="['/curso', product.id]">
-                    Ver detalhes
-                  </a>
-                } @else {
-                  <button
-                    type="button"
-                    [disabled]="!canAddToCart(product)"
-                    (click)="addToCart(product)"
-                  >
-                    {{ canAddToCart(product) ? 'Adicionar' : 'Indisponível' }}
-                  </button>
-                }
+                <strong>{{ formatPrice(course.preco) }}</strong>
+                <a class="product-card__details" [routerLink]="['/curso', course.id]">
+                  Ver detalhes
+                </a>
               </div>
             </div>
           </article>

@@ -1,9 +1,11 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Product } from '../models/product.models';
+import { CourseClass } from '../models/course.models';
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  courseClass?: CourseClass;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -21,28 +23,38 @@ export class CartService {
   );
 
   add(product: Product, quantity = 1): void {
+    this.addCourse(product, undefined, quantity);
+  }
+
+  addCourse(product: Product, courseClass?: CourseClass, quantity = 1): void {
+    this.addCourseInternal(product, courseClass, quantity);
+  }
+
+  private addCourseInternal(product: Product, courseClass: CourseClass | undefined, quantity: number): void {
     const items = [...this.items()];
-    const existing = items.find(item => item.product.id === product.id);
+    const existing = items.find(item =>
+      item.product.id === product.id && item.courseClass?.id === courseClass?.id
+    );
 
     if (existing) {
       existing.quantity += quantity;
     } else {
-      items.push({ product, quantity });
+      items.push({ product, courseClass, quantity });
     }
 
     this.setItems(items);
   }
 
-  updateQuantity(productId: number, quantity: number): void {
+  updateQuantity(item: CartItem, quantity: number): void {
     const items = this.items()
-      .map(item => item.product.id === productId ? { ...item, quantity } : item)
+      .map(current => current === item ? { ...current, quantity } : current)
       .filter(item => item.quantity > 0);
 
     this.setItems(items);
   }
 
-  remove(productId: number): void {
-    this.setItems(this.items().filter(item => item.product.id !== productId));
+  remove(item: CartItem): void {
+    this.setItems(this.items().filter(current => current !== item));
   }
 
   clear(): void {

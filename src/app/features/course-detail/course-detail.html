@@ -18,11 +18,34 @@
           <p class="course-detail__description">{{ course.description }}</p>
 
           <div class="course-facts">
-            <div><span>Data e horario</span><strong>{{ course.date }}</strong></div>
-            <div><span>Local</span><strong>{{ course.location }}</strong></div>
-            <div><span>Instrutor</span><strong>{{ course.instructor }}</strong></div>
-            <div><span>Disponibilidade</span><strong>{{ course.estoque }} vaga(s)</strong></div>
+            <div><span>Turmas disponiveis</span><strong>{{ classes().length }}</strong></div>
+            <div><span>Vagas na turma</span><strong>{{ selectedClass()?.availableSeats ?? 0 }}</strong></div>
           </div>
+
+          <label class="class-selector">
+            <span>Escolha a turma</span>
+            <select
+              [value]="selectedClass()?.id ?? ''"
+              (change)="selectClass(+$any($event.target).value)"
+              [disabled]="classes().length === 0"
+            >
+              @for (courseClass of classes(); track courseClass.id) {
+                <option [value]="courseClass.id">
+                  {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}
+                  ({{ courseClass.availableSeats }} vaga(s))
+                </option>
+              }
+            </select>
+          </label>
+
+          @if (classes().length === 0) {
+            <p class="course-unavailable">Nenhuma turma com vagas disponiveis no momento.</p>
+          } @else if (selectedClass(); as courseClass) {
+            <div class="selected-class">
+              <span>{{ courseClass.local }}</span>
+              <span>Instrutor: {{ courseClass.instructor }}</span>
+            </div>
+          }
 
           <div class="course-purchase">
             <strong class="course-price">{{ course.preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
@@ -31,8 +54,8 @@
               <span>{{ quantity() }}</span>
               <button type="button" aria-label="Aumentar quantidade" (click)="increaseQuantity()">+</button>
             </div>
-            <button type="button" class="primary-button" [disabled]="course.estoque < 1" (click)="addToCart()">
-              {{ course.estoque > 0 ? 'Inscrever-se agora' : 'Turma lotada' }}
+            <button type="button" class="primary-button" [disabled]="!selectedClass()" (click)="addToCart()">
+              {{ selectedClass() ? 'Inscrever-se agora' : 'Turma lotada' }}
             </button>
           </div>
         </div>

@@ -132,11 +132,16 @@
           <span class="section-label">Resumo</span>
 
           <div class="summary-items">
-            @for (item of items(); track item.product.id) {
+            @for (item of items(); track item.product.id + '-' + (item.courseClass?.id ?? 'legacy')) {
               <div class="summary-item">
                 <div>
                   <strong>{{ item.product.nome }}</strong>
-                  <span>{{ item.quantity }} unidade(s)</span>
+                  <span>
+                    {{ item.quantity }} inscricao(oes)
+                    @if (item.courseClass; as courseClass) {
+                      - {{ courseClass.local }}
+                    }
+                  </span>
                 </div>
 
                 <span>{{ formatPrice(item.product.preco * item.quantity) }}</span>

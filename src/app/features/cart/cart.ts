@@ -1,11 +1,12 @@
 import { Component, computed, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartItem, CartService } from '../../core/services/cart.service';
 import { Product } from '../../core/models/product.models';
 
 @Component({
   selector: 'app-cart',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './cart.html',
   styleUrl: './cart.scss',
 })
@@ -29,15 +30,15 @@ export class Cart {
   }
 
   increase(item: CartItem): void {
-    if (item.quantity >= item.product.estoque) {
+    if (item.quantity >= this.availableQuantity(item)) {
       return;
     }
 
-    this.cartService.updateQuantity(item.product.id, item.quantity + 1);
+    this.cartService.updateQuantity(item, item.quantity + 1);
   }
 
   decrease(item: CartItem): void {
-    this.cartService.updateQuantity(item.product.id, item.quantity - 1);
+    this.cartService.updateQuantity(item, item.quantity - 1);
   }
 
   updateQuantity(item: CartItem, value: string): void {
@@ -48,13 +49,13 @@ export class Cart {
     }
 
     const quantity = Math.trunc(parsedQuantity);
-    const safeQuantity = Math.min(Math.max(quantity, 0), item.product.estoque);
+    const safeQuantity = Math.min(Math.max(quantity, 0), this.availableQuantity(item));
 
-    this.cartService.updateQuantity(item.product.id, safeQuantity);
+    this.cartService.updateQuantity(item, safeQuantity);
   }
 
-  remove(productId: number): void {
-    this.cartService.remove(productId);
+  remove(item: CartItem): void {
+    this.cartService.remove(item);
   }
 
   clear(): void {
@@ -83,5 +84,9 @@ export class Cart {
     return product.tipoProduto === 'course'
       ? `${product.estoque} vagas disponiveis`
       : `${product.estoque} unidades disponiveis`;
+  }
+
+  availableQuantity(item: CartItem): number {
+    return item.courseClass?.availableSeats ?? item.product.estoque;
   }
 }
