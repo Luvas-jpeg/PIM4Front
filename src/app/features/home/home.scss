@@ -72,7 +72,14 @@
   gap: 12px;
 }
 
-.catalog__controls input {
+.catalog__filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.catalog__controls input,
+.catalog__controls select {
   width: 100%;
   height: 44px;
   padding: 0 14px;
@@ -81,6 +88,30 @@
   background: #fff;
   color: #172033;
   font: inherit;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.pagination button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.pagination button:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
 }
 
 .filters {
@@ -205,6 +236,14 @@
 
 .course-info {
   display: grid;
+  gap: 4px;
+  color: #475569;
+  font-size: 0.82rem;
+}
+
+.course-info--unavailable {
+  color: #be123c;
+  font-weight: 700;
 }
 
 .product-card__footer {
@@ -246,6 +285,10 @@
 @media (max-width: 900px) {
   .catalog__header,
   .product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog__filters {
     grid-template-columns: 1fr;
   }
 

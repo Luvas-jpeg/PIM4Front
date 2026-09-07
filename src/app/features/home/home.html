@@ -24,7 +24,27 @@
           [value]="searchTerm()"
           (input)="updateSearch($any($event.target).value)"
         />
-
+        <div class="catalog__filters">
+          <select [value]="category()" (change)="updateCategory($any($event.target).value)">
+            <option value="">Todas as categorias</option>
+            @for (item of categories(); track item) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
+          <input
+            type="search"
+            placeholder="Cidade ou local"
+            [value]="city()"
+            (input)="updateCity($any($event.target).value)"
+            (keyup.enter)="applyFilters()"
+          />
+          <select [value]="sort()" (change)="updateSort($any($event.target).value)">
+            <option value="date">Próxima turma</option>
+            <option value="price-asc">Menor preço</option>
+            <option value="price-desc">Maior preço</option>
+            <option value="name">Nome</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -32,11 +52,11 @@
       <div class="state">Carregando catálogo...</div>
     } @else if (error()) {
       <div class="state state--error">{{ error() }}</div>
-    } @else if (filteredCourses().length === 0) {
+    } @else if (courses().length === 0) {
       <div class="state">Nenhum curso encontrado.</div>
     } @else {
       <div class="product-grid">
-        @for (course of filteredCourses(); track course.id) {
+        @for (course of courses(); track course.id) {
           <article class="product-card">
             <div class="product-card__media">
               <img
@@ -49,7 +69,6 @@
 
               <span class="product-card__badge">Curso</span>
             </div>
-
             <div class="product-card__body">
               <div class="product-card__meta">
                 <span>{{ course.category || 'Saúde' }}</span>
@@ -58,6 +77,17 @@
 
               <h3><a [routerLink]="['/curso', course.id]">{{ course.nome }}</a></h3>
               <p>{{ course.description || 'Curso presencial disponível no catálogo.' }}</p>
+
+              @if (nextClass(course); as courseClass) {
+                <div class="course-info">
+                  <span>Próxima turma: {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                  <span>{{ courseClass.local }} · {{ availabilityLabel(course) }}</span>
+                </div>
+              } @else {
+                <div class="course-info course-info--unavailable">
+                  <span>{{ availabilityLabel(course) }}</span>
+                </div>
+              }
 
               <div class="product-card__footer">
                 <strong>{{ formatPrice(course.preco) }}</strong>
@@ -69,6 +99,17 @@
           </article>
         }
       </div>
+      @if (totalPages() > 1) {
+        <nav class="pagination" aria-label="Paginação do catálogo">
+          <button type="button" (click)="changePage(page() - 1)" [disabled]="page() === 1">
+            Anterior
+          </button>
+          <span>Página {{ page() }} de {{ totalPages() }}</span>
+          <button type="button" (click)="changePage(page() + 1)" [disabled]="page() === totalPages()">
+            Próxima
+          </button>
+        </nav>
+      }
     }
   </section>
 </main>

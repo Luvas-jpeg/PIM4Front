@@ -187,10 +187,14 @@
               <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
             </div>
           </div>
+          @if (formError(); as message) {
+            <div class="feedback feedback--error" role="alert">{{ message }}</div>
+          }
+          <p class="form-hint"><span class="required-marker">*</span> Campos obrigatórios</p>
 
           <label class="field">
-            <span>Nome</span>
-            <input type="text" formControlName="nome" />
+            <span>Nome <span class="required-marker" aria-hidden="true">*</span></span>
+            <input type="text" formControlName="nome" required aria-required="true" />
           </label>
 
           <div class="form-grid">
@@ -200,47 +204,25 @@
             </label>
 
             <label class="field">
-              <span>Preco</span>
-              <input type="number" min="0" step="0.01" formControlName="preco" />
+              <span>Preco <span class="required-marker" aria-hidden="true">*</span></span>
+              <input type="number" min="0.01" step="0.01" formControlName="preco" required aria-required="true" />
             </label>
 
             <label class="field">
-              <span>Quantidade de vagas</span>
-              <input type="number" min="0" formControlName="estoque" />
-            </label>
-
-            <label class="field">
-              <span>Categoria do curso</span>
+              <span>Categoria do curso <span class="optional-label">(opcional)</span></span>
               <input type="text" formControlName="category" />
             </label>
           </div>
 
           <label class="field">
-            <span>Descricao</span>
+            <span>Descricao <span class="optional-label">(opcional)</span></span>
             <textarea rows="3" formControlName="description"></textarea>
           </label>
 
           <label class="field">
-            <span>Imagem URL</span>
+            <span>Imagem URL <span class="optional-label">(opcional)</span></span>
             <input type="url" formControlName="image" />
           </label>
-
-          <div class="form-grid">
-            <label class="field">
-              <span>Data e horario</span>
-              <input type="datetime-local" formControlName="date" />
-            </label>
-
-            <label class="field">
-              <span>Local</span>
-              <input type="text" formControlName="location" />
-            </label>
-
-            <label class="field">
-              <span>Instrutor</span>
-              <input type="text" formControlName="instructor" />
-            </label>
-          </div>
 
           <button type="submit" class="primary-button" [disabled]="savingProduct()">
             {{ savingProduct() ? 'Salvando...' : 'Salvar curso' }}
@@ -257,20 +239,19 @@
           </div>
 
           <div class="table">
-            @for (product of products(); track product.id) {
+            @for (course of courses(); track course.id) {
               <article class="table-row">
                 <div>
-                  <strong>{{ product.nome }}</strong>
-                  <span>Curso - {{ formatPrice(product.preco) }}</span>
+                  <strong>{{ course.nome }}</strong>
+                  <span>Curso - {{ formatPrice(course.preco) }}</span>
                 </div>
-                <span>{{ product.estoque }}</span>
+                <span>{{ course.classes.length }} turma(s)</span>
                 <div class="actions">
-                  <button type="button" (click)="editProduct(product)">Editar</button>
-                  <button type="button" class="danger" (click)="deleteProduct(product.id)">Excluir</button>
+                  <button type="button" (click)="editProduct(course)">Editar</button>
                 </div>
               </article>
             } @empty {
-              <p class="muted">Nenhum produto cadastrado.</p>
+              <p class="muted">Nenhum curso cadastrado.</p>
             }
           </div>
         </section>
@@ -286,18 +267,85 @@
           </div>
         </div>
 
+        @if (activeFormModal() === 'class' && selectedCourse(); as course) {
+          <form class="subpanel creation-form creation-form--open" [formGroup]="classForm" (ngSubmit)="saveClass()">
+            <div class="panel__header">
+              <div>
+                <span class="section-label">Turma de {{ course.nome }}</span>
+                <h3>{{ editingClassId() ? 'Editar turma' : 'Adicionar turma' }}</h3>
+              </div>
+              <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
+            </div>
+            @if (formError(); as message) {
+              <div class="feedback feedback--error" role="alert">{{ message }}</div>
+            }
+            <p class="form-hint"><span class="required-marker">*</span> Campos obrigatórios</p>
+
+            <div class="form-grid">
+              <label class="field">
+                <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
+                <input type="datetime-local" formControlName="startDate" required aria-required="true" />
+              </label>
+              <label class="field">
+                <span>Fim <span class="optional-label">(opcional)</span></span>
+                <input type="datetime-local" formControlName="endDate" />
+              </label>
+              <label class="field">
+                <span>Local <span class="required-marker" aria-hidden="true">*</span></span>
+                <input type="text" formControlName="local" required aria-required="true" />
+              </label>
+              <label class="field">
+                <span>Instrutor <span class="required-marker" aria-hidden="true">*</span></span>
+                <input type="text" formControlName="instructor" required aria-required="true" />
+              </label>
+              <label class="field">
+                <span>Capacidade <span class="required-marker" aria-hidden="true">*</span></span>
+                <input type="number" min="1" formControlName="capacity" required aria-required="true" />
+              </label>
+              <label class="field">
+                <span>Status <span class="required-marker" aria-hidden="true">*</span></span>
+                <select formControlName="status" required aria-required="true">
+                  <option value="scheduled">Agendada</option>
+                  <option value="completed">Concluida</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
+              </label>
+            </div>
+
+            <button type="submit" class="primary-button">Salvar turma</button>
+          </form>
+        }
+
         <div class="class-list">
           @for (course of courses(); track course.id) {
-            <button type="button" class="class-card" (click)="openClassModal(course)">
+            <div class="class-course-group">
+              <div class="panel__header">
+                <h3>{{ course.nome }}</h3>
+                <button type="button" class="primary-button" (click)="openClassForm(course)">
+                  Adicionar turma
+                </button>
+              </div>
+            @for (courseClass of course.classes; track courseClass.id) {
+            <article class="class-card">
+              <button type="button" class="class-card__content" (click)="openClassModal(course, courseClass)">
               <span class="class-card__type">Curso presencial</span>
               <strong class="class-card__title">{{ course.nome }}</strong>
-              <span>{{ course.date }}</span>
-              <span>{{ course.location }}</span>
+              <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span>{{ courseClass.local }} - {{ courseClass.instructor }}</span>
               <span class="class-card__footer">
-                <b>{{ course.estoque }} vagas restantes</b>
-                <b>{{ studentsForCourse(course.id).length }} matriculado(s) <span aria-hidden="true">→</span></b>
+                <b>{{ courseClass.availableSeats }}/{{ courseClass.capacity }} vagas restantes</b>
+                <b>Ver alunos <span aria-hidden="true">→</span></b>
               </span>
-            </button>
+              </button>
+              <button type="button" class="ghost-button" (click)="editClass(course, courseClass)">
+                Editar turma
+              </button>
+            </article>
+            }
+            @empty {
+              <p class="muted">Nenhuma turma cadastrada para este curso.</p>
+            }
+            </div>
           } @empty {
             <p class="muted">Nenhum curso cadastrado.</p>
           }
@@ -318,39 +366,43 @@
               <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
             </div>
           </div>
+          @if (formError(); as message) {
+            <div class="feedback feedback--error" role="alert">{{ message }}</div>
+          }
+          <p class="form-hint"><span class="required-marker">*</span> Campos obrigatórios</p>
 
           <div class="form-grid">
             <label class="field">
-              <span>Codigo</span>
-              <input type="text" formControlName="code" />
+              <span>Codigo <span class="required-marker" aria-hidden="true">*</span></span>
+              <input type="text" formControlName="code" required aria-required="true" />
             </label>
 
             <label class="field">
-              <span>Tipo</span>
-              <select formControlName="discountType">
+              <span>Tipo <span class="required-marker" aria-hidden="true">*</span></span>
+              <select formControlName="discountType" required aria-required="true">
                 <option value="percentage">Percentual</option>
                 <option value="fixed">Valor fixo</option>
               </select>
             </label>
 
             <label class="field">
-              <span>Desconto</span>
-              <input type="number" min="0" step="0.01" formControlName="discount" />
+              <span>Desconto <span class="required-marker" aria-hidden="true">*</span></span>
+              <input type="number" min="0.01" step="0.01" formControlName="discount" required aria-required="true" />
             </label>
 
             <label class="field">
-              <span>Limite de uso</span>
+              <span>Limite de uso <span class="optional-label">(opcional)</span></span>
               <input type="number" min="0" formControlName="usageLimit" />
             </label>
 
             <label class="field">
-              <span>Inicio</span>
-              <input type="date" formControlName="startDate" />
+              <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
+              <input type="date" formControlName="startDate" required aria-required="true" />
             </label>
 
             <label class="field">
-              <span>Fim</span>
-              <input type="date" formControlName="endDate" />
+              <span>Fim <span class="required-marker" aria-hidden="true">*</span></span>
+              <input type="date" formControlName="endDate" required aria-required="true" />
             </label>
           </div>
 
@@ -440,15 +492,19 @@
         <div>
           <span class="section-label">Turma</span>
           <h2 id="class-modal-title">{{ course.nome }}</h2>
-          <p>{{ course.date }} - {{ course.location }}</p>
-          <p>Instrutor: {{ course.instructor }}</p>
+          @if (selectedClass(); as courseClass) {
+            <p>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}</p>
+            <p>Instrutor: {{ courseClass.instructor }}</p>
+          }
         </div>
         <button type="button" class="icon-button" aria-label="Fechar" (click)="closeClassModal()">X</button>
       </div>
 
       <div class="class-modal__summary">
         <span><b>{{ studentsForCourse(course.id).length }}</b> matriculado(s)</span>
-        <span><b>{{ course.estoque }}</b> vaga(s) restante(s)</span>
+        @if (selectedClass(); as courseClass) {
+          <span><b>{{ courseClass.availableSeats }}</b> vaga(s) restante(s)</span>
+        }
       </div>
 
       <div class="class-modal__students">

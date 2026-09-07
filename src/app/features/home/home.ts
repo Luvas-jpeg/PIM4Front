@@ -1,11 +1,12 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Course } from '../../core/models/course.models';
+import { Course, PagedCourseResponse } from '../../core/models/course.models';
 import { CourseService } from '../../core/services/course.service';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
@@ -22,22 +23,15 @@ export class Home {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly searchTerm = signal('');
+  readonly category = signal('');
+  readonly city = signal('');
+  readonly sort = signal('date');
+  readonly page = signal(1);
+  readonly totalPages = signal(1);
 
-  readonly filteredCourses = computed(() => {
-    const search = this.searchTerm().trim().toLowerCase();
-
-    return this.courses().filter((course) => {
-      const searchableText = [
-        course.nome,
-        course.description,
-        course.category,
-      ]
-        .join(' ')
-        .toLowerCase();
-
-      return searchableText.includes(search);
-    });
-  });
+  readonly categories = computed(() =>
+    [...new Set(this.courses().map((course) => course.category).filter(Boolean))].sort(),
+  );
 
   constructor() {
     this.loadProducts();
@@ -45,6 +39,35 @@ export class Home {
 
   updateSearch(value: string): void {
     this.searchTerm.set(value);
+    this.page.set(1);
+    this.loadProducts();
+  }
+
+  updateCategory(value: string): void {
+    this.category.set(value);
+    this.page.set(1);
+    this.loadProducts();
+  }
+
+  updateCity(value: string): void {
+    this.city.set(value);
+  }
+
+  applyFilters(): void {
+    this.page.set(1);
+    this.loadProducts();
+  }
+
+  updateSort(value: string): void {
+    this.sort.set(value);
+    this.page.set(1);
+    this.loadProducts();
+  }
+
+  changePage(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.page.set(page);
+    this.loadProducts();
   }
 
   imageUrl(course: Course): string {
@@ -65,13 +88,36 @@ export class Home {
     return this.currencyFormatter.format(value);
   }
 
+  nextClass(course: Course) {
+    return course.classes
+      .filter((courseClass) => courseClass.status === 'scheduled' && courseClass.availableSeats > 0)
+      .sort((first, second) =>
+        new Date(first.startDate).getTime() - new Date(second.startDate).getTime(),
+      )[0] ?? null;
+  }
+
+  availabilityLabel(course: Course): string {
+    const courseClass = this.nextClass(course);
+    if (!courseClass) return 'Sem vagas disponíveis';
+    if (courseClass.availableSeats <= 5) return `${courseClass.availableSeats} vaga(s) restantes`;
+    return `${courseClass.availableSeats} vagas disponíveis`;
+  }
+
   private loadProducts(): void {
     this.loading.set(true);
     this.error.set(null);
 
-    this.courseService.getAll().subscribe({
-      next: (courses) => {
-        this.courses.set(courses);
+    this.courseService.getCatalog({
+      search: this.searchTerm(),
+      category: this.category(),
+      city: this.city(),
+      sort: this.sort(),
+      page: this.page(),
+      pageSize: 9,
+    }).subscribe({
+      next: (response: PagedCourseResponse) => {
+        this.courses.set(response.items);
+        this.totalPages.set(response.totalPages || 1);
         this.loading.set(false);
       },
       error: () => {

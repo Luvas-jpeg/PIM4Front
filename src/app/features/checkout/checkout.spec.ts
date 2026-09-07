@@ -9,6 +9,7 @@ import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { PromoCodeService } from '../../core/services/promo-code.service';
 import { Product } from '../../core/models/product.models';
+import { CourseClass } from '../../core/models/course.models';
 import { CreateOrderRequest } from '../../core/models/order.models';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -58,6 +59,18 @@ describe('Checkout', () => {
     date: '',
     location: '',
     instructor: '',
+  };
+
+  const courseClass: CourseClass = {
+    id: 7,
+    courseId: 1,
+    startDate: '2026-10-01T09:00:00',
+    endDate: null,
+    local: 'Sao Paulo',
+    instructor: 'Instrutor Teste',
+    capacity: 20,
+    availableSeats: 19,
+    status: 'scheduled',
   };
 
   beforeEach(async () => {
@@ -130,9 +143,44 @@ describe('Checkout', () => {
     component.submit();
 
     const request = orderServiceMock.create.mock.calls[0][0] as CreateOrderRequest;
-    expect(request.itens).toEqual([{ produtoId: 1, quantidade: 2 }]);
+    expect(request.itens).toEqual([{
+      produtoId: 1,
+      turmaId: null,
+      quantidade: 2,
+    }]);
     expect(request.paymentMethod).toBe('pix');
     expect(cartService.items()).toEqual([]);
+  });
+
+  it('should send the selected class when submitting a course order', () => {
+    cartService.addCourse(
+      { ...product, tipoProduto: 'course', id: 1, preco: 250 },
+      courseClass,
+      2,
+    );
+    orderServiceMock.create.mockReturnValue(of({
+      message: 'Pedido criado com sucesso!',
+      orderId: 11,
+      total: 500,
+    }));
+
+    component.submit();
+
+    const request = orderServiceMock.create.mock.calls[0][0] as CreateOrderRequest;
+    expect(request.itens).toEqual([{
+      produtoId: 1,
+      turmaId: 7,
+      quantidade: 2,
+    }]);
+  });
+
+  it('should block a course order without a selected class', () => {
+    cartService.add({ ...product, tipoProduto: 'course' }, 1);
+
+    component.submit();
+
+    expect(component.error()).toContain('Selecione uma turma');
+    expect(orderServiceMock.create).not.toHaveBeenCalled();
   });
 
   it('should ask for address when equipment order has no address', () => {

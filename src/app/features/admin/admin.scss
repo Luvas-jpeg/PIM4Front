@@ -314,6 +314,16 @@ form,
   font-weight: 800;
 }
 
+.form-hint {
+  margin: -4px 0 4px;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.required-marker {
+  color: #be123c;
+}
+
 .field input,
 .field select,
 .field textarea,

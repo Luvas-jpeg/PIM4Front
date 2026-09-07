@@ -39,8 +39,11 @@ export class CourseDetail {
     this.courseService.getById(id).subscribe({
       next: course => {
         this.course.set(course);
-        const classes = course.classes.filter(
-          item => item.status !== 'cancelled' && item.availableSeats > 0,
+        const now = Date.now();
+        const classes = course.classes.filter(item =>
+          item.status === 'scheduled' &&
+          item.availableSeats > 0 &&
+          new Date(item.startDate).getTime() >= now,
         );
         this.classes.set(classes);
         this.selectedClass.set(classes[0] ?? null);

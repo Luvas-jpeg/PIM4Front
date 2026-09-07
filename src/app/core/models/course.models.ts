@@ -21,3 +21,23 @@ export interface Course {
   legacyProductId?: number | null;
   classes: CourseClass[];
 }
+
+export interface CourseCatalogQuery {
+  search?: string;
+  category?: string;
+  city?: string;
+  startDate?: string;
+  endDate?: string;
+  availableOnly?: boolean;
+  sort?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PagedCourseResponse {
+  items: Course[];
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+}

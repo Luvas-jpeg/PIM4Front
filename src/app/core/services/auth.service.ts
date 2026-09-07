@@ -49,6 +49,20 @@ export class AuthService {
     return localStorage.getItem(this.refreshTokenKey);
   }
 
+  refresh(): Observable<AuthResponse> {
+    const refreshToken = this.getRefreshToken();
+
+    if (!refreshToken) {
+      throw new Error('Refresh token ausente.');
+    }
+
+    return this.http.post<AuthResponse>(`${API_URL}/Auth/refresh`, {
+      refreshToken,
+    }).pipe(
+      tap(response => this.setSession(response)),
+    );
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
