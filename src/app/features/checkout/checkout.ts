@@ -43,29 +43,17 @@ export class Checkout {
   readonly savingAddress = signal(false);
   readonly addressModalOpen = signal(false);
 
-  readonly hasEquipment = computed(() =>
-    this.items().some(item => item.product.tipoProduto === 'equipment')
-  );
-
   readonly hasUnassignedCourse = computed(() =>
     this.items().some(item =>
       item.product.tipoProduto === 'course' && !item.courseClass
     )
   );
 
-  readonly hasAddress = computed(() => this.isAddressComplete(this.user()));
+  readonly hasUnsupportedItems = computed(() =>
+    this.items().some(item => item.product.tipoProduto !== 'course')
+  );
 
-  readonly shipping = computed(() => {
-    if (!this.hasEquipment()) {
-      return 0;
-    }
-
-    if (this.subtotal() >= 500) {
-      return 0;
-    }
-
-    return this.calculateShipping(this.user());
-  });
+  readonly shipping = computed(() => 0);
 
   readonly discount = computed(() => {
     const coupon = this.promoCode();
@@ -212,14 +200,13 @@ export class Checkout {
       return;
     }
 
-    if (this.hasUnassignedCourse()) {
-      this.error.set('Selecione uma turma para cada curso antes de finalizar.');
+    if (this.hasUnsupportedItems()) {
+      this.error.set('A loja aceita somente cursos. Remova itens legados do carrinho.');
       return;
     }
 
-    if (this.hasEquipment() && !this.hasAddress()) {
-      this.openAddressModal();
-      this.error.set('Cadastre o endereco para calcular o frete.');
+    if (this.hasUnassignedCourse()) {
+      this.error.set('Selecione uma turma para cada curso antes de finalizar.');
       return;
     }
 
@@ -240,7 +227,7 @@ export class Checkout {
         turmaId: item.courseClass?.id ?? null,
         quantidade: item.quantity,
       })),
-      valorFrete: this.shipping(),
+      valorFrete: 0,
       paymentMethod,
       installments,
       promoCode: this.promoCode()?.code ?? '',
@@ -280,44 +267,4 @@ export class Checkout {
     });
   }
 
-  private isAddressComplete(user: User | null): boolean {
-    if (!user) {
-      return false;
-    }
-
-    return [
-      user.street,
-      user.number,
-      user.neighborhood,
-      user.city,
-      user.state,
-      user.zipCode,
-    ].every(value => !!value?.trim());
-  }
-
-  private calculateShipping(user: User | null): number {
-    const state = user?.state?.trim().toUpperCase();
-    const equipmentQuantity = this.items()
-      .filter(item => item.product.tipoProduto === 'equipment')
-      .reduce((sum, item) => sum + item.quantity, 0);
-    const extraVolume = Math.max(equipmentQuantity - 1, 0) * 6;
-
-    if (!state) {
-      return 0;
-    }
-
-    if (state === 'SP') {
-      return 19.9 + extraVolume;
-    }
-
-    if (['RJ', 'MG', 'ES'].includes(state)) {
-      return 29.9 + extraVolume;
-    }
-
-    if (['PR', 'SC', 'RS'].includes(state)) {
-      return 34.9 + extraVolume;
-    }
-
-    return 44.9 + extraVolume;
-  }
 }

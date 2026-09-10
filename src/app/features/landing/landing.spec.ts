@@ -4,14 +4,20 @@ import { of } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Landing } from './landing';
-import { ProductService } from '../../core/services/product.service';
+import { CourseService } from '../../core/services/course.service';
 
 describe('Landing', () => {
   let component: Landing;
   let fixture: ComponentFixture<Landing>;
 
-  const productServiceMock = {
-    getAll: vi.fn(() => of([])),
+  const courseServiceMock = {
+    getCatalog: vi.fn(() => of({
+      items: [],
+      page: 1,
+      pageSize: 4,
+      totalItems: 0,
+      totalPages: 0,
+    })),
   };
 
   beforeEach(async () => {
@@ -19,7 +25,7 @@ describe('Landing', () => {
       imports: [Landing],
       providers: [
         provideRouter([]),
-        { provide: ProductService, useValue: productServiceMock },
+        { provide: CourseService, useValue: courseServiceMock },
       ],
     }).compileComponents();
 
@@ -32,7 +38,7 @@ describe('Landing', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load products', () => {
-    expect(productServiceMock.getAll).toHaveBeenCalled();
+  it('should load courses', () => {
+    expect(courseServiceMock.getCatalog).toHaveBeenCalled();
   });
 });

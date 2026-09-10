@@ -13,7 +13,7 @@
       <div class="empty-checkout">
         <span class="section-label">Carrinho vazio</span>
         <h2>Nao ha itens para finalizar</h2>
-        <p>Volte ao catalogo e selecione produtos ou cursos.</p>
+        <p>Volte ao catalogo e selecione um curso.</p>
         <a routerLink="/catalogo" class="primary-link">Ver catalogo</a>
       </div>
     } @else {
@@ -27,33 +27,6 @@
               <span>{{ user()?.email || 'Pedido vinculado ao usuario logado' }}</span>
             </div>
           </section>
-
-          @if (hasEquipment()) {
-            <section class="checkout-panel">
-              <div class="address-header">
-                <div>
-                  <span class="section-label">Entrega</span>
-                  <h2>Endereco para frete</h2>
-                </div>
-
-                <button type="button" class="secondary-button" (click)="openAddressModal()">
-                  {{ hasAddress() ? 'Editar endereco' : 'Cadastrar endereco' }}
-                </button>
-              </div>
-
-              @if (hasAddress()) {
-                <div class="address-box">
-                  <strong>{{ user()?.street }}, {{ user()?.number }}</strong>
-                  <span>{{ user()?.neighborhood }} - {{ user()?.city }}/{{ user()?.state }}</span>
-                  <span>CEP {{ user()?.zipCode }}</span>
-                </div>
-              } @else {
-                <p class="feedback">
-                  Cadastre seu endereco para calcular o frete dos equipamentos.
-                </p>
-              }
-            </section>
-          }
 
           <section class="checkout-panel">
             <span class="section-label">Pagamento</span>
@@ -161,7 +134,7 @@
 
           <div class="summary-row">
             <span>Frete</span>
-            <strong>{{ shipping() === 0 ? 'Gratis' : formatPrice(shipping()) }}</strong>
+            <strong>Gratis</strong>
           </div>
 
           @if (discount() > 0) {

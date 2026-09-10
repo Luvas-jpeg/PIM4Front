@@ -101,10 +101,10 @@ describe('Checkout', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should calculate shipping for equipment orders', () => {
+  it('should not charge shipping', () => {
     cartService.add(product, 1);
 
-    expect(component.shipping()).toBe(19.9);
+    expect(component.shipping()).toBe(0);
   });
 
   it('should not charge shipping for course-only orders', () => {
@@ -132,12 +132,16 @@ describe('Checkout', () => {
     expect(component.discount()).toBe(12);
   });
 
-  it('should submit order and clear cart', () => {
-    cartService.add(product, 2);
+  it('should submit course order and clear cart', () => {
+    cartService.addCourse(
+      { ...product, tipoProduto: 'course', nome: 'Curso teste' },
+      courseClass,
+      2,
+    );
     orderServiceMock.create.mockReturnValue(of({
       message: 'Pedido criado com sucesso!',
       orderId: 10,
-      total: 269.9,
+      total: 240,
     }));
 
     component.submit();
@@ -145,7 +149,7 @@ describe('Checkout', () => {
     const request = orderServiceMock.create.mock.calls[0][0] as CreateOrderRequest;
     expect(request.itens).toEqual([{
       produtoId: 1,
-      turmaId: null,
+      turmaId: 7,
       quantidade: 2,
     }]);
     expect(request.paymentMethod).toBe('pix');
@@ -183,21 +187,12 @@ describe('Checkout', () => {
     expect(orderServiceMock.create).not.toHaveBeenCalled();
   });
 
-  it('should ask for address when equipment order has no address', () => {
-    user.set({
-      ...user(),
-      street: '',
-      number: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-      zipCode: '',
-    });
+  it('should reject legacy equipment items in checkout', () => {
     cartService.add(product, 1);
 
     component.submit();
 
-    expect(component.addressModalOpen()).toBe(true);
+    expect(component.error()).toContain('somente cursos');
     expect(orderServiceMock.create).not.toHaveBeenCalled();
   });
 });

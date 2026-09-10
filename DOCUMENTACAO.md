@@ -2,12 +2,12 @@
 
 ## Visao geral
 
-Frontend Angular da plataforma MediShop, responsavel pela experiencia Web do
-e-commerce de cursos e equipamentos.
+Frontend Angular da plataforma MediShop, responsavel pela experiencia Web de
+cursos presenciais e suas turmas.
 
 O projeto atende:
 
-- catalogo publico;
+- catalogo publico de cursos;
 - carrinho de compras;
 - checkout;
 - cadastro e login;
@@ -110,7 +110,7 @@ http://localhost:5278/api
 Essa URL esta declarada nos servicos:
 
 - `AuthService`;
-- `ProductService`;
+- `CourseService`;
 - `OrderService`;
 - `PromoCodeService`;
 - `StudentService`.
@@ -123,7 +123,7 @@ Angular, evitando valores fixos no codigo.
 | Rota | Acesso | Funcao |
 |---|---|---|
 | `/` | Publico | Landing page |
-| `/catalogo` | Publico | Catalogo de produtos e cursos |
+| `/catalogo` | Publico | Catalogo de cursos e turmas |
 | `/login` | Publico | Login e cadastro |
 | `/carrinho` | Publico | Itens selecionados |
 | `/checkout` | Autenticado | Finalizacao da compra |
@@ -193,20 +193,22 @@ isAuthenticated()
 isAdmin()
 ```
 
-### ProductService
+### CourseService
 
 ```text
-getAll()
+getCatalog()
+getCatalogOptions()
 getById()
+getClasses()
 create()
 update()
-delete()
 ```
 
-O catalogo de cursos pode ser filtrado com:
+O catalogo publico usa:
 
 ```http
-GET /api/Products?tipo=course
+GET /api/courses/catalog
+GET /api/courses/catalog/options
 ```
 
 ### OrderService
@@ -241,9 +243,8 @@ delete()
 
 ```text
 catalogo
-  -> adicionar produto ao carrinho
+  -> selecionar curso e turma
   -> acessar checkout
-  -> validar endereco quando houver equipamento
   -> validar cupom
   -> selecionar forma de pagamento
   -> criar pedido

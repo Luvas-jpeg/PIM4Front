@@ -1,8 +1,8 @@
 <main class="landing-page">
   <section class="store-hero">
     <div class="store-hero__content">
-      <span class="hero-kicker">MediShop | Sua loja de saude</span>
-      <h1>Cuide da sua carreira com os produtos certos.</h1>
+      <span class="hero-kicker">MediShop | Formacao em saude</span>
+      <h1>Desenvolva sua carreira com cursos presenciais.</h1>
       <p>
         Cursos presenciais para estudantes e profissionais que querem evoluir
         na area da saude.
@@ -15,7 +15,7 @@
 
       <div class="hero-proof">
         <span>Compra segura</span>
-        <span>Produtos selecionados</span>
+        <span>Turmas selecionadas</span>
         <span>Suporte especializado</span>
       </div>
     </div>
@@ -48,13 +48,13 @@
   <section class="store-section categories">
     <div class="section-header">
       <div>
-        <span class="section-label">Compre por categoria</span>
-        <h2>Encontre o que voce precisa</h2>
+        <span class="section-label">Encontre sua formacao</span>
+        <h2>Escolha o proximo curso</h2>
       </div>
     </div>
 
     <div class="category-grid">
-      <a routerLink="/catalogo" class="category-card category-card--equipment">
+      <a routerLink="/catalogo" class="category-card category-card--courses">
         <span class="category-card__eyebrow">Formacao profissional</span>
         <strong>Cursos praticos</strong>
         <span>Ver cursos <b aria-hidden="true">→</b></span>
@@ -79,27 +79,23 @@
 
     @if (loading()) {
       <div class="state">Carregando destaques...</div>
-    } @else if (featuredProducts().length === 0) {
+    } @else if (featuredCourses().length === 0) {
       <div class="state">Nenhum destaque disponivel.</div>
     } @else {
       <div class="featured-grid">
-        @for (product of featuredProducts(); track product.id) {
+        @for (course of featuredCourses(); track course.id) {
           <article class="featured-card">
             <div class="featured-card__media">
-              <img [src]="imageUrl(product)" [alt]="product.nome" loading="eager"
+              <img [src]="imageUrl(course)" [alt]="course.nome" loading="eager"
                 decoding="async" (error)="setFallbackImage($event)" />
             </div>
             <div class="featured-card__body">
-              <span class="featured-card__type">{{ product.tipoProduto === 'course' ? 'Curso' : 'Equipamento' }}</span>
-              <h3>{{ product.nome }}</h3>
-              <p>{{ product.description || 'Item disponivel no catalogo MediShop.' }}</p>
+              <span class="featured-card__type">Curso</span>
+              <h3>{{ course.nome }}</h3>
+              <p>{{ course.description || 'Curso presencial disponivel no catalogo MediShop.' }}</p>
               <div class="featured-card__footer">
-                <strong>{{ formatPrice(product.preco) }}</strong>
-                @if (product.tipoProduto === 'course') {
-                  <a [routerLink]="['/curso', product.id]">Ver detalhes</a>
-                } @else {
-                  <a routerLink="/catalogo">Ver catalogo</a>
-                }
+                <strong>{{ formatPrice(course.preco) }}</strong>
+                <a [routerLink]="['/curso', course.id]">Ver detalhes</a>
               </div>
             </div>
           </article>
@@ -113,14 +109,13 @@
       <span class="section-label">Sobre a MediShop</span>
       <h2>Uma experiencia feita para a rotina da saude</h2>
       <p>
-        Reunimos produtos e capacitacao em um so lugar para voce comprar melhor,
-        aprender mais e evoluir profissionalmente.
+        Reunimos cursos presenciais e turmas selecionadas para voce aprender
+        na pratica e evoluir profissionalmente.
       </p>
     </div>
     <div class="trust-list">
-      <span><b>✓</b> Compra de equipamentos</span>
       <span><b>✓</b> Inscricao em cursos</span>
-      <span><b>✓</b> Cupons promocionais</span>
+      <span><b>✓</b> Turmas presenciais</span>
       <span><b>✓</b> Acompanhamento de pedidos</span>
     </div>
   </section>
