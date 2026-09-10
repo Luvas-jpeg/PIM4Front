@@ -31,14 +31,33 @@
               <option [value]="item">{{ item }}</option>
             }
           </select>
-          <input
-            type="search"
-            placeholder="Cidade ou local"
-            [value]="city()"
-            (input)="updateCity($any($event.target).value)"
-            (keyup.enter)="applyFilters()"
-          />
+          <select [value]="city()" (change)="updateCity($any($event.target).value)">
+            <option value="">Todos os locais</option>
+            @for (item of cities(); track item) {
+              <option [value]="item">{{ item }}</option>
+            }
+          </select>
+          <label>
+            <span>De</span>
+            <input
+              type="date"
+              [value]="startDate()"
+              (change)="updateStartDate($any($event.target).value)"
+            />
+          </label>
+          <label>
+            <span>Até</span>
+            <input
+              type="date"
+              [value]="endDate()"
+              (change)="updateEndDate($any($event.target).value)"
+            />
+          </label>
+          <button type="button" class="filter-button" (click)="applyFilters()">
+            Aplicar filtros
+          </button>
           <select [value]="sort()" (change)="updateSort($any($event.target).value)">
+            <option value="relevance">Mais relevantes</option>
             <option value="date">Próxima turma</option>
             <option value="price-asc">Menor preço</option>
             <option value="price-desc">Maior preço</option>

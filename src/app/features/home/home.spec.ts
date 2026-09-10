@@ -37,6 +37,7 @@ describe('Home', () => {
   const courseServiceMock = {
     getAll: vi.fn(),
     getCatalog: vi.fn(),
+    getCatalogOptions: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -46,6 +47,10 @@ describe('Home', () => {
       pageSize: 9,
       totalItems: courses.length,
       totalPages: 1,
+    }));
+    courseServiceMock.getCatalogOptions.mockReturnValue(of({
+      categories: ['Treinamento'],
+      cities: ['Sao Paulo'],
     }));
 
     await TestBed.configureTestingModule({
@@ -86,6 +91,19 @@ describe('Home', () => {
 
   it('should format prices in BRL', () => {
     expect(component.formatPrice(289.9)).toContain('289,90');
+  });
+
+  it('should send the selected period to the catalog API', () => {
+    component.updateStartDate('2026-10-01');
+    component.updateEndDate('2026-10-31');
+    component.applyFilters();
+
+    expect(courseServiceMock.getCatalog).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        startDate: '2026-10-01',
+        endDate: '2026-10-31',
+      }),
+    );
   });
 
   it('should set error when courses cannot be loaded', () => {

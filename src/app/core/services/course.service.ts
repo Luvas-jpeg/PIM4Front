@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Course, CourseCatalogQuery, CourseClass, PagedCourseResponse } from '../models/course.models';
+import {
+  Course,
+  CourseCatalogOptions,
+  CourseCatalogQuery,
+  CourseClass,
+  PagedCourseResponse,
+} from '../models/course.models';
 import { Student } from '../models/student.models';
 
 const API_URL = 'http://localhost:5278/api';
@@ -46,6 +52,10 @@ export class CourseService {
         pageSize: query.pageSize ?? 9,
       },
     });
+  }
+
+  getCatalogOptions(): Observable<CourseCatalogOptions> {
+    return this.http.get<CourseCatalogOptions>(`${API_URL}/courses/catalog/options`);
   }
 
   getById(id: number): Observable<Course> {

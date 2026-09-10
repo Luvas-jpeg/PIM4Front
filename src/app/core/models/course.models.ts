@@ -41,3 +41,8 @@ export interface PagedCourseResponse {
   totalItems: number;
   totalPages: number;
 }
+
+export interface CourseCatalogOptions {
+  categories: string[];
+  cities: string[];
+}

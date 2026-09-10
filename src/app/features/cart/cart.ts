@@ -87,6 +87,9 @@ export class Cart {
   }
 
   availableQuantity(item: CartItem): number {
-    return item.courseClass?.availableSeats ?? item.product.estoque;
+    const available = item.courseClass?.availableSeats ?? item.product.estoque;
+    return item.product.tipoProduto === 'course'
+      ? Math.min(available, CartService.maxCourseQuantity)
+      : available;
   }
 }

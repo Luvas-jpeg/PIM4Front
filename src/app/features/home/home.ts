@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Course, PagedCourseResponse } from '../../core/models/course.models';
 import { CourseService } from '../../core/services/course.service';
@@ -25,15 +25,25 @@ export class Home {
   readonly searchTerm = signal('');
   readonly category = signal('');
   readonly city = signal('');
+  readonly startDate = signal('');
+  readonly endDate = signal('');
   readonly sort = signal('date');
   readonly page = signal(1);
   readonly totalPages = signal(1);
 
-  readonly categories = computed(() =>
-    [...new Set(this.courses().map((course) => course.category).filter(Boolean))].sort(),
-  );
+  readonly categories = signal<string[]>([]);
+  readonly cities = signal<string[]>([]);
 
   constructor() {
+    this.courseService.getCatalogOptions().subscribe({
+      next: (options) => {
+        this.categories.set(options.categories);
+        this.cities.set(options.cities);
+      },
+      error: () => {
+        this.error.set('Nao foi possivel carregar as opcoes de filtro.');
+      },
+    });
     this.loadProducts();
   }
 
@@ -51,6 +61,14 @@ export class Home {
 
   updateCity(value: string): void {
     this.city.set(value);
+  }
+
+  updateStartDate(value: string): void {
+    this.startDate.set(value);
+  }
+
+  updateEndDate(value: string): void {
+    this.endDate.set(value);
   }
 
   applyFilters(): void {
@@ -111,6 +129,8 @@ export class Home {
       search: this.searchTerm(),
       category: this.category(),
       city: this.city(),
+      startDate: this.startDate(),
+      endDate: this.endDate(),
       sort: this.sort(),
       page: this.page(),
       pageSize: 9,

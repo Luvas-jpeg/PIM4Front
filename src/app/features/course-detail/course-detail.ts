@@ -13,6 +13,7 @@ import { CourseService } from '../../core/services/course.service';
   styleUrl: './course-detail.scss',
 })
 export class CourseDetail {
+  readonly maxCourseQuantity = 5;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly courseService = inject(CourseService);
@@ -26,6 +27,8 @@ export class CourseDetail {
   readonly quantity = signal(1);
   readonly classes = signal<CourseClass[]>([]);
   readonly selectedClass = signal<CourseClass | null>(null);
+  readonly quantityError = signal<string | null>(null);
+  readonly cartError = signal<string | null>(null);
 
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -67,17 +70,54 @@ export class CourseDetail {
 
   decreaseQuantity(): void {
     this.quantity.update(value => Math.max(1, value - 1));
+    this.quantityError.set(null);
+    this.cartError.set(null);
   }
 
   increaseQuantity(): void {
-    const available = this.selectedClass()?.availableSeats ?? 1;
+    const available = Math.min(
+      this.selectedClass()?.availableSeats ?? 1,
+      this.maxCourseQuantity,
+    );
     this.quantity.update(value => Math.min(available, value + 1));
+    this.quantityError.set(null);
   }
 
   selectClass(classId: number): void {
     const selected = this.classes().find(item => item.id === classId) ?? null;
     this.selectedClass.set(selected);
     this.quantity.set(1);
+    this.quantityError.set(null);
+    this.cartError.set(null);
+  }
+
+  classStatusLabel(courseClass: CourseClass): string {
+    switch (courseClass.status) {
+      case 'scheduled':
+        return 'Inscrições abertas';
+      case 'completed':
+        return 'Concluída';
+      case 'cancelled':
+        return 'Cancelada';
+      default:
+        return courseClass.status;
+    }
+  }
+
+  classPeriod(courseClass: CourseClass): string {
+    const start = new Date(courseClass.startDate);
+    if (!courseClass.endDate) {
+      return start.toLocaleString('pt-BR', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      });
+    }
+
+    const end = new Date(courseClass.endDate);
+    return `${start.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} até ${end.toLocaleString('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    })}`;
   }
 
   addToCart(): void {
@@ -86,10 +126,29 @@ export class CourseDetail {
     const selectedClass = this.selectedClass();
 
     if (!course || !selectedClass || selectedClass.availableSeats < 1) {
+      this.quantityError.set('A turma selecionada nao possui vagas disponiveis.');
       return;
     }
 
-    this.cartService.addCourse(this.toCartProduct(course), selectedClass, this.quantity());
+    if (this.quantity() > selectedClass.availableSeats) {
+      this.quantityError.set(
+        `A quantidade solicitada excede as ${selectedClass.availableSeats} vaga(s) disponiveis.`,
+      );
+      return;
+    }
+
+    this.quantityError.set(null);
+    const added = this.cartService.addCourse(
+      this.toCartProduct(course),
+      selectedClass,
+      this.quantity(),
+    );
+    if (!added) {
+      this.cartError.set('Este curso ja possui outra turma no carrinho. Remova-a antes de escolher uma turma diferente.');
+      return;
+    }
+
+    this.cartError.set(null);
     void this.router.navigate(['/carrinho']);
   }
 

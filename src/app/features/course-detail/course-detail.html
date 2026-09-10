@@ -19,7 +19,10 @@
 
           <div class="course-facts">
             <div><span>Turmas disponiveis</span><strong>{{ classes().length }}</strong></div>
-            <div><span>Vagas na turma</span><strong>{{ selectedClass()?.availableSeats ?? 0 }}</strong></div>
+            <div>
+              <span>Vagas na turma selecionada</span>
+              <strong>{{ selectedClass()?.availableSeats ?? 0 }}</strong>
+            </div>
           </div>
 
           <label class="class-selector">
@@ -42,22 +45,50 @@
             <p class="course-unavailable">Nenhuma turma com vagas disponiveis no momento.</p>
           } @else if (selectedClass(); as courseClass) {
             <div class="selected-class">
-              <span>{{ courseClass.local }}</span>
-              <span>Instrutor: {{ courseClass.instructor }}</span>
+              <div class="selected-class__header">
+                <strong>Detalhes da turma</strong>
+                <span class="class-status">{{ classStatusLabel(courseClass) }}</span>
+              </div>
+              <span><strong>Período:</strong> {{ classPeriod(courseClass) }}</span>
+              <span><strong>Local:</strong> {{ courseClass.local }}</span>
+              <span><strong>Instrutor:</strong> {{ courseClass.instructor }}</span>
+              <span><strong>Vagas:</strong> {{ courseClass.availableSeats }} de {{ courseClass.capacity }}</span>
             </div>
           }
 
           <div class="course-purchase">
             <strong class="course-price">{{ course.preco | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
             <div class="quantity-control">
-              <button type="button" aria-label="Diminuir quantidade" (click)="decreaseQuantity()">-</button>
+              <button
+                type="button"
+                aria-label="Diminuir quantidade"
+                (click)="decreaseQuantity()"
+                [disabled]="quantity() <= 1"
+              >-</button>
               <span>{{ quantity() }}</span>
-              <button type="button" aria-label="Aumentar quantidade" (click)="increaseQuantity()">+</button>
+              <button
+                type="button"
+                aria-label="Aumentar quantidade"
+                (click)="increaseQuantity()"
+                [disabled]="quantity() >= (selectedClass()?.availableSeats ?? 1) || quantity() >= maxCourseQuantity"
+              >+</button>
             </div>
-            <button type="button" class="primary-button" [disabled]="!selectedClass()" (click)="addToCart()">
+            <span class="quantity-hint">Máximo de {{ maxCourseQuantity }} inscrições por pedido</span>
+            <button
+              type="button"
+              class="primary-button"
+              [disabled]="!selectedClass() || !!quantityError()"
+              (click)="addToCart()"
+            >
               {{ selectedClass() ? 'Inscrever-se agora' : 'Turma lotada' }}
             </button>
           </div>
+          @if (quantityError()) {
+            <p class="quantity-error" role="alert">{{ quantityError() }}</p>
+          }
+          @if (cartError()) {
+            <p class="quantity-error" role="alert">{{ cartError() }}</p>
+          }
         </div>
       </section>
     }
