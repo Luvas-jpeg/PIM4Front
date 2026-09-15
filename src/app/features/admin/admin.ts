@@ -577,4 +577,16 @@ export class Admin {
       error: () => this.error.set('Nao foi possivel atualizar o pedido.'),
     });
   }
+
+  refundOrder(order: Order): void {
+    this.orderService.refund(order.id).subscribe({
+      next: refundedOrder => {
+        this.orders.update(orders => orders.map(current =>
+          current.id === order.id ? refundedOrder : current
+        ));
+        this.success.set('Reembolso processado e matriculas canceladas.');
+      },
+      error: () => this.error.set('Nao foi possivel processar o reembolso.'),
+    });
+  }
 }

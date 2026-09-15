@@ -469,6 +469,11 @@
                 <option value="Concluido">Concluido</option>
                 <option value="Cancelado">Cancelado</option>
               </select>
+              @if (order.paymentStatus === 'paid') {
+                <button type="button" class="button button--secondary" (click)="refundOrder(order)">
+                  Reembolsar
+                </button>
+              }
             </article>
           } @empty {
             <p class="muted">Nenhum pedido registrado.</p>

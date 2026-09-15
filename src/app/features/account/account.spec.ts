@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Account } from './account';
 import { AuthService } from '../../core/services/auth.service';
+import { EnrollmentService } from '../../core/services/enrollment.service';
+import { OrderService } from '../../core/services/order.service';
 
 describe('Account', () => {
   let component: Account;
@@ -32,12 +34,23 @@ describe('Account', () => {
     logout: vi.fn(),
   };
 
+  const enrollmentServiceMock = {
+    getMine: vi.fn(() => of([])),
+  };
+
+  const orderServiceMock = {
+    getMyOrders: vi.fn(() => of([])),
+    cancel: vi.fn(() => of({})),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Account],
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: authServiceMock },
+        { provide: EnrollmentService, useValue: enrollmentServiceMock },
+        { provide: OrderService, useValue: orderServiceMock },
       ],
     }).compileComponents();
 

@@ -1,0 +1,58 @@
+<main class="enrollment-detail-page">
+  <section class="enrollment-detail-hero">
+    <div class="enrollment-detail-hero__content">
+      <a routerLink="/conta" class="back-link">Voltar para minha conta</a>
+      <span class="section-label">Area do aluno</span>
+      <h1>Detalhes da matricula</h1>
+    </div>
+  </section>
+
+  <section class="enrollment-detail-content">
+    @if (loading()) {
+      <section class="enrollment-panel"><p>Carregando matricula...</p></section>
+    } @else if (error()) {
+      <section class="enrollment-panel feedback feedback--error">{{ error() }}</section>
+    } @else if (enrollment(); as current) {
+      @if (notice(); as currentNotice) {
+        <section class="enrollment-notice" [class]="'enrollment-notice enrollment-notice--' + currentNotice.type">
+          {{ currentNotice.text }}
+        </section>
+      }
+
+      <section class="enrollment-panel enrollment-header">
+        @if (current.courseImage) {
+          <img [src]="current.courseImage" [alt]="current.courseName" />
+        }
+        <div>
+          <span class="section-label">{{ current.category || 'Curso' }}</span>
+          <h2>{{ current.courseName }}</h2>
+          <p>{{ current.courseDescription }}</p>
+          <strong>Matricula: {{ statusLabel(current.enrollmentStatus) }}</strong>
+        </div>
+      </section>
+
+      <section class="enrollment-panel">
+        <span class="section-label">Sua turma</span>
+        <div class="enrollment-data">
+          <p><strong>Data:</strong> {{ formatDate(current.startDate) }}</p>
+          @if (current.endDate) {
+            <p><strong>Termino:</strong> {{ formatDate(current.endDate) }}</p>
+          }
+          <p><strong>Local:</strong> {{ current.location }}</p>
+          <p><strong>Instrutor:</strong> {{ current.instructor }}</p>
+          <p><strong>Status da turma:</strong> {{ statusLabel(current.classStatus) }}</p>
+        </div>
+      </section>
+
+      <section class="enrollment-panel">
+        <span class="section-label">Instrucoes antes da aula</span>
+        <ul class="instructions">
+          <li>Chegue com antecedencia ao local informado.</li>
+          <li>Leve um documento de identificacao.</li>
+          <li>Confira as orientacoes enviadas pela organizacao antes da data.</li>
+          <li>Em caso de alteracao da turma, consulte novamente esta pagina.</li>
+        </ul>
+      </section>
+    }
+  </section>
+</main>

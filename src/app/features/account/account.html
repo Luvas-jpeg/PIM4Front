@@ -9,6 +9,107 @@
   </section>
 
   <section class="account-content">
+    <section class="account-overview" aria-label="Resumo da area do aluno">
+      <article class="overview-card">
+        <span>Matriculas ativas</span>
+        <strong>{{ activeEnrollmentCount() }}</strong>
+      </article>
+      <article class="overview-card">
+        <span>Concluidas</span>
+        <strong>{{ completedEnrollmentCount() }}</strong>
+      </article>
+      <article class="overview-card">
+        <span>Canceladas</span>
+        <strong>{{ cancelledEnrollmentCount() }}</strong>
+      </article>
+      <article class="overview-card">
+        <span>Pedidos pendentes</span>
+        <strong>{{ pendingOrderCount() }}</strong>
+      </article>
+    </section>
+
+    <section class="account-panel">
+      <div class="panel-header">
+        <div>
+          <span class="section-label">Area do aluno</span>
+          <h2>Minhas matriculas</h2>
+        </div>
+      </div>
+
+      @if (loadingEnrollments()) {
+        <p class="muted">Carregando matriculas...</p>
+      } @else if (enrollments().length === 0) {
+        <p class="muted">Voce ainda nao possui matriculas.</p>
+      } @else {
+        <div class="enrollment-list">
+          @for (enrollment of enrollments(); track enrollment.enrollmentId) {
+            <article class="enrollment-card">
+              @if (enrollment.courseImage) {
+                <img [src]="enrollment.courseImage" [alt]="enrollment.courseName" />
+              }
+              <div>
+                <span class="section-label">{{ enrollment.category || 'Curso' }}</span>
+                <h3>{{ enrollment.courseName }}</h3>
+                <p>{{ enrollment.instructor }} - {{ enrollment.location }}</p>
+                <p>{{ formatClassDate(enrollment.startDate) }}</p>
+                <strong>{{ enrollmentStatusLabel(enrollment.enrollmentStatus) }}</strong>
+                <a class="order-link" [routerLink]="['/conta/matricula', enrollment.enrollmentId]">
+                  Ver detalhes e instrucoes
+                </a>
+                <a class="order-link" [routerLink]="['/conta/pedido', enrollment.orderId]">
+                  Ver pedido
+                </a>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="account-panel">
+      <div class="panel-header">
+        <div>
+          <span class="section-label">Historico</span>
+          <h2>Meus pedidos</h2>
+        </div>
+      </div>
+
+      @if (loadingOrders()) {
+        <p class="muted">Carregando pedidos...</p>
+      } @else if (orders().length === 0) {
+        <p class="muted">Voce ainda nao possui pedidos.</p>
+      } @else {
+        <div class="order-list">
+          @for (order of orders(); track order.id) {
+            <article class="order-card">
+              <div>
+                <span class="section-label">Pedido #{{ order.id }}</span>
+                <h3>{{ formatOrderDate(order.dataPedido) }}</h3>
+                <p>{{ order.itens.length }} item(ns) - {{ order.paymentMethod }}</p>
+                <a class="order-link" [routerLink]="['/conta/pedido', order.id]">
+                  Ver detalhes
+                </a>
+              </div>
+              <div class="order-card__summary">
+                <strong>{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
+                <span>{{ paymentStatusLabel(order.paymentStatus) }}</span>
+                @if (order.paymentStatus === 'pending' && order.status === 'pending') {
+                  <button
+                    type="button"
+                    class="ghost-button"
+                    [disabled]="cancellingOrderId() === order.id"
+                    (click)="cancelOrder(order)"
+                  >
+                    {{ cancellingOrderId() === order.id ? 'Cancelando...' : 'Cancelar pedido' }}
+                  </button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
     <form class="account-panel" [formGroup]="form" (ngSubmit)="save()">
       <div class="panel-header">
         <div>

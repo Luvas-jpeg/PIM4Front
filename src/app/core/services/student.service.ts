@@ -2,8 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Student, StudentRequest } from '../models/student.models';
-
-const API_URL = 'http://localhost:5278/api';
+import { API_URL } from '../config/api.config';
 
 @Injectable({ providedIn: 'root' })
 export class StudentService {

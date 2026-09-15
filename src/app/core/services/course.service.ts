@@ -9,8 +9,7 @@ import {
   PagedCourseResponse,
 } from '../models/course.models';
 import { Student } from '../models/student.models';
-
-const API_URL = 'http://localhost:5278/api';
+import { API_URL } from '../config/api.config';
 
 export interface CourseRequest {
   nome: string;

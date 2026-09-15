@@ -25,6 +25,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/account/account').then(m => m.Account)
   },
   {
+    path: 'conta/pedido/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/order-detail/order-detail').then(m => m.OrderDetail)
+  },
+  {
+    path: 'conta/matricula/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/enrollment-detail/enrollment-detail').then(m => m.EnrollmentDetail)
+  },
+  {
     path: 'carrinho',
     loadComponent: () => import('./features/cart/cart').then(m => m.Cart)
   },

@@ -1,0 +1,59 @@
+<main class="order-detail-page">
+  <section class="order-detail-hero">
+    <div class="order-detail-hero__content">
+      <a routerLink="/conta" class="back-link">Voltar para minha conta</a>
+      <span class="section-label">Historico de pedidos</span>
+      <h1>Detalhes do pedido</h1>
+    </div>
+  </section>
+
+  <section class="order-detail-content">
+    @if (loading()) {
+      <section class="order-panel">
+        <p>Carregando pedido...</p>
+      </section>
+    } @else if (error()) {
+      <section class="order-panel feedback feedback--error">
+        {{ error() }}
+      </section>
+    } @else if (order(); as currentOrder) {
+      <section class="order-panel order-summary">
+        <div>
+          <span class="section-label">Pedido #{{ currentOrder.id }}</span>
+          <h2>{{ formatDate(currentOrder.dataPedido) }}</h2>
+          <p>Forma de pagamento: {{ currentOrder.paymentMethod }}</p>
+        </div>
+        <div class="order-statuses">
+          <span>Status: {{ statusLabel(currentOrder.status) }}</span>
+          <strong>Pagamento: {{ statusLabel(currentOrder.paymentStatus) }}</strong>
+        </div>
+      </section>
+
+      <section class="order-panel">
+        <span class="section-label">Itens</span>
+        <div class="order-items">
+          @for (item of currentOrder.itens; track item.produtoId + '-' + (item.turmaId ?? 'legacy')) {
+            <article class="order-item">
+              <div>
+                <h3>{{ item.nome }}</h3>
+                <p>{{ item.quantidade }} inscricao(oes)</p>
+                @if (item.turmaId) {
+                  <p>Turma selecionada: #{{ item.turmaId }}</p>
+                }
+              </div>
+              <strong>{{ (item.precoUnitario * item.quantidade) | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="order-panel order-total">
+        <span>Total do pedido</span>
+        <strong>{{ currentOrder.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
+        @if (currentOrder.paidAt) {
+          <p>Pago em {{ formatDate(currentOrder.paidAt) }}</p>
+        }
+      </section>
+    }
+  </section>
+</main>
