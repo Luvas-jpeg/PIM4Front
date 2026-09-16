@@ -40,5 +40,10 @@ export interface Order {
     paymentMethod: string;
     installments?: number | null;
     promoCode: string;
+    usuario?: {
+        id: number;
+        nome: string;
+        email: string;
+    } | null;
     itens: OrderItem[];
 }

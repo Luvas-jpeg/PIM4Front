@@ -51,6 +51,9 @@
                       <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
                       <span>{{ courseClass.local }}</span>
                       <span>{{ courseClass.instructor }}</span>
+                    } @else if (item.product.deliveryMode === 'ead') {
+                      <span>Acesso online</span>
+                      <span>Curso EAD sem turma presencial</span>
                     } @else {
                       <span>Turma a definir</span>
                     }

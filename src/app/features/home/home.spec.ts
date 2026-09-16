@@ -19,8 +19,11 @@ describe('Home', () => {
       description: 'Curso presencial de primeiros socorros.',
       image: 'https://example.com/stethoscope.jpg',
       category: 'Treinamento',
+      deliveryMode: 'presencial',
+      workloadHours: 8,
       isActive: true,
       classes: [],
+      modules: [],
     },
     {
       id: 2,
@@ -29,8 +32,11 @@ describe('Home', () => {
       description: 'Curso presencial de atendimento clinico.',
       image: 'https://example.com/course.jpg',
       category: 'Treinamento',
+      deliveryMode: 'presencial',
+      workloadHours: 8,
       isActive: true,
       classes: [],
+      modules: [],
     },
   ];
 
@@ -121,3 +127,4 @@ describe('Home', () => {
     expect(errorComponent.error()).toBe('Nao foi possivel carregar os cursos.');
   });
 });
+

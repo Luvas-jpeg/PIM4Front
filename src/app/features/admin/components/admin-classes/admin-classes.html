@@ -1,0 +1,188 @@
+<section class="panel classes-panel">
+  <div class="panel__header">
+    <div>
+      <span class="section-label">Inscricoes</span>
+      <h2>Turmas e alunos matriculados</h2>
+    </div>
+  </div>
+
+  @if (formOpen() && selectedCourse(); as course) {
+    <form class="subpanel creation-form creation-form--open" [formGroup]="form" (ngSubmit)="saveClass()">
+      <div class="panel__header">
+        <div>
+          <span class="section-label">Turma de {{ course.nome }}</span>
+          <h3>{{ editingClassId() ? 'Editar turma' : 'Adicionar turma' }}</h3>
+        </div>
+        <button type="button" class="ghost-button" (click)="closeForm()">Fechar</button>
+      </div>
+      @if (formError(); as message) {
+        <div class="feedback feedback--error" role="alert">{{ message }}</div>
+      }
+      <p class="form-hint"><span class="required-marker">*</span> Campos obrigatorios</p>
+
+      <div class="form-grid">
+        <label class="field">
+          <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
+          <input type="datetime-local" formControlName="startDate" required aria-required="true" />
+        </label>
+        <label class="field">
+          <span>Fim <span class="optional-label">(opcional)</span></span>
+          <input type="datetime-local" formControlName="endDate" />
+        </label>
+        <label class="field">
+          <span>Local <span class="required-marker" aria-hidden="true">*</span></span>
+          <input type="text" formControlName="local" required aria-required="true" />
+        </label>
+        <label class="field">
+          <span>Instrutor <span class="required-marker" aria-hidden="true">*</span></span>
+          <input type="text" formControlName="instructor" required aria-required="true" />
+        </label>
+        <label class="field">
+          <span>Capacidade <span class="required-marker" aria-hidden="true">*</span></span>
+          <input type="number" min="1" formControlName="capacity" required aria-required="true" />
+        </label>
+        <label class="field">
+          <span>Status <span class="required-marker" aria-hidden="true">*</span></span>
+          <select formControlName="status" required aria-required="true">
+            <option value="scheduled">Agendada</option>
+            <option value="completed">Concluida</option>
+            <option value="cancelled">Cancelada</option>
+          </select>
+        </label>
+      </div>
+
+      <button type="submit" class="primary-button">Salvar turma</button>
+    </form>
+  }
+
+  <div class="class-list">
+    @for (course of courses; track course.id) {
+      <div class="class-course-group">
+        <div class="panel__header">
+          <div>
+            <h3>{{ course.nome }}</h3>
+            @if (course.deliveryMode === 'ead') {
+              <p class="muted">Curso EAD: o conteudo fica na aba Conteudo EAD.</p>
+            }
+          </div>
+          @if (course.deliveryMode !== 'ead') {
+            <button type="button" class="primary-button" (click)="openClassForm(course)">
+              Adicionar turma
+            </button>
+          }
+        </div>
+
+        @if (course.deliveryMode === 'ead') {
+          <p class="muted">Cursos EAD nao precisam de agenda, local, instrutor ou vagas.</p>
+        } @else {
+          @for (courseClass of course.classes; track courseClass.id) {
+            <article class="class-card">
+              <button type="button" class="class-card__content" (click)="openClassModal(course, courseClass)">
+                <span class="class-card__type">Curso presencial</span>
+                <strong class="class-card__title">{{ course.nome }}</strong>
+                <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span>{{ courseClass.local }} - {{ courseClass.instructor }}</span>
+                <span class="class-card__footer">
+                  <b>{{ courseClass.availableSeats }}/{{ courseClass.capacity }} vagas restantes</b>
+                  <b>Ver alunos <span aria-hidden="true">-&gt;</span></b>
+                </span>
+              </button>
+              <button type="button" class="ghost-button" (click)="openClassForm(course, courseClass)">
+                Editar turma
+              </button>
+            </article>
+          } @empty {
+            <p class="muted">Nenhuma turma cadastrada para este curso.</p>
+          }
+        }
+      </div>
+    } @empty {
+      <p class="muted">Nenhum curso cadastrado.</p>
+    }
+  </div>
+</section>
+
+@if (selectedCourse(); as course) {
+  @if (selectedClass(); as courseClass) {
+    <div class="modal-backdrop" role="presentation" (click)="closeClassModal()">
+      <section
+        class="class-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="class-modal-title"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="class-modal__header">
+          <div>
+            <span class="section-label">Turma</span>
+            <h2 id="class-modal-title">{{ course.nome }}</h2>
+            <p>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}</p>
+            <p>Instrutor: {{ courseClass.instructor }}</p>
+          </div>
+          <button type="button" class="icon-button" aria-label="Fechar" (click)="closeClassModal()">X</button>
+        </div>
+
+        <div class="class-modal__summary">
+          <span><b>{{ studentsForCourse(course.id).length }}</b> matriculado(s)</span>
+          <span><b>{{ courseClass.availableSeats }}</b> vaga(s) restante(s)</span>
+          <button
+            type="button"
+            class="ghost-button"
+            [disabled]="!studentsForCourse(course.id).length"
+            (click)="exportClassStudents()"
+          >
+            Exportar lista CSV
+          </button>
+        </div>
+
+        <div class="class-modal__students">
+          @for (student of studentsForCourse(course.id); track student.id) {
+            <div class="class-student">
+              <div>
+                <strong>{{ student.name }}</strong>
+                <span>{{ student.email }}</span>
+                @if (student.phone) {
+                  <span>{{ student.phone }}</span>
+                }
+              </div>
+
+              <div class="student-controls">
+                <select
+                  [value]="student.status"
+                  (change)="updateStudentStatus(student, $any($event.target).value)"
+                  aria-label="Status da matricula de {{ student.name }}"
+                >
+                  <option value="active">Ativa</option>
+                  <option value="completed">Concluida</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
+
+                <select
+                  [disabled]="student.status !== 'active' || transferringStudentId() === student.id"
+                  (change)="transferStudent(student, toNumber($any($event.target).value))"
+                  aria-label="Transferir {{ student.name }} para outra turma"
+                >
+                  <option value="">Transferir para...</option>
+                  @for (targetClass of course.classes; track targetClass.id) {
+                    @if (
+                      targetClass.id !== courseClass.id &&
+                      targetClass.status === 'scheduled' &&
+                      targetClass.availableSeats > 0
+                    ) {
+                      <option [value]="targetClass.id">
+                        {{ targetClass.local }} - {{ targetClass.startDate | date:'short' }}
+                        ({{ targetClass.availableSeats }} vaga(s))
+                      </option>
+                    }
+                  }
+                </select>
+              </div>
+            </div>
+          } @empty {
+            <p class="muted">Nenhum aluno matriculado nesta turma.</p>
+          }
+        </div>
+      </section>
+    </div>
+  }
+}

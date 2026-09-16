@@ -1,0 +1,61 @@
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <span class="section-label">Registro</span>
+      <h2>Auditoria administrativa</h2>
+    </div>
+    <button type="button" class="ghost-button" [disabled]="!filteredLogs().length" (click)="exportAuditCsv()">
+      Exportar CSV
+    </button>
+  </div>
+
+  <div class="form-grid">
+    <label class="field">
+      <span>Buscar</span>
+      <input
+        type="search"
+        [value]="search()"
+        placeholder="Usuario, entidade ou valor"
+        (input)="setSearch($any($event.target).value)"
+      />
+    </label>
+
+    <label class="field">
+      <span>Acao</span>
+      <select [value]="actionFilter()" (change)="setActionFilter($any($event.target).value)">
+        <option value="all">Todas</option>
+        @for (action of actions(); track action) {
+          <option [value]="action">{{ auditActionLabel(action) }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Entidade</span>
+      <select [value]="entityFilter()" (change)="setEntityFilter($any($event.target).value)">
+        <option value="all">Todas</option>
+        @for (entity of entities(); track entity) {
+          <option [value]="entity">{{ auditEntityLabel(entity) }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  <div class="table">
+    @for (log of filteredLogs(); track log.id) {
+      <article class="table-row audit-row">
+        <div class="audit-meta">
+          <strong>{{ auditActionLabel(log.action) }} - {{ auditEntityLabel(log.entityType) }}</strong>
+          <span>{{ log.userName || 'Sistema' }} - {{ formatAuditDate(log.createdAt) }}</span>
+          <span>Entidade #{{ log.entityId }}</span>
+        </div>
+        <div class="audit-values">
+          <span><strong>Antes:</strong> {{ formatAuditValue(log.previousValue) }}</span>
+          <span><strong>Depois:</strong> {{ formatAuditValue(log.newValue) }}</span>
+        </div>
+      </article>
+    } @empty {
+      <p class="muted">Nenhum registro de auditoria encontrado.</p>
+    }
+  </div>
+</section>

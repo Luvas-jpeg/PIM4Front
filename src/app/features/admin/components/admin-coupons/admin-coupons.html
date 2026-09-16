@@ -1,0 +1,85 @@
+<section class="panel">
+  <form class="panel creation-form" [class.creation-form--open]="formOpen()" [formGroup]="form" (ngSubmit)="save()">
+    <div class="panel__header">
+      <div>
+        <span class="section-label">Promocoes</span>
+        <h2>{{ editingCouponId() ? 'Editar cupom' : 'Adicionar cupom' }}</h2>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="ghost-button" (click)="resetForm()">Limpar</button>
+        <button type="button" class="ghost-button" (click)="closeForm()">Fechar</button>
+      </div>
+    </div>
+    @if (formError(); as message) {
+      <div class="feedback feedback--error" role="alert">{{ message }}</div>
+    }
+    <p class="form-hint"><span class="required-marker">*</span> Campos obrigatorios</p>
+
+    <div class="form-grid">
+      <label class="field">
+        <span>Codigo <span class="required-marker" aria-hidden="true">*</span></span>
+        <input type="text" formControlName="code" required aria-required="true" />
+      </label>
+      <label class="field">
+        <span>Tipo <span class="required-marker" aria-hidden="true">*</span></span>
+        <select formControlName="discountType" required aria-required="true">
+          <option value="percentage">Percentual</option>
+          <option value="fixed">Valor fixo</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Desconto <span class="required-marker" aria-hidden="true">*</span></span>
+        <input type="number" min="0.01" step="0.01" formControlName="discount" required aria-required="true" />
+      </label>
+      <label class="field">
+        <span>Limite de uso <span class="optional-label">(opcional)</span></span>
+        <input type="number" min="0" formControlName="usageLimit" />
+      </label>
+      <label class="field">
+        <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
+        <input type="date" formControlName="startDate" required aria-required="true" />
+      </label>
+      <label class="field">
+        <span>Fim <span class="required-marker" aria-hidden="true">*</span></span>
+        <input type="date" formControlName="endDate" required aria-required="true" />
+      </label>
+    </div>
+
+    <label class="check-field">
+      <input type="checkbox" formControlName="isActive" />
+      <span>Cupom ativo</span>
+    </label>
+
+    <button type="submit" class="primary-button" [disabled]="saving()">
+      {{ saving() ? 'Salvando...' : 'Salvar cupom' }}
+    </button>
+  </form>
+
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <span class="section-label">Cupons</span>
+        <h2>Codigos cadastrados</h2>
+      </div>
+      <button type="button" class="primary-button" (click)="openCreateForm()">Adicionar cupom</button>
+    </div>
+
+    <div class="table">
+      @for (coupon of promoCodes; track coupon.id) {
+        <article class="table-row">
+          <div>
+            <strong>{{ coupon.code }}</strong>
+            <span>{{ coupon.discountType === 'percentage' ? coupon.discount + '%' : formatPrice(coupon.discount) }}</span>
+          </div>
+          <span>{{ coupon.usageCount }}/{{ coupon.usageLimit ?? 'sem limite' }}</span>
+          <div class="actions">
+            <button type="button" (click)="editCoupon(coupon)">Editar</button>
+            <button type="button" class="danger" (click)="deleteCoupon(coupon.id)">Excluir</button>
+          </div>
+        </article>
+      } @empty {
+        <p class="muted">Nenhum cupom cadastrado.</p>
+      }
+    </div>
+  </section>
+</section>

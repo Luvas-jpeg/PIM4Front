@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { MyEnrollment } from '../../core/models/enrollment.models';
+import { CourseProgress, MyEnrollment } from '../../core/models/enrollment.models';
 import { EnrollmentService } from '../../core/services/enrollment.service';
 
 @Component({
@@ -14,39 +14,62 @@ export class EnrollmentDetail {
   private readonly enrollmentService = inject(EnrollmentService);
 
   readonly enrollment = signal<MyEnrollment | null>(null);
+  readonly progress = signal<CourseProgress | null>(null);
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
+  readonly progressError = signal<string | null>(null);
+  readonly savingLessonId = signal<number | null>(null);
+
   readonly notice = computed(() => {
     const current = this.enrollment();
 
-    if (!current) {
-      return null;
+    if (!current) return null;
+
+    if (current.deliveryMode === 'ead') {
+      if (current.enrollmentStatus === 'cancelled') {
+        return {
+          type: 'warning',
+          text: 'Esta matricula EAD foi cancelada. Consulte o historico do pedido para verificar o pagamento.',
+        };
+      }
+
+      if (this.progress()?.percent === 100) {
+        return {
+          type: 'success',
+          text: 'Curso EAD concluido. A emissao de certificado ainda depende da regra academica definida para o projeto.',
+        };
+      }
+
+      return {
+        type: 'info',
+        text: 'Sua matricula EAD esta ativa. Acompanhe as aulas e marque o progresso conforme estudar.',
+      };
     }
 
     if (current.enrollmentStatus === 'cancelled' || current.classStatus === 'cancelled') {
       return {
         type: 'warning',
-        text: 'Esta matricula ou turma foi cancelada. Consulte o historico do pedido para verificar o pagamento.'
+        text: 'Esta matricula ou turma foi cancelada. Consulte o historico do pedido para verificar o pagamento.',
       };
     }
 
     if (current.enrollmentStatus === 'completed' || current.classStatus === 'finished') {
       return {
         type: 'success',
-        text: 'Esta turma foi encerrada. Seu historico de matricula continua disponivel.'
+        text: 'Esta turma foi encerrada. Seu historico de matricula continua disponivel.',
       };
     }
 
     if (new Date(current.startDate).getTime() <= Date.now()) {
       return {
         type: 'info',
-        text: 'A turma ja iniciou. Consulte a organizacao caso precise de orientacoes adicionais.'
+        text: 'A turma ja iniciou. Consulte a organizacao caso precise de orientacoes adicionais.',
       };
     }
 
     return {
       type: 'info',
-      text: 'Sua matricula esta ativa. Guarde estas informacoes para o dia da aula.'
+      text: 'Sua matricula esta ativa. Guarde estas informacoes para o dia da aula.',
     };
   });
 
@@ -60,7 +83,13 @@ export class EnrollmentDetail {
     }
 
     this.enrollmentService.getById(enrollmentId).subscribe({
-      next: enrollment => this.enrollment.set(enrollment),
+      next: enrollment => {
+        this.enrollment.set(enrollment);
+
+        if (enrollment.deliveryMode === 'ead' && enrollment.courseId) {
+          this.loadProgress(enrollment.courseId);
+        }
+      },
       error: response => {
         this.error.set(response.error?.message ?? 'Nao foi possivel carregar a matricula.');
         this.loading.set(false);
@@ -87,5 +116,54 @@ export class EnrollmentDetail {
     };
 
     return labels[value] ?? value;
+  }
+
+  isLessonCompleted(lessonId: number): boolean {
+    return this.progress()?.completedLessons.includes(lessonId) ?? false;
+  }
+
+  totalLessons(): number {
+    return this.enrollment()?.modules
+      .reduce((total, module) => total + module.lessons.length, 0) ?? 0;
+  }
+
+  completedLessons(): number {
+    return this.progress()?.completedLessons.length ?? 0;
+  }
+
+  toggleLesson(lessonId: number): void {
+    const enrollment = this.enrollment();
+
+    if (!enrollment?.courseId || this.isLessonCompleted(lessonId)) {
+      return;
+    }
+
+    const totalLessons = this.totalLessons();
+    const nextCompleted = this.completedLessons() + 1;
+    const percent = totalLessons > 0
+      ? Math.min(100, Math.round((nextCompleted / totalLessons) * 100))
+      : 0;
+
+    this.savingLessonId.set(lessonId);
+    this.progressError.set(null);
+    this.enrollmentService.updateProgress(enrollment.courseId, {
+      percent,
+      completedLessonId: lessonId,
+    }).subscribe({
+      next: progress => this.progress.set(progress),
+      error: response => this.progressError.set(
+        response.error?.message ?? 'Nao foi possivel atualizar seu progresso.'
+      ),
+      complete: () => this.savingLessonId.set(null),
+    });
+  }
+
+  private loadProgress(courseId: number): void {
+    this.enrollmentService.getProgress(courseId).subscribe({
+      next: progress => this.progress.set(progress),
+      error: response => this.progressError.set(
+        response.error?.message ?? 'Nao foi possivel carregar seu progresso.'
+      ),
+    });
   }
 }

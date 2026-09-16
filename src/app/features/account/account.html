@@ -48,13 +48,13 @@
                 <img [src]="enrollment.courseImage" [alt]="enrollment.courseName" />
               }
               <div>
-                <span class="section-label">{{ enrollment.category || 'Curso' }}</span>
+                <span class="section-label">{{ enrollmentModeLabel(enrollment) }}</span>
                 <h3>{{ enrollment.courseName }}</h3>
-                <p>{{ enrollment.instructor }} - {{ enrollment.location }}</p>
+                <p>{{ enrollmentLocationLabel(enrollment) }}</p>
                 <p>{{ formatClassDate(enrollment.startDate) }}</p>
                 <strong>{{ enrollmentStatusLabel(enrollment.enrollmentStatus) }}</strong>
                 <a class="order-link" [routerLink]="['/conta/matricula', enrollment.enrollmentId]">
-                  Ver detalhes e instrucoes
+                  {{ enrollment.deliveryMode === 'ead' ? 'Assistir aulas' : 'Ver detalhes e instrucoes' }}
                 </a>
                 <a class="order-link" [routerLink]="['/conta/pedido', enrollment.orderId]">
                   Ver pedido
@@ -198,3 +198,4 @@
     </form>
   </section>
 </main>
+

@@ -1,0 +1,104 @@
+<section class="panel">
+  <form class="panel creation-form" [class.creation-form--open]="formOpen()" [formGroup]="form" (ngSubmit)="save()">
+    <div class="panel__header">
+      <div>
+        <span class="section-label">Catalogo de cursos</span>
+        <h2>{{ editingCourseId() ? 'Editar curso' : 'Adicionar curso' }}</h2>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="ghost-button" (click)="resetForm()">Limpar</button>
+        <button type="button" class="ghost-button" (click)="closeForm()">Fechar</button>
+      </div>
+    </div>
+    @if (formError(); as message) {
+      <div class="feedback feedback--error" role="alert">{{ message }}</div>
+    }
+    <p class="form-hint"><span class="required-marker">*</span> Campos obrigatorios</p>
+
+    <label class="field">
+      <span>Nome <span class="required-marker" aria-hidden="true">*</span></span>
+      <input type="text" formControlName="nome" required aria-required="true" />
+    </label>
+
+    <div class="form-grid">
+      <label class="field">
+        <span>Tipo</span>
+        <input type="text" value="Curso" readonly />
+      </label>
+      <label class="field">
+        <span>Modalidade <span class="required-marker" aria-hidden="true">*</span></span>
+        <select formControlName="deliveryMode" required aria-required="true">
+          <option value="presencial">Presencial</option>
+          <option value="ead">EAD</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Preco <span class="required-marker" aria-hidden="true">*</span></span>
+        <input type="number" min="0.01" step="0.01" formControlName="preco" required aria-required="true" />
+      </label>
+      <label class="field">
+        <span>Carga horaria</span>
+        <input type="number" min="0" step="1" formControlName="workloadHours" />
+      </label>
+      <label class="field">
+        <span>Categoria do curso <span class="optional-label">(opcional)</span></span>
+        <input type="text" formControlName="category" />
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Descricao <span class="optional-label">(opcional)</span></span>
+      <textarea rows="3" formControlName="description"></textarea>
+    </label>
+
+    <label class="field">
+      <span>Imagem URL <span class="optional-label">(opcional)</span></span>
+      <input type="url" formControlName="image" />
+    </label>
+
+    <button type="submit" class="primary-button" [disabled]="saving()">
+      {{ saving() ? 'Salvando...' : 'Salvar curso' }}
+    </button>
+  </form>
+
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <span class="section-label">Lista</span>
+        <h2>Cursos cadastrados</h2>
+      </div>
+      <button type="button" class="primary-button" (click)="openCreateForm()">Adicionar curso</button>
+    </div>
+
+    <div class="table">
+      @for (course of courses; track course.id) {
+        <article class="table-row">
+          <div>
+            <strong>{{ course.nome }}</strong>
+            <span>
+              {{ course.deliveryMode === 'ead' ? 'EAD' : 'Presencial' }} - {{ formatPrice(course.preco) }}
+              @if (!course.isActive) {
+                - Arquivado
+              }
+            </span>
+          </div>
+          <span>
+            @if (course.deliveryMode === 'ead') {
+              {{ course.modules.length }} modulo(s)
+            } @else {
+              {{ course.classes.length }} turma(s)
+            }
+          </span>
+          <div class="actions">
+            <button type="button" (click)="editCourse(course)">Editar</button>
+            <button type="button" (click)="toggleCourseActive(course)">
+              {{ course.isActive ? 'Arquivar' : 'Restaurar' }}
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <p class="muted">Nenhum curso cadastrado.</p>
+      }
+    </div>
+  </section>
+</section>

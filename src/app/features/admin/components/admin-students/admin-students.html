@@ -1,0 +1,117 @@
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <span class="section-label">Alunos</span>
+      <h2>Consulta de alunos</h2>
+    </div>
+  </div>
+
+  <div class="metric-grid student-metrics">
+    <article class="metric">
+      <span>Total</span>
+      <strong>{{ filteredStudents().length }}</strong>
+    </article>
+    <article class="metric">
+      <span>Ativas</span>
+      <strong>{{ activeCount() }}</strong>
+    </article>
+    <article class="metric">
+      <span>Concluidas</span>
+      <strong>{{ completedCount() }}</strong>
+    </article>
+    <article class="metric">
+      <span>Canceladas</span>
+      <strong>{{ cancelledCount() }}</strong>
+    </article>
+  </div>
+
+  <div class="form-grid">
+    <label class="field">
+      <span>Buscar</span>
+      <input
+        type="search"
+        [value]="search()"
+        placeholder="Nome, e-mail, telefone ou curso"
+        (input)="setSearch($any($event.target).value)"
+      />
+    </label>
+
+    <label class="field">
+      <span>Status</span>
+      <select [value]="statusFilter()" (change)="setStatusFilter($any($event.target).value)">
+        <option value="all">Todos</option>
+        <option value="active">Ativa</option>
+        <option value="completed">Concluida</option>
+        <option value="cancelled">Cancelada</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="table">
+    @for (student of filteredStudents(); track student.id) {
+      <article class="table-row student-row">
+        <div>
+          <strong>{{ student.name }}</strong>
+          <span>{{ student.email }}</span>
+          @if (student.phone) {
+            <span>{{ student.phone }}</span>
+          }
+        </div>
+        <div>
+          <strong>{{ student.courseName || 'Curso nao informado' }}</strong>
+          <span>Curso #{{ student.courseId || 'N/A' }}</span>
+        </div>
+        <span>{{ studentStatusLabel(student.status) }}</span>
+        <div class="actions">
+          <button type="button" (click)="openStudent(student)">Detalhes</button>
+        </div>
+      </article>
+    } @empty {
+      <p class="muted">Nenhum aluno encontrado com os filtros atuais.</p>
+    }
+  </div>
+</section>
+
+@if (selectedStudent(); as student) {
+  <div class="modal-backdrop" role="presentation" (click)="closeStudent()">
+    <section
+      class="class-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="student-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="class-modal__header">
+        <div>
+          <span class="section-label">Aluno</span>
+          <h2 id="student-modal-title">{{ student.name }}</h2>
+          <p>{{ student.email }}</p>
+          @if (student.phone) {
+            <p>{{ student.phone }}</p>
+          }
+        </div>
+        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeStudent()">X</button>
+      </div>
+
+      <div class="class-modal__summary">
+        <span><b>{{ studentStatusLabel(student.status) }}</b> status</span>
+        <span><b>{{ student.courseName || 'Curso nao informado' }}</b> curso</span>
+      </div>
+
+      <div class="list">
+        <div class="list-row">
+          <span>Curso</span>
+          <strong>{{ student.courseName || 'Nao informado' }}</strong>
+        </div>
+        <div class="list-row">
+          <span>Identificador do curso</span>
+          <strong>{{ student.courseId || 'Nao informado' }}</strong>
+        </div>
+        <div class="list-row">
+          <span>Data de matricula</span>
+          <strong>{{ student.enrollmentDate || 'Nao informado' }}</strong>
+        </div>
+      </div>
+    </section>
+  </div>
+}

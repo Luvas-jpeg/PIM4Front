@@ -1,0 +1,170 @@
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <span class="section-label">Faturamento</span>
+      <h2>Resumo financeiro</h2>
+    </div>
+
+    <div class="period-control">
+      <button type="button" [class.active]="period() === 'day'" (click)="setPeriod('day')">Dia</button>
+      <button type="button" [class.active]="period() === 'week'" (click)="setPeriod('week')">Semana</button>
+      <button type="button" [class.active]="period() === 'month'" (click)="setPeriod('month')">Mes</button>
+      <button type="button" [class.active]="period() === 'year'" (click)="setPeriod('year')">Ano</button>
+    </div>
+    <button type="button" class="ghost-button" (click)="exportReports()">Exportar relatorio CSV</button>
+  </div>
+
+  <div class="metric-grid">
+    <article class="metric">
+      <span>Faturamento</span>
+      <strong>{{ formatPrice(revenue()) }}</strong>
+    </article>
+    <article class="metric">
+      <span>Pedidos</span>
+      <strong>{{ filteredOrders().length }}</strong>
+    </article>
+    <article class="metric">
+      <span>Ticket medio</span>
+      <strong>{{ formatPrice(averageTicket()) }}</strong>
+    </article>
+    <article class="metric">
+      <span>Turmas com poucas vagas</span>
+      <strong>{{ lowStockClasses().length }}</strong>
+    </article>
+    <article class="metric">
+      <span>Ocupacao das turmas</span>
+      <strong>{{ formatPercent(occupancyRate()) }}</strong>
+    </article>
+    <article class="metric">
+      <span>Cancelamento</span>
+      <strong>{{ formatPercent(cancellationRate()) }}</strong>
+    </article>
+  </div>
+
+  <div class="analytics-grid">
+    <article class="subpanel chart-panel chart-panel--wide">
+      <div class="chart-header">
+        <div>
+          <h3>Faturamento dos ultimos 7 dias</h3>
+          <p class="muted">Pedidos ativos, sem cancelamentos.</p>
+        </div>
+      </div>
+
+      <div class="bar-chart" aria-label="Grafico de faturamento dos ultimos 7 dias">
+        @for (point of revenueChart(); track point.label) {
+          <div class="bar-chart__item">
+            <div class="bar-chart__track">
+              <span class="bar-chart__bar" [style.height.%]="point.percent"></span>
+            </div>
+            <strong>{{ formatPrice(point.value) }}</strong>
+            <span>{{ point.label }}</span>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="subpanel chart-panel">
+      <h3>Status dos pedidos</h3>
+      <div class="status-chart">
+        @for (item of statusChart(); track item.status) {
+          <div class="status-chart__row">
+            <div class="status-chart__label">
+              <span>{{ item.status }}</span>
+              <strong>{{ item.count }}</strong>
+            </div>
+            <div class="status-chart__track">
+              <span [style.width.%]="item.percent"></span>
+            </div>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="subpanel chart-panel">
+      <h3>Mais vendidos</h3>
+      @if (topCourses().length === 0) {
+        <p class="muted">Nenhum item vendido ainda.</p>
+      } @else {
+        <div class="ranking-chart">
+          @for (item of topCourses(); track item.name) {
+            <div class="ranking-chart__row">
+              <div>
+                <strong>{{ item.name }}</strong>
+                <span>{{ item.quantity }} unidade(s) - {{ formatPrice(item.total) }}</span>
+              </div>
+              <div class="ranking-chart__track">
+                <span [style.width.%]="item.percent"></span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </article>
+  </div>
+
+  <div class="dashboard-grid">
+    <article class="subpanel">
+      <h3>Ocupacao por turma</h3>
+      @if (occupancyReport().length === 0) {
+        <p class="muted">Nenhuma turma cadastrada.</p>
+      } @else {
+        <div class="list">
+          @for (item of occupancyReport(); track item.classId) {
+            <div class="list-row">
+              <span>{{ item.courseName }} - {{ item.label }}</span>
+              <strong>{{ item.occupied }}/{{ item.capacity }} ({{ formatPercent(item.percent) }})</strong>
+            </div>
+          }
+        </div>
+      }
+    </article>
+
+    <article class="subpanel">
+      <h3>Receita por categoria</h3>
+      @if (categoryReport().length === 0) {
+        <p class="muted">Nenhuma receita categorizada.</p>
+      } @else {
+        <div class="list">
+          @for (item of categoryReport(); track item.category) {
+            <div class="list-row">
+              <span>{{ item.category }}</span>
+              <strong>{{ formatPrice(item.total) }}</strong>
+            </div>
+          }
+        </div>
+      }
+    </article>
+  </div>
+
+  <div class="dashboard-grid">
+    <article class="subpanel">
+      <h3>Turmas em atencao</h3>
+      @if (lowStockClasses().length === 0) {
+        <p class="muted">Nenhuma turma com poucas vagas.</p>
+      } @else {
+        <div class="list">
+          @for (item of lowStockClasses(); track item.id) {
+            <div class="list-row">
+              <span>{{ item.nome }}</span>
+              <strong>{{ item.estoque }}</strong>
+            </div>
+          }
+        </div>
+      }
+    </article>
+
+    <article class="subpanel">
+      <h3>Ultimos pedidos</h3>
+      <div class="list">
+        @for (order of ordersSignal().slice(0, 5); track order.id) {
+          <div class="list-row">
+            <span>#{{ order.id }} - {{ order.status }}</span>
+            <strong>{{ formatPrice(order.total) }}</strong>
+          </div>
+        } @empty {
+          <p class="muted">Nenhum pedido registrado.</p>
+        }
+      </div>
+    </article>
+  </div>
+</section>

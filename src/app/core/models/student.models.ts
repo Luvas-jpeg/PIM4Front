@@ -1,3 +1,5 @@
+import { CourseClass } from './course.models';
+
 export interface Student {
   id: number;
   name: string;
@@ -17,4 +19,10 @@ export interface StudentRequest {
   courseName: string;
   enrollmentDate: string;
   status: 'active' | 'completed' | 'cancelled';
+}
+
+export interface TransferEnrollmentResponse {
+  student: Student;
+  sourceClass: CourseClass;
+  targetClass: CourseClass;
 }

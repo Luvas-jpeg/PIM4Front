@@ -86,12 +86,18 @@
                 (error)="setFallbackImage($event)"
               />
 
-              <span class="product-card__badge">Curso</span>
+              <span class="product-card__badge">{{ course.deliveryMode === 'ead' ? 'EAD' : 'Presencial' }}</span>
             </div>
             <div class="product-card__body">
               <div class="product-card__meta">
                 <span>{{ course.category || 'Saúde' }}</span>
-                <span>{{ course.classes.length }} turma(s)</span>
+                <span>
+                  @if (course.deliveryMode === 'ead') {
+                    {{ course.modules.length }} modulo(s)
+                  } @else {
+                    {{ course.classes.length }} turma(s)
+                  }
+                </span>
               </div>
 
               <h3><a [routerLink]="['/curso', course.id]">{{ course.nome }}</a></h3>

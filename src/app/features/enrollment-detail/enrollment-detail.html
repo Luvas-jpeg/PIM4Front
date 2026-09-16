@@ -32,27 +32,83 @@
       </section>
 
       <section class="enrollment-panel">
-        <span class="section-label">Sua turma</span>
-        <div class="enrollment-data">
-          <p><strong>Data:</strong> {{ formatDate(current.startDate) }}</p>
-          @if (current.endDate) {
-            <p><strong>Termino:</strong> {{ formatDate(current.endDate) }}</p>
-          }
-          <p><strong>Local:</strong> {{ current.location }}</p>
-          <p><strong>Instrutor:</strong> {{ current.instructor }}</p>
-          <p><strong>Status da turma:</strong> {{ statusLabel(current.classStatus) }}</p>
-        </div>
+        @if (current.deliveryMode === 'ead') {
+          <span class="section-label">Curso EAD</span>
+          <div class="enrollment-data">
+            <p><strong>Carga horaria:</strong> {{ current.workloadHours || 0 }}h</p>
+            <p><strong>Modulos:</strong> {{ current.modules.length }}</p>
+            <p><strong>Progresso:</strong> {{ progress()?.percent ?? 0 }}% ({{ completedLessons() }}/{{ totalLessons() }} aulas)</p>
+          </div>
+        } @else {
+          <span class="section-label">Sua turma</span>
+          <div class="enrollment-data">
+            <p><strong>Data:</strong> {{ formatDate(current.startDate) }}</p>
+            @if (current.endDate) {
+              <p><strong>Termino:</strong> {{ formatDate(current.endDate) }}</p>
+            }
+            <p><strong>Local:</strong> {{ current.location }}</p>
+            <p><strong>Instrutor:</strong> {{ current.instructor }}</p>
+            <p><strong>Status da turma:</strong> {{ statusLabel(current.classStatus) }}</p>
+          </div>
+        }
       </section>
 
-      <section class="enrollment-panel">
-        <span class="section-label">Instrucoes antes da aula</span>
-        <ul class="instructions">
-          <li>Chegue com antecedencia ao local informado.</li>
-          <li>Leve um documento de identificacao.</li>
-          <li>Confira as orientacoes enviadas pela organizacao antes da data.</li>
-          <li>Em caso de alteracao da turma, consulte novamente esta pagina.</li>
-        </ul>
-      </section>
+      @if (current.deliveryMode === 'ead') {
+        <section class="enrollment-panel">
+          <span class="section-label">Aulas online</span>
+          @if (progressError()) {
+            <div class="feedback feedback--error">{{ progressError() }}</div>
+          }
+
+          @for (module of current.modules; track module.id) {
+            <div class="module-block">
+              <h3>{{ module.title }}</h3>
+              <div class="lesson-list">
+                @for (lesson of module.lessons; track lesson.id) {
+                  <article class="lesson-row" [class.lesson-row--done]="isLessonCompleted(lesson.id)">
+                    <div>
+                      <strong>{{ lesson.title }}</strong>
+                      @if (lesson.description) {
+                        <p>{{ lesson.description }}</p>
+                      }
+                      <span>{{ lesson.durationMinutes }} min</span>
+                      @if (lesson.videoUrl) {
+                        <a [href]="lesson.videoUrl" target="_blank" rel="noreferrer">Abrir aula</a>
+                      }
+                    </div>
+                    <button
+                      type="button"
+                      class="lesson-action"
+                      [disabled]="isLessonCompleted(lesson.id) || savingLessonId() === lesson.id"
+                      (click)="toggleLesson(lesson.id)"
+                    >
+                      @if (isLessonCompleted(lesson.id)) {
+                        Concluida
+                      } @else {
+                        {{ savingLessonId() === lesson.id ? 'Salvando...' : 'Marcar concluida' }}
+                      }
+                    </button>
+                  </article>
+                } @empty {
+                  <p class="muted">Nenhuma aula cadastrada neste modulo.</p>
+                }
+              </div>
+            </div>
+          } @empty {
+            <p class="muted">Este curso EAD ainda nao possui aulas cadastradas.</p>
+          }
+        </section>
+      } @else {
+        <section class="enrollment-panel">
+          <span class="section-label">Instrucoes antes da aula</span>
+          <ul class="instructions">
+            <li>Chegue com antecedencia ao local informado.</li>
+            <li>Leve um documento de identificacao.</li>
+            <li>Confira as orientacoes enviadas pela organizacao antes da data.</li>
+            <li>Em caso de alteracao da turma, consulte novamente esta pagina.</li>
+          </ul>
+        </section>
+      }
     }
   </section>
 </main>

@@ -13,47 +13,64 @@
         </div>
 
         <div class="course-detail__content">
-          <span class="course-detail__type">{{ course.category || 'Curso presencial' }}</span>
+          <span class="course-detail__type">
+            {{ course.deliveryMode === 'ead' ? 'Curso EAD' : (course.category || 'Curso presencial') }}
+          </span>
           <h1>{{ course.nome }}</h1>
           <p class="course-detail__description">{{ course.description }}</p>
 
           <div class="course-facts">
-            <div><span>Turmas disponiveis</span><strong>{{ classes().length }}</strong></div>
             <div>
-              <span>Vagas na turma selecionada</span>
-              <strong>{{ selectedClass()?.availableSeats ?? 0 }}</strong>
+              <span>{{ course.deliveryMode === 'ead' ? 'Modulos' : 'Turmas disponiveis' }}</span>
+              <strong>{{ course.deliveryMode === 'ead' ? course.modules.length : classes().length }}</strong>
+            </div>
+            <div>
+              <span>{{ course.deliveryMode === 'ead' ? 'Carga horaria' : 'Vagas na turma selecionada' }}</span>
+              <strong>{{ course.deliveryMode === 'ead' ? (course.workloadHours || 0) + 'h' : selectedClass()?.availableSeats ?? 0 }}</strong>
             </div>
           </div>
 
-          <label class="class-selector">
-            <span>Escolha a turma</span>
-            <select
-              [value]="selectedClass()?.id ?? ''"
-              (change)="selectClass(+$any($event.target).value)"
-              [disabled]="classes().length === 0"
-            >
-              @for (courseClass of classes(); track courseClass.id) {
-                <option [value]="courseClass.id">
-                  {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}
-                  ({{ courseClass.availableSeats }} vaga(s))
-                </option>
-              }
-            </select>
-          </label>
-
-          @if (classes().length === 0) {
-            <p class="course-unavailable">Nenhuma turma com vagas disponiveis no momento.</p>
-          } @else if (selectedClass(); as courseClass) {
+          @if (course.deliveryMode === 'ead') {
             <div class="selected-class">
               <div class="selected-class__header">
-                <strong>Detalhes da turma</strong>
-                <span class="class-status">{{ classStatusLabel(courseClass) }}</span>
+                <strong>Conteudo online</strong>
+                <span class="class-status">Acesso digital</span>
               </div>
-              <span><strong>Período:</strong> {{ classPeriod(courseClass) }}</span>
-              <span><strong>Local:</strong> {{ courseClass.local }}</span>
-              <span><strong>Instrutor:</strong> {{ courseClass.instructor }}</span>
-              <span><strong>Vagas:</strong> {{ courseClass.availableSeats }} de {{ courseClass.capacity }}</span>
+              <span><strong>Modulos:</strong> {{ course.modules.length }}</span>
+              <span><strong>Aulas:</strong> {{ course.modules.length ? course.modules[0].lessons.length : 0 }}</span>
+              <span><strong>Formato:</strong> estudo online sem turma presencial</span>
             </div>
+          } @else {
+            <label class="class-selector">
+              <span>Escolha a turma</span>
+              <select
+                [value]="selectedClass()?.id ?? ''"
+                (change)="selectClass(+$any($event.target).value)"
+                [disabled]="classes().length === 0"
+              >
+                @for (courseClass of classes(); track courseClass.id) {
+                  <option [value]="courseClass.id">
+                    {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}
+                    ({{ courseClass.availableSeats }} vaga(s))
+                  </option>
+                }
+              </select>
+            </label>
+
+            @if (classes().length === 0) {
+              <p class="course-unavailable">Nenhuma turma com vagas disponiveis no momento.</p>
+            } @else if (selectedClass(); as courseClass) {
+              <div class="selected-class">
+                <div class="selected-class__header">
+                  <strong>Detalhes da turma</strong>
+                  <span class="class-status">{{ classStatusLabel(courseClass) }}</span>
+                </div>
+                <span><strong>Periodo:</strong> {{ classPeriod(courseClass) }}</span>
+                <span><strong>Local:</strong> {{ courseClass.local }}</span>
+                <span><strong>Instrutor:</strong> {{ courseClass.instructor }}</span>
+                <span><strong>Vagas:</strong> {{ courseClass.availableSeats }} de {{ courseClass.capacity }}</span>
+              </div>
+            }
           }
 
           <div class="course-purchase">
@@ -70,17 +87,17 @@
                 type="button"
                 aria-label="Aumentar quantidade"
                 (click)="increaseQuantity()"
-                [disabled]="quantity() >= (selectedClass()?.availableSeats ?? 1) || quantity() >= maxCourseQuantity"
+                [disabled]="quantity() >= availableQuantity() || quantity() >= maxCourseQuantity"
               >+</button>
             </div>
-            <span class="quantity-hint">Máximo de {{ maxCourseQuantity }} inscrições por pedido</span>
+            <span class="quantity-hint">Maximo de {{ maxCourseQuantity }} inscricoes por pedido</span>
             <button
               type="button"
               class="primary-button"
-              [disabled]="!selectedClass() || !!quantityError()"
+              [disabled]="(course.deliveryMode !== 'ead' && !selectedClass()) || !!quantityError()"
               (click)="addToCart()"
             >
-              {{ selectedClass() ? 'Inscrever-se agora' : 'Turma lotada' }}
+              {{ course.deliveryMode === 'ead' || selectedClass() ? 'Inscrever-se agora' : 'Turma lotada' }}
             </button>
           </div>
           @if (quantityError()) {

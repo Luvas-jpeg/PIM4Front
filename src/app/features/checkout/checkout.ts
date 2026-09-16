@@ -45,7 +45,9 @@ export class Checkout {
 
   readonly hasUnassignedCourse = computed(() =>
     this.items().some(item =>
-      item.product.tipoProduto === 'course' && !item.courseClass
+      item.product.tipoProduto === 'course' &&
+      item.product.deliveryMode !== 'ead' &&
+      !item.courseClass
     )
   );
 
@@ -206,7 +208,7 @@ export class Checkout {
     }
 
     if (this.hasUnassignedCourse()) {
-      this.error.set('Selecione uma turma para cada curso antes de finalizar.');
+      this.error.set('Selecione uma turma para cada curso presencial antes de finalizar.');
       return;
     }
 

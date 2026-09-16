@@ -92,10 +92,26 @@ export class Account {
   }
 
   formatClassDate(value: string): string {
+    if (!value || new Date(value).getFullYear() <= 1) {
+      return 'Acesso online';
+    }
+
     return new Intl.DateTimeFormat('pt-BR', {
       dateStyle: 'medium',
       timeZone: 'UTC',
     }).format(new Date(value));
+  }
+
+  enrollmentModeLabel(enrollment: MyEnrollment): string {
+    return enrollment.deliveryMode === 'ead' ? 'Curso EAD' : 'Curso presencial';
+  }
+
+  enrollmentLocationLabel(enrollment: MyEnrollment): string {
+    if (enrollment.deliveryMode === 'ead') {
+      return `${enrollment.modules?.length ?? 0} modulo(s) online`;
+    }
+
+    return [enrollment.instructor, enrollment.location].filter(Boolean).join(' - ');
   }
 
   enrollmentStatusLabel(value: string): string {
@@ -194,3 +210,4 @@ export class Account {
     };
   }
 }
+

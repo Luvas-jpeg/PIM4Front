@@ -7,6 +7,8 @@ export interface Product {
     description: string;
     image: string;
     category: string;
+    deliveryMode?: 'presencial' | 'ead';
+    workloadHours?: number;
     date: string;
     location: string;
     instructor: string;
@@ -20,6 +22,8 @@ export interface ProductRequest {
     description: string;
     image: string;
     category: string;
+    deliveryMode?: 'presencial' | 'ead';
+    workloadHours?: number;
     date: string;
     location: string;
     instructor: string;

@@ -12,11 +12,20 @@
       <button type="button" [class.active]="activeTab() === 'dashboard'" (click)="setTab('dashboard')">
         Dashboard
       </button>
-      <button type="button" [class.active]="activeTab() === 'products'" (click)="setTab('products')">
-      Cursos
+      <button type="button" [class.active]="activeTab() === 'audit'" (click)="setTab('audit')">
+        Auditoria
+      </button>
+      <button type="button" [class.active]="activeTab() === 'courses'" (click)="setTab('courses')">
+        Cursos
+      </button>
+      <button type="button" [class.active]="activeTab() === 'ead-content'" (click)="setTab('ead-content')">
+        Conteudo EAD
       </button>
       <button type="button" [class.active]="activeTab() === 'classes'" (click)="setTab('classes')">
         Turmas
+      </button>
+      <button type="button" [class.active]="activeTab() === 'students'" (click)="setTab('students')">
+        Alunos
       </button>
       <button type="button" [class.active]="activeTab() === 'coupons'" (click)="setTab('coupons')">
         Cupons
@@ -35,499 +44,58 @@
     }
 
     @if (activeTab() === 'dashboard') {
-      <section class="panel">
-        <div class="panel__header">
-          <div>
-            <span class="section-label">Faturamento</span>
-            <h2>Resumo financeiro</h2>
-          </div>
-
-          <div class="period-control">
-            <button type="button" [class.active]="period() === 'day'" (click)="setPeriod('day')">Dia</button>
-            <button type="button" [class.active]="period() === 'week'" (click)="setPeriod('week')">Semana</button>
-            <button type="button" [class.active]="period() === 'month'" (click)="setPeriod('month')">Mes</button>
-            <button type="button" [class.active]="period() === 'year'" (click)="setPeriod('year')">Ano</button>
-          </div>
-        </div>
-
-        <div class="metric-grid">
-          <article class="metric">
-            <span>Faturamento</span>
-            <strong>{{ formatPrice(revenue()) }}</strong>
-          </article>
-
-          <article class="metric">
-            <span>Pedidos</span>
-            <strong>{{ filteredOrders().length }}</strong>
-          </article>
-
-          <article class="metric">
-            <span>Ticket medio</span>
-            <strong>{{ formatPrice(averageTicket()) }}</strong>
-          </article>
-
-          <article class="metric">
-            <span>Baixo estoque</span>
-            <strong>{{ lowStockProducts().length }}</strong>
-          </article>
-        </div>
-
-        <div class="analytics-grid">
-          <article class="subpanel chart-panel chart-panel--wide">
-            <div class="chart-header">
-              <div>
-                <h3>Faturamento dos ultimos 7 dias</h3>
-                <p class="muted">Pedidos ativos, sem cancelamentos.</p>
-              </div>
-            </div>
-
-            <div class="bar-chart" aria-label="Grafico de faturamento dos ultimos 7 dias">
-              @for (point of revenueChart(); track point.label) {
-                <div class="bar-chart__item">
-                  <div class="bar-chart__track">
-                    <span
-                      class="bar-chart__bar"
-                      [style.height.%]="point.percent"
-                    ></span>
-                  </div>
-                  <strong>{{ formatPrice(point.value) }}</strong>
-                  <span>{{ point.label }}</span>
-                </div>
-              }
-            </div>
-          </article>
-
-          <article class="subpanel chart-panel">
-            <h3>Status dos pedidos</h3>
-
-            <div class="status-chart">
-              @for (item of statusChart(); track item.status) {
-                <div class="status-chart__row">
-                  <div class="status-chart__label">
-                    <span>{{ item.status }}</span>
-                    <strong>{{ item.count }}</strong>
-                  </div>
-                  <div class="status-chart__track">
-                    <span [style.width.%]="item.percent"></span>
-                  </div>
-                </div>
-              }
-            </div>
-          </article>
-
-          <article class="subpanel chart-panel">
-            <h3>Mais vendidos</h3>
-
-            @if (topProducts().length === 0) {
-              <p class="muted">Nenhum item vendido ainda.</p>
-            } @else {
-              <div class="ranking-chart">
-                @for (item of topProducts(); track item.name) {
-                  <div class="ranking-chart__row">
-                    <div>
-                      <strong>{{ item.name }}</strong>
-                      <span>{{ item.quantity }} unidade(s) - {{ formatPrice(item.total) }}</span>
-                    </div>
-                    <div class="ranking-chart__track">
-                      <span [style.width.%]="item.percent"></span>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </article>
-        </div>
-
-        <div class="dashboard-grid">
-          <article class="subpanel">
-            <h3>Produtos em atencao</h3>
-
-            @if (lowStockProducts().length === 0) {
-              <p class="muted">Nenhum produto com estoque baixo.</p>
-            } @else {
-              <div class="list">
-                @for (product of lowStockProducts(); track product.id) {
-                  <div class="list-row">
-                    <span>{{ product.nome }}</span>
-                    <strong>{{ product.estoque }}</strong>
-                  </div>
-                }
-              </div>
-            }
-          </article>
-
-          <article class="subpanel">
-            <h3>Ultimos pedidos</h3>
-
-            <div class="list">
-              @for (order of orders().slice(0, 5); track order.id) {
-                <div class="list-row">
-                  <span>#{{ order.id }} - {{ order.status }}</span>
-                  <strong>{{ formatPrice(order.total) }}</strong>
-                </div>
-              } @empty {
-                <p class="muted">Nenhum pedido registrado.</p>
-              }
-            </div>
-          </article>
-        </div>
-      </section>
+      <app-admin-dashboard [courses]="courses()" [orders]="orders()" />
     }
 
-    @if (activeTab() === 'products') {
-      <section class="panel">
-        <form class="panel creation-form" [class.creation-form--open]="activeFormModal() === 'course'" [formGroup]="productForm" (ngSubmit)="saveProduct()">
-          <div class="panel__header">
-            <div>
-              <span class="section-label">Catalogo de cursos</span>
-              <h2>{{ editingProductId() ? 'Editar curso' : 'Adicionar curso' }}</h2>
-            </div>
-            <div class="form-actions">
-              <button type="button" class="ghost-button" (click)="resetProductForm()">Limpar</button>
-              <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
-            </div>
-          </div>
-          @if (formError(); as message) {
-            <div class="feedback feedback--error" role="alert">{{ message }}</div>
-          }
-          <p class="form-hint"><span class="required-marker">*</span> Campos obrigatórios</p>
+    @if (activeTab() === 'audit') {
+      <app-admin-audit [auditLogs]="auditLogs()" />
+    }
 
-          <label class="field">
-            <span>Nome <span class="required-marker" aria-hidden="true">*</span></span>
-            <input type="text" formControlName="nome" required aria-required="true" />
-          </label>
+    @if (activeTab() === 'courses') {
+      <app-admin-courses
+        [courses]="courses()"
+        (coursesChange)="setCourses($event)"
+        (notify)="handleNotification($event)"
+      />
+    }
 
-          <div class="form-grid">
-            <label class="field">
-              <span>Tipo</span>
-              <input type="text" value="Curso" readonly />
-            </label>
-
-            <label class="field">
-              <span>Preco <span class="required-marker" aria-hidden="true">*</span></span>
-              <input type="number" min="0.01" step="0.01" formControlName="preco" required aria-required="true" />
-            </label>
-
-            <label class="field">
-              <span>Categoria do curso <span class="optional-label">(opcional)</span></span>
-              <input type="text" formControlName="category" />
-            </label>
-          </div>
-
-          <label class="field">
-            <span>Descricao <span class="optional-label">(opcional)</span></span>
-            <textarea rows="3" formControlName="description"></textarea>
-          </label>
-
-          <label class="field">
-            <span>Imagem URL <span class="optional-label">(opcional)</span></span>
-            <input type="url" formControlName="image" />
-          </label>
-
-          <button type="submit" class="primary-button" [disabled]="savingProduct()">
-            {{ savingProduct() ? 'Salvando...' : 'Salvar curso' }}
-          </button>
-        </form>
-
-        <section class="panel">
-          <div class="panel__header">
-            <div>
-              <span class="section-label">Lista</span>
-              <h2>Cursos cadastrados</h2>
-            </div>
-            <button type="button" class="primary-button" (click)="openCourseModal()">Adicionar curso</button>
-          </div>
-
-          <div class="table">
-            @for (course of courses(); track course.id) {
-              <article class="table-row">
-                <div>
-                  <strong>{{ course.nome }}</strong>
-                  <span>Curso - {{ formatPrice(course.preco) }}</span>
-                </div>
-                <span>{{ course.classes.length }} turma(s)</span>
-                <div class="actions">
-                  <button type="button" (click)="editProduct(course)">Editar</button>
-                </div>
-              </article>
-            } @empty {
-              <p class="muted">Nenhum curso cadastrado.</p>
-            }
-          </div>
-        </section>
-      </section>
+    @if (activeTab() === 'ead-content') {
+      <app-admin-ead-content
+        [courses]="courses()"
+        (coursesChange)="setCourses($event)"
+        (notify)="handleNotification($event)"
+      />
     }
 
     @if (activeTab() === 'classes') {
-      <section class="panel classes-panel">
-        <div class="panel__header">
-          <div>
-            <span class="section-label">Inscricoes</span>
-            <h2>Turmas e alunos matriculados</h2>
-          </div>
-        </div>
+      <app-admin-classes
+        [courses]="courses()"
+        (coursesChange)="setCourses($event)"
+        (notify)="handleNotification($event)"
+      />
+    }
 
-        @if (activeFormModal() === 'class' && selectedCourse(); as course) {
-          <form class="subpanel creation-form creation-form--open" [formGroup]="classForm" (ngSubmit)="saveClass()">
-            <div class="panel__header">
-              <div>
-                <span class="section-label">Turma de {{ course.nome }}</span>
-                <h3>{{ editingClassId() ? 'Editar turma' : 'Adicionar turma' }}</h3>
-              </div>
-              <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
-            </div>
-            @if (formError(); as message) {
-              <div class="feedback feedback--error" role="alert">{{ message }}</div>
-            }
-            <p class="form-hint"><span class="required-marker">*</span> Campos obrigatórios</p>
-
-            <div class="form-grid">
-              <label class="field">
-                <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
-                <input type="datetime-local" formControlName="startDate" required aria-required="true" />
-              </label>
-              <label class="field">
-                <span>Fim <span class="optional-label">(opcional)</span></span>
-                <input type="datetime-local" formControlName="endDate" />
-              </label>
-              <label class="field">
-                <span>Local <span class="required-marker" aria-hidden="true">*</span></span>
-                <input type="text" formControlName="local" required aria-required="true" />
-              </label>
-              <label class="field">
-                <span>Instrutor <span class="required-marker" aria-hidden="true">*</span></span>
-                <input type="text" formControlName="instructor" required aria-required="true" />
-              </label>
-              <label class="field">
-                <span>Capacidade <span class="required-marker" aria-hidden="true">*</span></span>
-                <input type="number" min="1" formControlName="capacity" required aria-required="true" />
-              </label>
-              <label class="field">
-                <span>Status <span class="required-marker" aria-hidden="true">*</span></span>
-                <select formControlName="status" required aria-required="true">
-                  <option value="scheduled">Agendada</option>
-                  <option value="completed">Concluida</option>
-                  <option value="cancelled">Cancelada</option>
-                </select>
-              </label>
-            </div>
-
-            <button type="submit" class="primary-button">Salvar turma</button>
-          </form>
-        }
-
-        <div class="class-list">
-          @for (course of courses(); track course.id) {
-            <div class="class-course-group">
-              <div class="panel__header">
-                <h3>{{ course.nome }}</h3>
-                <button type="button" class="primary-button" (click)="openClassForm(course)">
-                  Adicionar turma
-                </button>
-              </div>
-            @for (courseClass of course.classes; track courseClass.id) {
-            <article class="class-card">
-              <button type="button" class="class-card__content" (click)="openClassModal(course, courseClass)">
-              <span class="class-card__type">Curso presencial</span>
-              <strong class="class-card__title">{{ course.nome }}</strong>
-              <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
-              <span>{{ courseClass.local }} - {{ courseClass.instructor }}</span>
-              <span class="class-card__footer">
-                <b>{{ courseClass.availableSeats }}/{{ courseClass.capacity }} vagas restantes</b>
-                <b>Ver alunos <span aria-hidden="true">→</span></b>
-              </span>
-              </button>
-              <button type="button" class="ghost-button" (click)="editClass(course, courseClass)">
-                Editar turma
-              </button>
-            </article>
-            }
-            @empty {
-              <p class="muted">Nenhuma turma cadastrada para este curso.</p>
-            }
-            </div>
-          } @empty {
-            <p class="muted">Nenhum curso cadastrado.</p>
-          }
-        </div>
-      </section>
+    @if (activeTab() === 'students') {
+      <app-admin-students
+        [students]="students()"
+        (notify)="handleNotification($event)"
+      />
     }
 
     @if (activeTab() === 'coupons') {
-      <section class="panel">
-        <form class="panel creation-form" [class.creation-form--open]="activeFormModal() === 'coupon'" [formGroup]="couponForm" (ngSubmit)="saveCoupon()">
-          <div class="panel__header">
-            <div>
-              <span class="section-label">Promocoes</span>
-              <h2>{{ editingCouponId() ? 'Editar cupom' : 'Adicionar cupom' }}</h2>
-            </div>
-            <div class="form-actions">
-              <button type="button" class="ghost-button" (click)="resetCouponForm()">Limpar</button>
-              <button type="button" class="ghost-button" (click)="closeFormModal()">Fechar</button>
-            </div>
-          </div>
-          @if (formError(); as message) {
-            <div class="feedback feedback--error" role="alert">{{ message }}</div>
-          }
-          <p class="form-hint"><span class="required-marker">*</span> Campos obrigatórios</p>
-
-          <div class="form-grid">
-            <label class="field">
-              <span>Codigo <span class="required-marker" aria-hidden="true">*</span></span>
-              <input type="text" formControlName="code" required aria-required="true" />
-            </label>
-
-            <label class="field">
-              <span>Tipo <span class="required-marker" aria-hidden="true">*</span></span>
-              <select formControlName="discountType" required aria-required="true">
-                <option value="percentage">Percentual</option>
-                <option value="fixed">Valor fixo</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span>Desconto <span class="required-marker" aria-hidden="true">*</span></span>
-              <input type="number" min="0.01" step="0.01" formControlName="discount" required aria-required="true" />
-            </label>
-
-            <label class="field">
-              <span>Limite de uso <span class="optional-label">(opcional)</span></span>
-              <input type="number" min="0" formControlName="usageLimit" />
-            </label>
-
-            <label class="field">
-              <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
-              <input type="date" formControlName="startDate" required aria-required="true" />
-            </label>
-
-            <label class="field">
-              <span>Fim <span class="required-marker" aria-hidden="true">*</span></span>
-              <input type="date" formControlName="endDate" required aria-required="true" />
-            </label>
-          </div>
-
-          <label class="check-field">
-            <input type="checkbox" formControlName="isActive" />
-            <span>Cupom ativo</span>
-          </label>
-
-          <button type="submit" class="primary-button" [disabled]="savingCoupon()">
-            {{ savingCoupon() ? 'Salvando...' : 'Salvar cupom' }}
-          </button>
-        </form>
-
-        <section class="panel">
-          <div class="panel__header">
-            <div>
-              <span class="section-label">Cupons</span>
-              <h2>Codigos cadastrados</h2>
-            </div>
-            <button type="button" class="primary-button" (click)="openCouponModal()">Adicionar cupom</button>
-          </div>
-
-          <div class="table">
-            @for (coupon of promoCodes(); track coupon.id) {
-              <article class="table-row">
-                <div>
-                  <strong>{{ coupon.code }}</strong>
-                  <span>{{ coupon.discountType === 'percentage' ? coupon.discount + '%' : formatPrice(coupon.discount) }}</span>
-                </div>
-                <span>{{ coupon.usageCount }}/{{ coupon.usageLimit ?? 'sem limite' }}</span>
-                <div class="actions">
-                  <button type="button" (click)="editCoupon(coupon)">Editar</button>
-                  <button type="button" class="danger" (click)="deleteCoupon(coupon.id)">Excluir</button>
-                </div>
-              </article>
-            } @empty {
-              <p class="muted">Nenhum cupom cadastrado.</p>
-            }
-          </div>
-        </section>
-      </section>
+      <app-admin-coupons
+        [promoCodes]="promoCodes()"
+        (promoCodesChange)="setPromoCodes($event)"
+        (notify)="handleNotification($event)"
+      />
     }
 
     @if (activeTab() === 'orders') {
-      <section class="panel">
-        <div class="panel__header">
-          <div>
-            <span class="section-label">Pedidos</span>
-            <h2>Gerenciar pedidos</h2>
-          </div>
-        </div>
-
-        <div class="table table--orders">
-          @for (order of orders(); track order.id) {
-            <article class="table-row">
-              <div>
-                <strong>Pedido #{{ order.id }}</strong>
-                <span>{{ order.itens.length }} item(ns) - {{ order.paymentMethod }}</span>
-              </div>
-              <strong>{{ formatPrice(order.total) }}</strong>
-              <select [value]="order.status" (change)="updateOrderStatus(order, $any($event.target).value)">
-                <option value="Pendente">Pendente</option>
-                <option value="Processando">Processando</option>
-                <option value="Concluido">Concluido</option>
-                <option value="Cancelado">Cancelado</option>
-              </select>
-              @if (order.paymentStatus === 'paid') {
-                <button type="button" class="button button--secondary" (click)="refundOrder(order)">
-                  Reembolsar
-                </button>
-              }
-            </article>
-          } @empty {
-            <p class="muted">Nenhum pedido registrado.</p>
-          }
-        </div>
-      </section>
+      <app-admin-orders
+        [orders]="orders()"
+        (ordersChange)="setOrders($event)"
+        (notify)="handleNotification($event)"
+      />
     }
   </section>
 </main>
-
-@if (selectedCourse(); as course) {
-  <div class="modal-backdrop" role="presentation" (click)="closeClassModal()">
-    <section
-      class="class-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="class-modal-title"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="class-modal__header">
-        <div>
-          <span class="section-label">Turma</span>
-          <h2 id="class-modal-title">{{ course.nome }}</h2>
-          @if (selectedClass(); as courseClass) {
-            <p>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}</p>
-            <p>Instrutor: {{ courseClass.instructor }}</p>
-          }
-        </div>
-        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeClassModal()">X</button>
-      </div>
-
-      <div class="class-modal__summary">
-        <span><b>{{ studentsForCourse(course.id).length }}</b> matriculado(s)</span>
-        @if (selectedClass(); as courseClass) {
-          <span><b>{{ courseClass.availableSeats }}</b> vaga(s) restante(s)</span>
-        }
-      </div>
-
-      <div class="class-modal__students">
-        @for (student of studentsForCourse(course.id); track student.id) {
-          <div class="class-student">
-            <div>
-              <strong>{{ student.name }}</strong>
-              <span>{{ student.email }}</span>
-              @if (student.phone) {
-                <span>{{ student.phone }}</span>
-              }
-            </div>
-            <strong>{{ student.status }}</strong>
-          </div>
-        } @empty {
-          <p class="muted">Nenhum aluno matriculado nesta turma.</p>
-        }
-      </div>
-    </section>
-  </div>
-}

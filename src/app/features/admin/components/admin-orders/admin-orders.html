@@ -1,0 +1,192 @@
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <span class="section-label">Pedidos</span>
+      <h2>Gerenciar pedidos</h2>
+    </div>
+    <button type="button" class="ghost-button" [disabled]="!filteredOrders().length" (click)="exportOrdersCsv()">
+      Exportar CSV
+    </button>
+  </div>
+
+  <div class="form-grid">
+    <label class="field">
+      <span>Buscar</span>
+      <input
+        type="search"
+        [value]="orderSearch()"
+        placeholder="Pedido, cliente ou curso"
+        (input)="setOrderSearch($any($event.target).value)"
+      />
+    </label>
+
+    <label class="field">
+      <span>Status do pedido</span>
+      <select [value]="orderStatusFilter()" (change)="setOrderStatusFilter($any($event.target).value)">
+        <option value="all">Todos</option>
+        <option value="pending">Pendente</option>
+        <option value="processing">Processando</option>
+        <option value="completed">Concluido</option>
+        <option value="cancelled">Cancelado</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Status do pagamento</span>
+      <select [value]="paymentStatusFilter()" (change)="setPaymentStatusFilter($any($event.target).value)">
+        <option value="all">Todos</option>
+        <option value="pending">Pendente</option>
+        <option value="paid">Pago</option>
+        <option value="refused">Recusado</option>
+        <option value="cancelled">Cancelado</option>
+        <option value="refunded">Reembolsado</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="table table--orders">
+    @for (order of filteredOrders(); track order.id) {
+      <article class="table-row">
+        <div>
+          <strong>Pedido #{{ order.id }}</strong>
+          <span>{{ order.usuario?.nome || 'Cliente' }} - {{ order.itens.length }} item(ns)</span>
+          <span>{{ orderStatusLabel(order.status) }} - Pagamento {{ paymentStatusLabel(order.paymentStatus) }}</span>
+        </div>
+        <strong>{{ formatPrice(order.total) }}</strong>
+        <select [value]="order.status" (change)="updateOrderStatus(order, $any($event.target).value)">
+          <option value="pending">Pendente</option>
+          <option value="processing">Processando</option>
+          <option value="completed">Concluido</option>
+          <option value="cancelled">Cancelado</option>
+        </select>
+        <div class="actions">
+          <button type="button" (click)="openDetails(order)">Detalhes</button>
+          @if (order.paymentStatus === 'paid') {
+            <button type="button" class="danger" (click)="refundOrder(order)">
+              Reembolsar
+            </button>
+          }
+        </div>
+      </article>
+    } @empty {
+      <p class="muted">Nenhum pedido encontrado com os filtros atuais.</p>
+    }
+  </div>
+</section>
+
+@if (selectedOrder(); as order) {
+  <div class="modal-backdrop" role="presentation" (click)="closeDetails()">
+    <section
+      class="class-modal order-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="order-modal-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="class-modal__header">
+        <div>
+          <span class="section-label">Pedido</span>
+          <h2 id="order-modal-title">Pedido #{{ order.id }}</h2>
+          <p>{{ order.usuario?.nome || 'Cliente' }} - {{ order.usuario?.email || 'E-mail nao informado' }}</p>
+          <p>{{ formatDate(order.dataPedido) }}</p>
+        </div>
+        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeDetails()">X</button>
+      </div>
+
+      <div class="class-modal__summary">
+        <span><b>{{ orderStatusLabel(order.status) }}</b> pedido</span>
+        <span><b>{{ paymentStatusLabel(order.paymentStatus) }}</b> pagamento</span>
+        <span><b>{{ formatPrice(order.total) }}</b> total</span>
+      </div>
+
+      <div class="dashboard-grid order-detail-grid">
+        <article class="subpanel">
+          <h3>Pagamento</h3>
+          <div class="list">
+            <div class="list-row">
+              <span>Metodo</span>
+              <strong>{{ paymentMethodLabel(order.paymentMethod) }}</strong>
+            </div>
+            <div class="list-row">
+              <span>Parcelas</span>
+              <strong>{{ order.installments || 1 }}</strong>
+            </div>
+            <div class="list-row">
+              <span>Gateway</span>
+              <strong>{{ order.gatewayPaymentId || 'Nao informado' }}</strong>
+            </div>
+            <div class="list-row">
+              <span>Pagamento aprovado em</span>
+              <strong>{{ formatDate(order.paidAt) }}</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="subpanel">
+          <h3>Resumo</h3>
+          <div class="list">
+            <div class="list-row">
+              <span>Cupom</span>
+              <strong>{{ order.promoCode || 'Sem cupom' }}</strong>
+            </div>
+            <div class="list-row">
+              <span>Frete</span>
+              <strong>{{ formatPrice(order.valorFrete) }}</strong>
+            </div>
+            <div class="list-row">
+              <span>Total</span>
+              <strong>{{ formatPrice(order.total) }}</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <article class="subpanel order-items-panel">
+        <h3>Itens</h3>
+        <div class="table">
+          @for (item of order.itens; track item.produtoId + '-' + item.turmaId) {
+            <div class="table-row order-item-row">
+              <div>
+                <strong>{{ item.nome }}</strong>
+                <span>
+                  {{ item.tipoProduto === 'course' ? 'Curso' : 'Item legado' }}
+                  @if (item.turmaId) {
+                    - Turma #{{ item.turmaId }}
+                  }
+                </span>
+                @if (item.status) {
+                  <span>Status: {{ item.status }}</span>
+                }
+              </div>
+              <span>{{ item.quantidade }}x {{ formatPrice(item.precoUnitario) }}</span>
+              <strong>{{ formatPrice(itemTotal(item)) }}</strong>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="subpanel">
+        <h3>Eventos de pagamento</h3>
+        @if (loadingWebhookEvents()) {
+          <p class="muted">Carregando eventos...</p>
+        } @else {
+          <div class="list">
+            @for (event of webhookEvents(); track event.id) {
+              <div class="list-row">
+                <span>
+                  {{ event.status }} - {{ event.eventId }}
+                  @if (event.paymentId) {
+                    - {{ event.paymentId }}
+                  }
+                </span>
+                <strong>{{ formatDate(event.processedAt || event.receivedAt) }}</strong>
+              </div>
+            } @empty {
+              <p class="muted">Nenhum evento de webhook registrado para este pedido.</p>
+            }
+          </div>
+        }
+      </article>
+    </section>
+  </div>
+}

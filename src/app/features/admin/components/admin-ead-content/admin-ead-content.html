@@ -1,0 +1,136 @@
+<section class="panel">
+  <div class="panel__header">
+    <div>
+      <span class="section-label">Conteudo EAD</span>
+      <h2>Modulos e aulas online</h2>
+    </div>
+  </div>
+
+  @if (formError(); as message) {
+    <div class="feedback feedback--error" role="alert">{{ message }}</div>
+  }
+
+  @if (eadCourses().length === 0) {
+    <p class="muted">Nenhum curso EAD cadastrado. Crie um curso com modalidade EAD na aba Cursos.</p>
+  } @else {
+    <div class="form-grid">
+      <label class="field">
+        <span>Curso EAD</span>
+        <select [value]="selectedCourse().id" (change)="selectCourse(+$any($event.target).value)">
+          @for (course of eadCourses(); track course.id) {
+            <option [value]="course.id">{{ course.nome }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (selectedCourse(); as course) {
+      <div class="ead-layout">
+        <section class="subpanel">
+          <div class="panel__header">
+            <div>
+              <span class="section-label">Modulos</span>
+              <h3>{{ course.nome }}</h3>
+            </div>
+          </div>
+
+          <form [formGroup]="moduleForm" (ngSubmit)="saveModule()">
+            <div class="form-grid">
+              <label class="field">
+                <span>Titulo <span class="required-marker" aria-hidden="true">*</span></span>
+                <input type="text" formControlName="title" required aria-required="true" />
+              </label>
+              <label class="field">
+                <span>Ordem</span>
+                <input type="number" min="0" formControlName="sortOrder" />
+              </label>
+            </div>
+            <label class="check-field">
+              <input type="checkbox" formControlName="isActive" />
+              <span>Modulo ativo</span>
+            </label>
+            <button type="submit" class="primary-button" [disabled]="savingModule()">
+              {{ savingModule() ? 'Salvando...' : 'Adicionar modulo' }}
+            </button>
+          </form>
+
+          <div class="list ead-list">
+            @for (module of course.modules; track module.id) {
+              <button
+                type="button"
+                class="list-row ead-list__button"
+                [class.active]="selectedModule()?.id === module.id"
+                (click)="selectModule(module.id)"
+              >
+                <span>
+                  <strong>{{ module.title }}</strong>
+                  {{ module.lessons.length }} aula(s)
+                </span>
+                <span>#{{ module.sortOrder }}</span>
+              </button>
+            } @empty {
+              <p class="muted">Nenhum modulo cadastrado.</p>
+            }
+          </div>
+        </section>
+
+        <section class="subpanel">
+          <div class="panel__header">
+            <div>
+              <span class="section-label">Aulas</span>
+              <h3>{{ selectedModule()?.title || 'Selecione um modulo' }}</h3>
+            </div>
+          </div>
+
+          <form [formGroup]="lessonForm" (ngSubmit)="saveLesson()">
+            <label class="field">
+              <span>Titulo <span class="required-marker" aria-hidden="true">*</span></span>
+              <input type="text" formControlName="title" required aria-required="true" />
+            </label>
+            <label class="field">
+              <span>Descricao</span>
+              <textarea rows="3" formControlName="description"></textarea>
+            </label>
+            <div class="form-grid">
+              <label class="field">
+                <span>Video URL</span>
+                <input type="url" formControlName="videoUrl" />
+              </label>
+              <label class="field">
+                <span>Duracao em minutos</span>
+                <input type="number" min="0" formControlName="durationMinutes" />
+              </label>
+              <label class="field">
+                <span>Ordem</span>
+                <input type="number" min="0" formControlName="sortOrder" />
+              </label>
+            </div>
+            <label class="check-field">
+              <input type="checkbox" formControlName="isActive" />
+              <span>Aula ativa</span>
+            </label>
+            <button type="submit" class="primary-button" [disabled]="savingLesson() || !selectedModule()">
+              {{ savingLesson() ? 'Salvando...' : 'Adicionar aula' }}
+            </button>
+          </form>
+
+          @if (selectedModule(); as module) {
+            <div class="table ead-lessons">
+              @for (lesson of module.lessons; track lesson.id) {
+                <article class="table-row">
+                  <div>
+                    <strong>{{ lesson.title }}</strong>
+                    <span>{{ lesson.durationMinutes }} min - {{ lesson.videoUrl || 'Sem video informado' }}</span>
+                  </div>
+                  <span>#{{ lesson.sortOrder }}</span>
+                </article>
+              } @empty {
+                <p class="muted">Nenhuma aula cadastrada neste modulo.</p>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    }
+  }
+</section>

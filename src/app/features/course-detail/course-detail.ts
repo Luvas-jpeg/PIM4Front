@@ -49,7 +49,7 @@ export class CourseDetail {
           new Date(item.startDate).getTime() >= now,
         );
         this.classes.set(classes);
-        this.selectedClass.set(classes[0] ?? null);
+        this.selectedClass.set(course.deliveryMode === 'ead' ? null : classes[0] ?? null);
         this.loading.set(false);
       },
       error: () => {
@@ -76,7 +76,7 @@ export class CourseDetail {
 
   increaseQuantity(): void {
     const available = Math.min(
-      this.selectedClass()?.availableSeats ?? 1,
+      this.availableQuantity(),
       this.maxCourseQuantity,
     );
     this.quantity.update(value => Math.min(available, value + 1));
@@ -125,14 +125,18 @@ export class CourseDetail {
 
     const selectedClass = this.selectedClass();
 
-    if (!course || !selectedClass || selectedClass.availableSeats < 1) {
+    if (!course) {
+      return;
+    }
+
+    if (course.deliveryMode !== 'ead' && (!selectedClass || selectedClass.availableSeats < 1)) {
       this.quantityError.set('A turma selecionada nao possui vagas disponiveis.');
       return;
     }
 
-    if (this.quantity() > selectedClass.availableSeats) {
+    if (this.quantity() > this.availableQuantity()) {
       this.quantityError.set(
-        `A quantidade solicitada excede as ${selectedClass.availableSeats} vaga(s) disponiveis.`,
+        `A quantidade solicitada excede o limite de ${this.availableQuantity()} inscricao(oes).`,
       );
       return;
     }
@@ -140,7 +144,7 @@ export class CourseDetail {
     this.quantityError.set(null);
     const added = this.cartService.addCourse(
       this.toCartProduct(course),
-      selectedClass,
+      selectedClass ?? undefined,
       this.quantity(),
     );
     if (!added) {
@@ -158,13 +162,27 @@ export class CourseDetail {
       nome: course.nome,
       preco: course.preco,
       tipoProduto: 'course',
-      estoque: course.classes.reduce((total, item) => total + item.availableSeats, 0),
+      estoque: course.deliveryMode === 'ead'
+        ? this.maxCourseQuantity
+        : course.classes.reduce((total, item) => total + item.availableSeats, 0),
       description: course.description,
       image: course.image,
       category: course.category,
+      deliveryMode: course.deliveryMode,
+      workloadHours: course.workloadHours,
       date: '',
       location: '',
       instructor: '',
     };
+  }
+
+  isEad(course: Course): boolean {
+    return course.deliveryMode === 'ead';
+  }
+
+  availableQuantity(): number {
+    return this.course()?.deliveryMode === 'ead'
+      ? this.maxCourseQuantity
+      : this.selectedClass()?.availableSeats ?? 1;
   }
 }

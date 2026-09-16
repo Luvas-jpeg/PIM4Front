@@ -107,6 +107,8 @@ export class Home {
   }
 
   nextClass(course: Course) {
+    if (course.deliveryMode === 'ead') return null;
+
     return course.classes
       .filter((courseClass) => courseClass.status === 'scheduled' && courseClass.availableSeats > 0)
       .sort((first, second) =>
@@ -115,6 +117,8 @@ export class Home {
   }
 
   availabilityLabel(course: Course): string {
+    if (course.deliveryMode === 'ead') return 'Acesso online';
+
     const courseClass = this.nextClass(course);
     if (!courseClass) return 'Sem vagas disponíveis';
     if (courseClass.availableSeats <= 5) return `${courseClass.availableSeats} vaga(s) restantes`;

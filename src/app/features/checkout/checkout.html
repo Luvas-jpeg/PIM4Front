@@ -113,6 +113,8 @@
                     {{ item.quantity }} inscricao(oes)
                     @if (item.courseClass; as courseClass) {
                       - {{ courseClass.local }}
+                    } @else if (item.product.deliveryMode === 'ead') {
+                      - EAD
                     }
                   </span>
                 </div>

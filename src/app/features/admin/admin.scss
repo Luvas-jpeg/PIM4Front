@@ -117,7 +117,6 @@
 .metric-grid,
 .analytics-grid,
 .dashboard-grid,
-.management-grid,
 .form-grid {
   display: grid;
   gap: 16px;
@@ -139,8 +138,7 @@
 
 .metric span,
 .muted,
-.table-row span,
-.summary span {
+.table-row span {
   color: #64748b;
 }
 
@@ -267,11 +265,6 @@
 .ranking-chart__row > div:first-child {
   display: grid;
   gap: 4px;
-}
-
-.management-grid {
-  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
-  align-items: start;
 }
 
 .creation-form {
@@ -427,7 +420,7 @@ form,
 }
 
 .table--orders .table-row {
-  grid-template-columns: minmax(0, 1fr) auto 180px;
+  grid-template-columns: minmax(0, 1fr) auto 180px auto;
 }
 
 .table-row strong,
@@ -457,15 +450,6 @@ form,
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-
-.class-card:hover,
-.class-card:focus-visible {
-  border-color: var(--color-primary);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, .1);
-  outline: 0;
-  transform: translateY(-3px);
 }
 
 .class-card__type {
@@ -476,7 +460,14 @@ form,
   text-transform: uppercase;
 }
 
-.class-card > span:not(.class-card__footer) {
+.class-card__content {
+  all: unset;
+  display: grid;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.class-card__content > span:not(.class-card__footer) {
   color: var(--color-muted);
   font-size: .88rem;
 }
@@ -567,6 +558,11 @@ form,
   border-top: 1px solid var(--color-border);
 }
 
+.student-controls {
+  display: grid;
+  gap: 8px;
+}
+
 .class-student div {
   display: grid;
   gap: 4px;
@@ -576,6 +572,25 @@ form,
   color: var(--color-muted);
   font-size: .86rem;
 }
+
+.audit-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+}
+
+.audit-meta,
+.audit-values {
+  display: grid;
+  gap: 6px;
+}
+
+.audit-values span {
+  word-break: break-word;
+}
+
+.order-item-row {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
 
 @media (max-width: 560px) {
   .class-list {
@@ -605,9 +620,9 @@ form,
   .metric-grid,
   .analytics-grid,
   .dashboard-grid,
-  .management-grid,
   .table-row,
-  .table--orders .table-row {
+  .table--orders .table-row,
+  .audit-row {
     grid-template-columns: 1fr;
   }
 
