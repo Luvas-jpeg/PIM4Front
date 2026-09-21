@@ -3,6 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   Course,
+  CourseAssessment,
+  CourseAssessmentRequest,
   CourseCatalogOptions,
   CourseCatalogQuery,
   CourseClass,
@@ -10,6 +12,8 @@ import {
   CourseLessonRequest,
   CourseModule,
   CourseModuleRequest,
+  CourseQuestion,
+  CourseQuestionRequest,
   PagedCourseResponse,
   CourseRequest,
   CourseClassRequest,
@@ -107,6 +111,36 @@ export class CourseService {
   ): Observable<CourseLesson> {
     return this.http.put<CourseLesson>(
       `${API_URL}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`,
+      request,
+    );
+  }
+
+  getAssessments(courseId: number): Observable<CourseAssessment[]> {
+    return this.http.get<CourseAssessment[]>(`${API_URL}/courses/${courseId}/assessments`);
+  }
+
+  createAssessment(courseId: number, request: CourseAssessmentRequest): Observable<CourseAssessment> {
+    return this.http.post<CourseAssessment>(`${API_URL}/courses/${courseId}/assessments`, request);
+  }
+
+  updateAssessment(
+    courseId: number,
+    assessmentId: number,
+    request: CourseAssessmentRequest,
+  ): Observable<CourseAssessment> {
+    return this.http.put<CourseAssessment>(
+      `${API_URL}/courses/${courseId}/assessments/${assessmentId}`,
+      request,
+    );
+  }
+
+  createQuestion(
+    courseId: number,
+    assessmentId: number,
+    request: CourseQuestionRequest,
+  ): Observable<CourseQuestion> {
+    return this.http.post<CourseQuestion>(
+      `${API_URL}/courses/${courseId}/assessments/${assessmentId}/questions`,
       request,
     );
   }

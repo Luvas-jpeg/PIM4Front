@@ -98,6 +98,94 @@
             <p class="muted">Este curso EAD ainda nao possui aulas cadastradas.</p>
           }
         </section>
+        <section class="enrollment-panel">
+          <span class="section-label">Avaliacao</span>
+          @if (assessmentError()) {
+            <div class="feedback feedback--error">{{ assessmentError() }}</div>
+          }
+          @if (assessmentResult(); as result) {
+            <div class="enrollment-notice" [class]="result.passed ? 'enrollment-notice enrollment-notice--success' : 'enrollment-notice enrollment-notice--warning'">
+              Nota {{ result.score }}%. {{ result.passed ? 'Aprovado.' : 'Nao aprovado.' }}
+              Tentativas restantes: {{ result.remainingAttempts }}.
+            </div>
+          }
+
+          @for (assessment of current.assessments; track assessment.id) {
+            <div class="assessment-block">
+              <div>
+                <h3>{{ assessment.title }}</h3>
+                <p class="muted">
+                  Nota minima: {{ assessment.minimumScore }}% -
+                  tentativas: {{ attemptsForAssessment(assessment.id).length }}/{{ assessment.maxAttempts }}
+                </p>
+                @if (latestAttempt(assessment.id); as attempt) {
+                  <p class="muted">
+                    Ultima tentativa: {{ attempt.score }}% -
+                    {{ attempt.passed ? 'aprovado' : 'nao aprovado' }}
+                  </p>
+                }
+              </div>
+
+              @for (question of assessment.questions; track question.id) {
+                <fieldset class="question-block">
+                  <legend>{{ question.statement }}</legend>
+                  @for (option of question.options; track option.id) {
+                    <label class="option-row">
+                      <input
+                        type="radio"
+                        [name]="'question-' + question.id"
+                        [value]="option.id"
+                        [checked]="selectedOption(question.id) === option.id"
+                        (change)="selectOption(question.id, option.id)"
+                      />
+                      <span>{{ option.text }}</span>
+                    </label>
+                  }
+                </fieldset>
+              } @empty {
+                <p class="muted">Esta avaliacao ainda nao possui questoes.</p>
+              }
+
+              <button
+                type="button"
+                class="lesson-action"
+                [disabled]="remainingAttempts(assessment) === 0 || submittingAssessmentId() === assessment.id || assessment.questions.length === 0"
+                (click)="submitAssessment(assessment)"
+              >
+                {{ submittingAssessmentId() === assessment.id ? 'Enviando...' : 'Enviar avaliacao' }}
+              </button>
+            </div>
+          } @empty {
+            <p class="muted">Este curso EAD ainda nao possui avaliacao cadastrada.</p>
+          }
+        </section>
+        <section class="enrollment-panel">
+          <span class="section-label">Certificado</span>
+          @if (certificateError()) {
+            <div class="feedback feedback--error">{{ certificateError() }}</div>
+          }
+
+          @if (certificate(); as certificate) {
+            <div class="certificate-box">
+              <h3>Certificado emitido</h3>
+              <p><strong>Aluno:</strong> {{ certificate.studentName }}</p>
+              <p><strong>Curso:</strong> {{ certificate.courseName }}</p>
+              <p><strong>Carga horaria:</strong> {{ certificate.workloadHours }}h</p>
+              <p><strong>Codigo:</strong> {{ certificate.validationCode }}</p>
+              <p><strong>Emissao:</strong> {{ formatDate(certificate.issuedAt) }}</p>
+            </div>
+          } @else {
+            <p class="muted">{{ certificateStatus()?.reason || 'Conclua os requisitos para liberar o certificado.' }}</p>
+            <button
+              type="button"
+              class="lesson-action"
+              [disabled]="!certificateStatus()?.eligible || issuingCertificate()"
+              (click)="issueCertificate()"
+            >
+              {{ issuingCertificate() ? 'Emitindo...' : 'Emitir certificado' }}
+            </button>
+          }
+        </section>
       } @else {
         <section class="enrollment-panel">
           <span class="section-label">Instrucoes antes da aula</span>

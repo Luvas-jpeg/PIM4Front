@@ -131,6 +131,107 @@
           }
         </section>
       </div>
+
+      <section class="subpanel">
+        <div class="panel__header">
+          <div>
+            <span class="section-label">Avaliacao</span>
+            <h3>Prova do curso EAD</h3>
+          </div>
+        </div>
+
+        <form [formGroup]="assessmentForm" (ngSubmit)="saveAssessment()">
+          <div class="form-grid">
+            <label class="field">
+              <span>Titulo <span class="required-marker" aria-hidden="true">*</span></span>
+              <input type="text" formControlName="title" required aria-required="true" />
+            </label>
+            <label class="field">
+              <span>Nota minima (%)</span>
+              <input type="number" min="0" max="100" formControlName="minimumScore" />
+            </label>
+            <label class="field">
+              <span>Tentativas</span>
+              <input type="number" min="1" formControlName="maxAttempts" />
+            </label>
+          </div>
+          <label class="check-field">
+            <input type="checkbox" formControlName="isActive" />
+            <span>Avaliacao ativa</span>
+          </label>
+          <button type="submit" class="primary-button" [disabled]="savingAssessment()">
+            {{ savingAssessment() ? 'Salvando...' : 'Salvar avaliacao' }}
+          </button>
+        </form>
+
+        @if (selectedAssessment(); as assessment) {
+          <form [formGroup]="questionForm" (ngSubmit)="saveQuestion()">
+            <label class="field">
+              <span>Enunciado <span class="required-marker" aria-hidden="true">*</span></span>
+              <textarea rows="3" formControlName="statement" required aria-required="true"></textarea>
+            </label>
+            <div class="form-grid">
+              <label class="field">
+                <span>Ordem</span>
+                <input type="number" min="0" formControlName="sortOrder" />
+              </label>
+              <label class="field">
+                <span>Alternativa correta</span>
+                <select formControlName="correctOption">
+                  <option [value]="0">Alternativa 1</option>
+                  <option [value]="1">Alternativa 2</option>
+                  <option [value]="2">Alternativa 3</option>
+                  <option [value]="3">Alternativa 4</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-grid">
+              <label class="field">
+                <span>Alternativa 1 <span class="required-marker" aria-hidden="true">*</span></span>
+                <input type="text" formControlName="option1" required aria-required="true" />
+              </label>
+              <label class="field">
+                <span>Alternativa 2 <span class="required-marker" aria-hidden="true">*</span></span>
+                <input type="text" formControlName="option2" required aria-required="true" />
+              </label>
+              <label class="field">
+                <span>Alternativa 3</span>
+                <input type="text" formControlName="option3" />
+              </label>
+              <label class="field">
+                <span>Alternativa 4</span>
+                <input type="text" formControlName="option4" />
+              </label>
+            </div>
+            <label class="check-field">
+              <input type="checkbox" formControlName="isActive" />
+              <span>Questao ativa</span>
+            </label>
+            <button type="submit" class="primary-button" [disabled]="savingQuestion()">
+              {{ savingQuestion() ? 'Salvando...' : 'Adicionar questao' }}
+            </button>
+          </form>
+
+          <div class="table">
+            @for (question of assessment.questions; track question.id) {
+              <article class="table-row">
+                <div>
+                  <strong>{{ question.statement }}</strong>
+                  <span>
+                    {{ question.options.length }} alternativa(s) -
+                    correta: {{ correctOptionText(assessment, question.id) }}
+                  </span>
+                </div>
+                <span>#{{ question.sortOrder }}</span>
+              </article>
+            } @empty {
+              <p class="muted">Nenhuma questao cadastrada.</p>
+            }
+          </div>
+        } @else {
+          <p class="muted">Salve a avaliacao para cadastrar questoes.</p>
+        }
+      </section>
     }
   }
 </section>

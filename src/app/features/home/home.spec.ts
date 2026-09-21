@@ -24,6 +24,7 @@ describe('Home', () => {
       isActive: true,
       classes: [],
       modules: [],
+      assessments: [],
     },
     {
       id: 2,
@@ -37,6 +38,7 @@ describe('Home', () => {
       isActive: true,
       classes: [],
       modules: [],
+      assessments: [],
     },
   ];
 
@@ -127,4 +129,5 @@ describe('Home', () => {
     expect(errorComponent.error()).toBe('Nao foi possivel carregar os cursos.');
   });
 });
+
 

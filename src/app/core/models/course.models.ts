@@ -23,6 +23,7 @@ export interface Course {
   legacyProductId?: number | null;
   classes: CourseClass[];
   modules: CourseModule[];
+  assessments: CourseAssessment[];
 }
 
 export interface CourseModule {
@@ -43,6 +44,33 @@ export interface CourseLesson {
   durationMinutes: number;
   sortOrder: number;
   isActive: boolean;
+}
+
+export interface CourseAssessment {
+  id: number;
+  courseId: number;
+  title: string;
+  minimumScore: number;
+  maxAttempts: number;
+  isActive: boolean;
+  questions: CourseQuestion[];
+}
+
+export interface CourseQuestion {
+  id: number;
+  assessmentId: number;
+  statement: string;
+  sortOrder: number;
+  isActive: boolean;
+  options: CourseQuestionOption[];
+}
+
+export interface CourseQuestionOption {
+  id: number;
+  questionId: number;
+  text: string;
+  isCorrect: boolean;
+  sortOrder: number;
 }
 
 export interface CourseCatalogQuery {
@@ -93,6 +121,26 @@ export interface CourseLessonRequest {
   durationMinutes: number;
   sortOrder: number;
   isActive: boolean;
+}
+
+export interface CourseAssessmentRequest {
+  title: string;
+  minimumScore: number;
+  maxAttempts: number;
+  isActive: boolean;
+}
+
+export interface CourseQuestionRequest {
+  statement: string;
+  sortOrder: number;
+  isActive: boolean;
+  options: CourseQuestionOptionRequest[];
+}
+
+export interface CourseQuestionOptionRequest {
+  text: string;
+  isCorrect: boolean;
+  sortOrder: number;
 }
 
 export interface CourseClassRequest {
