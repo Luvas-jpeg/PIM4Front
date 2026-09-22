@@ -95,14 +95,14 @@ describe('Login', () => {
   it('should login and navigate to return url', () => {
     component.loginForm.setValue({
       email: 'cliente@email.com',
-      senha: '123456',
+      senha: 'SenhaSegura123',
     });
 
     component.submitLogin();
 
     expect(authServiceMock.login).toHaveBeenCalledWith({
       email: 'cliente@email.com',
-      senha: '123456',
+      senha: 'SenhaSegura123',
     });
     expect(router.navigateByUrl).toHaveBeenCalledWith('/checkout');
   });
@@ -111,7 +111,7 @@ describe('Login', () => {
     component.registerForm.setValue({
       nome: 'Cliente Teste',
       email: 'cliente@email.com',
-      senha: '123456',
+      senha: 'SenhaSegura123',
       cpf: '12345678901',
       phone: '11999999999',
     });
@@ -121,7 +121,7 @@ describe('Login', () => {
     expect(authServiceMock.register).toHaveBeenCalled();
     expect(authServiceMock.login).toHaveBeenCalledWith({
       email: 'cliente@email.com',
-      senha: '123456',
+      senha: 'SenhaSegura123',
     });
     expect(router.navigateByUrl).toHaveBeenCalledWith('/checkout');
   });

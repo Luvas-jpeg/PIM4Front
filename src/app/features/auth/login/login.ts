@@ -32,7 +32,12 @@ export class Login {
   readonly registerForm = this.formBuilder.group({
     nome: this.formBuilder.control('', [Validators.required, Validators.minLength(3)]),
     email: this.formBuilder.control('', [Validators.required, Validators.email]),
-    senha: this.formBuilder.control('', [Validators.required, Validators.minLength(6)]),
+    senha: this.formBuilder.control('', [
+      Validators.required,
+      Validators.minLength(12),
+      Validators.maxLength(128),
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
+    ]),
     cpf: this.formBuilder.control('', [Validators.required, Validators.minLength(11)]),
     phone: this.formBuilder.control('', [Validators.required, Validators.minLength(10)]),
   });
