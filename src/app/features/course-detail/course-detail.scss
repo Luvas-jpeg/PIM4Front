@@ -188,6 +188,99 @@
 .course-purchase .primary-button {
   grid-column: 1 / -1;
   width: 100%;
+  min-height: 50px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.course-purchase .primary-button:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  box-shadow: 0 8px 18px rgba(49, 92, 253, .22);
+  transform: translateY(-1px);
+}
+
+.course-purchase .primary-button:focus-visible {
+  outline: 3px solid rgba(49, 92, 253, .28);
+  outline-offset: 3px;
+}
+
+.course-purchase .primary-button:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.course-support {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  margin-top: 20px;
+  padding: 24px 28px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.course-support__eyebrow {
+  color: var(--color-accent);
+  font-size: .76rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.course-support h2 {
+  margin: 6px 0 0;
+  font-size: 1.2rem;
+}
+
+.course-support p {
+  margin: 8px 0 0;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.course-support__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.course-support__links a {
+  display: grid;
+  gap: 4px;
+  min-width: 190px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.course-support__links a:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.course-support__links span {
+  color: var(--color-muted);
+  font-size: .76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.course-support__links strong {
+  overflow-wrap: anywhere;
+  font-size: .9rem;
 }
 
 .quantity-error {
@@ -218,5 +311,19 @@
 
   .course-detail__media {
     min-height: 280px;
+  }
+
+  .course-support {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .course-support__links {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .course-support__links a {
+    min-width: 0;
   }
 }

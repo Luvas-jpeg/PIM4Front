@@ -32,7 +32,7 @@ export class AdminClasses {
     endDate: this.formBuilder.control(''),
     local: this.formBuilder.control('', [Validators.required]),
     instructor: this.formBuilder.control('', [Validators.required]),
-    capacity: this.formBuilder.control(1, [Validators.required, Validators.min(1)]),
+    capacity: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(1)]),
     status: this.formBuilder.control('scheduled', [Validators.required]),
   });
 
@@ -51,7 +51,7 @@ export class AdminClasses {
       endDate: courseClass?.endDate ? this.toDateTimeLocal(courseClass.endDate) : '',
       local: courseClass?.local ?? '',
       instructor: courseClass?.instructor ?? '',
-      capacity: courseClass?.capacity ?? 1,
+      capacity: courseClass?.capacity ?? null,
       status: courseClass?.status ?? 'scheduled',
     });
   }

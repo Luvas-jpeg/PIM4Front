@@ -25,6 +25,11 @@
           (input)="updateSearch($any($event.target).value)"
         />
         <div class="catalog__filters">
+          <select [value]="deliveryMode()" (change)="updateDeliveryMode($any($event.target).value)">
+            <option value="">Todos os formatos</option>
+            <option value="ead">EAD</option>
+            <option value="presencial">Presencial</option>
+          </select>
           <select [value]="category()" (change)="updateCategory($any($event.target).value)">
             <option value="">Todas as categorias</option>
             @for (item of categories(); track item) {
@@ -55,6 +60,9 @@
           </label>
           <button type="button" class="filter-button" (click)="applyFilters()">
             Aplicar filtros
+          </button>
+          <button type="button" class="filter-reset-button" (click)="clearFilters()">
+            Limpar filtros
           </button>
           <select [value]="sort()" (change)="updateSort($any($event.target).value)">
             <option value="relevance">Mais relevantes</option>
@@ -104,12 +112,16 @@
               <p>{{ course.description || 'Curso presencial disponível no catálogo.' }}</p>
 
               @if (nextClass(course); as courseClass) {
-                <div class="course-info">
+                <div class="course-info" [class.course-info--available]="hasAvailability(course)">
                   <span>Próxima turma: {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
                   <span>{{ courseClass.local }} · {{ availabilityLabel(course) }}</span>
                 </div>
               } @else {
-                <div class="course-info course-info--unavailable">
+                <div
+                  class="course-info"
+                  [class.course-info--available]="hasAvailability(course)"
+                  [class.course-info--unavailable]="!hasAvailability(course)"
+                >
                   <span>{{ availabilityLabel(course) }}</span>
                 </div>
               }

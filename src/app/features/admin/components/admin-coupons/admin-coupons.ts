@@ -31,7 +31,7 @@ export class AdminCoupons {
 
   readonly form = this.formBuilder.group({
     code: this.formBuilder.control('', [Validators.required]),
-    discount: this.formBuilder.control(0, [Validators.required, Validators.min(0.01)]),
+    discount: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
     discountType: this.formBuilder.control<DiscountType>('percentage', [Validators.required]),
     startDate: this.formBuilder.control('', [Validators.required]),
     endDate: this.formBuilder.control('', [Validators.required]),
@@ -59,7 +59,7 @@ export class AdminCoupons {
     this.editingCouponId.set(null);
     this.form.reset({
       code: '',
-      discount: 0,
+      discount: null,
       discountType: 'percentage',
       startDate: '',
       endDate: '',

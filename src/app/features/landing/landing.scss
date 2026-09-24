@@ -7,7 +7,7 @@
 .store-hero {
   display: flex;
   align-items: center;
-  min-height: 570px;
+  min-height: 510px;
   padding: 72px 24px;
   background:
     linear-gradient(90deg, rgba(8, 27, 42, .94) 0%, rgba(8, 27, 42, .72) 48%, rgba(8, 27, 42, .25) 100%),
@@ -47,7 +47,7 @@
   margin: 0;
   font-size: clamp(2.6rem, 6vw, 5.2rem);
   line-height: .98;
-  letter-spacing: -.045em;
+  letter-spacing: 0;
 }
 
 .store-hero p {
@@ -117,24 +117,21 @@
 .benefits {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  margin-top: -34px;
+  gap: 16px;
+  margin-top: -24px;
   position: relative;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, .08);
+  z-index: 1;
 }
 
 .benefits article {
   display: flex;
   gap: 14px;
+  min-height: 104px;
   padding: 24px;
-}
-
-.benefits article + article {
-  border-left: 1px solid var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .1);
 }
 
 .benefit-icon {
@@ -181,10 +178,10 @@
 
 .category-card {
   display: grid;
-  min-height: 220px;
+  min-height: 200px;
   align-content: space-between;
   padding: 26px;
-  border-radius: 12px;
+  border-radius: 8px;
   color: #fff;
   text-decoration: none;
   transition: transform .2s ease;
@@ -200,8 +197,13 @@
 }
 
 .category-card--courses {
-  background: linear-gradient(135deg, rgba(58, 34, 105, .9), rgba(124, 58, 237, .72)),
+  background: linear-gradient(135deg, rgba(14, 64, 93, .94), rgba(38, 127, 145, .74)),
     url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80') center / cover;
+}
+
+.category-card--courses:nth-child(2) {
+  background: linear-gradient(135deg, rgba(30, 67, 62, .94), rgba(55, 135, 112, .72)),
+    url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=900&q=80') center / cover;
 }
 
 .category-card__eyebrow {
@@ -239,7 +241,7 @@
 .featured-card {
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 8px;
   background: #fff;
   transition: box-shadow .2s ease, transform .2s ease;
 }
@@ -309,7 +311,7 @@
   gap: 28px;
   padding-inline: 28px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 8px;
   background: #fff;
 }
 
@@ -366,7 +368,7 @@
 
 @media (max-width: 640px) {
   .store-hero {
-    min-height: 500px;
+    min-height: 440px;
     padding: 48px 16px;
   }
 
@@ -390,7 +392,6 @@
 
   .benefits article + article {
     border-top: 1px solid var(--color-border);
-    border-left: 0;
   }
 
   .section-header {

@@ -32,3 +32,29 @@ select,
 textarea {
   font-family: inherit;
 }
+
+.money-input {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.money-input > span {
+  padding-left: 12px;
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.money-input input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+}
+
+.money-input input:focus {
+  box-shadow: none;
+}

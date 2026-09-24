@@ -36,6 +36,7 @@ export class CourseService {
       params: {
         ...(query.search ? { search: query.search } : {}),
         ...(query.category ? { category: query.category } : {}),
+        ...(query.deliveryMode ? { deliveryMode: query.deliveryMode } : {}),
         ...(query.city ? { city: query.city } : {}),
         ...(query.startDate ? { startDate: query.startDate } : {}),
         ...(query.endDate ? { endDate: query.endDate } : {}),

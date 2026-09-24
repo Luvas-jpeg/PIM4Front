@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Course, PagedCourseResponse } from '../../core/models/course.models';
 import { CourseService } from '../../core/services/course.service';
 
@@ -11,6 +12,8 @@ import { CourseService } from '../../core/services/course.service';
   styleUrl: './home.scss',
 })
 export class Home {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly courseService = inject(CourseService);
   private readonly fallbackImageUrl =
     'https://images.unsplash.com/photo-1583912086096-8c60d75a53f9?auto=format&fit=crop&w=900&q=80';
@@ -24,6 +27,9 @@ export class Home {
   readonly error = signal<string | null>(null);
   readonly searchTerm = signal('');
   readonly category = signal('');
+  readonly deliveryMode = signal<'presencial' | 'ead' | ''>(
+    this.readDeliveryMode(this.route.snapshot.queryParamMap.get('deliveryMode')),
+  );
   readonly city = signal('');
   readonly startDate = signal('');
   readonly endDate = signal('');
@@ -59,6 +65,12 @@ export class Home {
     this.loadProducts();
   }
 
+  updateDeliveryMode(value: string): void {
+    this.deliveryMode.set(this.readDeliveryMode(value));
+    this.page.set(1);
+    this.loadProducts();
+  }
+
   updateCity(value: string): void {
     this.city.set(value);
   }
@@ -73,6 +85,25 @@ export class Home {
 
   applyFilters(): void {
     this.page.set(1);
+    this.loadProducts();
+  }
+
+  clearFilters(): void {
+    this.searchTerm.set('');
+    this.category.set('');
+    this.deliveryMode.set('');
+    this.city.set('');
+    this.startDate.set('');
+    this.endDate.set('');
+    this.sort.set('date');
+    this.page.set(1);
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
+    });
+
     this.loadProducts();
   }
 
@@ -117,12 +148,20 @@ export class Home {
   }
 
   availabilityLabel(course: Course): string {
-    if (course.deliveryMode === 'ead') return 'Acesso online';
+    if (course.deliveryMode === 'ead') return 'Inscrições abertas';
 
     const courseClass = this.nextClass(course);
     if (!courseClass) return 'Sem vagas disponíveis';
     if (courseClass.availableSeats <= 5) return `${courseClass.availableSeats} vaga(s) restantes`;
     return `${courseClass.availableSeats} vagas disponíveis`;
+  }
+
+  hasAvailability(course: Course): boolean {
+    return course.deliveryMode === 'ead' || this.nextClass(course) !== null;
+  }
+
+  private readDeliveryMode(value: string | null): 'presencial' | 'ead' | '' {
+    return value === 'ead' || value === 'presencial' ? value : '';
   }
 
   private loadProducts(): void {
@@ -132,9 +171,11 @@ export class Home {
     this.courseService.getCatalog({
       search: this.searchTerm(),
       category: this.category(),
+      deliveryMode: this.deliveryMode() || undefined,
       city: this.city(),
       startDate: this.startDate(),
       endDate: this.endDate(),
+      availableOnly: false,
       sort: this.sort(),
       page: this.page(),
       pageSize: 9,

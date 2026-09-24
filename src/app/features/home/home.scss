@@ -56,9 +56,9 @@
 
 .catalog__header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 520px);
+  grid-template-columns: 1fr;
   gap: 24px;
-  align-items: end;
+  align-items: start;
   margin-bottom: 24px;
 }
 
@@ -72,10 +72,15 @@
   gap: 12px;
 }
 
+.catalog__search {
+  min-width: 0;
+}
+
 .catalog__filters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) repeat(3, max-content);
+  gap: 12px;
+  align-items: end;
 }
 
 .catalog__controls input,
@@ -99,19 +104,39 @@
   text-transform: uppercase;
 }
 
+.catalog__filters select {
+  min-width: 0;
+}
+
 .catalog__filters label input {
   min-width: 0;
 }
 
 .filter-button {
-  min-height: 44px;
-  padding: 0 14px;
+  width: max-content;
+  min-height: 40px;
+  padding: 0 16px;
   border: 0;
   border-radius: 8px;
   background: var(--color-primary);
   color: #fff;
   font: inherit;
   font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filter-reset-button {
+  width: max-content;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -271,6 +296,15 @@
   font-weight: 700;
 }
 
+.course-info--available {
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
+  font-weight: 700;
+}
+
 .product-card__footer {
   display: flex;
   gap: 12px;
@@ -315,6 +349,14 @@
 
   .catalog__filters {
     grid-template-columns: 1fr;
+  }
+
+  .filter-button {
+    justify-self: start;
+  }
+
+  .filter-reset-button {
+    justify-self: start;
   }
 
   .hero {

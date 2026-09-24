@@ -2,10 +2,10 @@
   <section class="store-hero">
     <div class="store-hero__content">
       <span class="hero-kicker">MediShop | Formacao em saude</span>
-      <h1>Desenvolva sua carreira com cursos presenciais.</h1>
+      <h1>Formacao que acompanha o seu proximo passo.</h1>
       <p>
-        Cursos presenciais para estudantes e profissionais que querem evoluir
-        na area da saude.
+        Encontre cursos EAD e presenciais para estudar no seu ritmo ou aprender
+        na pratica com instrutores e turmas selecionadas.
       </p>
 
       <div class="hero-actions">
@@ -15,7 +15,7 @@
 
       <div class="hero-proof">
         <span>Compra segura</span>
-        <span>Turmas selecionadas</span>
+        <span>EAD e presencial</span>
         <span>Suporte especializado</span>
       </div>
     </div>
@@ -49,20 +49,20 @@
     <div class="section-header">
       <div>
         <span class="section-label">Encontre sua formacao</span>
-        <h2>Escolha o proximo curso</h2>
+        <h2>Escolha como voce quer aprender</h2>
       </div>
     </div>
 
     <div class="category-grid">
-      <a routerLink="/catalogo" class="category-card category-card--courses">
-        <span class="category-card__eyebrow">Formacao profissional</span>
-        <strong>Cursos praticos</strong>
+      <a routerLink="/catalogo" [queryParams]="{ deliveryMode: 'ead' }" class="category-card category-card--courses">
+        <span class="category-card__eyebrow">Cursos EAD</span>
+        <strong>Estude no seu ritmo</strong>
         <span>Ver cursos <b aria-hidden="true">→</b></span>
       </a>
 
-      <a routerLink="/catalogo" class="category-card category-card--courses">
-        <span class="category-card__eyebrow">Turmas presenciais</span>
-        <strong>Proximas turmas</strong>
+      <a routerLink="/catalogo" [queryParams]="{ deliveryMode: 'presencial' }" class="category-card category-card--courses">
+        <span class="category-card__eyebrow">Cursos presenciais</span>
+        <strong>Aprenda na pratica</strong>
         <span>Ver turmas <b aria-hidden="true">→</b></span>
       </a>
     </div>
@@ -72,7 +72,7 @@
     <div class="section-header">
       <div>
         <span class="section-label">Destaques</span>
-        <h2>Mais procurados</h2>
+        <h2>Cursos em destaque</h2>
       </div>
       <a routerLink="/catalogo" class="text-link">Ver catalogo completo</a>
     </div>
@@ -90,9 +90,11 @@
                 decoding="async" (error)="setFallbackImage($event)" />
             </div>
             <div class="featured-card__body">
-              <span class="featured-card__type">Curso</span>
+              <span class="featured-card__type">
+                {{ course.deliveryMode === 'ead' ? 'EAD' : 'Presencial' }}
+              </span>
               <h3>{{ course.nome }}</h3>
-              <p>{{ course.description || 'Curso presencial disponivel no catalogo MediShop.' }}</p>
+              <p>{{ course.description || 'Conheca os detalhes e faca sua inscricao pelo catalogo MediShop.' }}</p>
               <div class="featured-card__footer">
                 <strong>{{ formatPrice(course.preco) }}</strong>
                 <a [routerLink]="['/curso', course.id]">Ver detalhes</a>

@@ -76,6 +76,7 @@ export interface CourseQuestionOption {
 export interface CourseCatalogQuery {
   search?: string;
   category?: string;
+  deliveryMode?: 'presencial' | 'ead';
   city?: string;
   startDate?: string;
   endDate?: string;

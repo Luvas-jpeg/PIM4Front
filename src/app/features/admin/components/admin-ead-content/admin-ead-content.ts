@@ -27,6 +27,7 @@ export class AdminEadContent implements OnChanges {
 
   readonly selectedCourseId = signal<number | null>(null);
   readonly selectedModuleId = signal<number | null>(null);
+  private readonly coursesRevision = signal(0);
   readonly savingModule = signal(false);
   readonly savingLesson = signal(false);
   readonly savingAssessment = signal(false);
@@ -34,7 +35,7 @@ export class AdminEadContent implements OnChanges {
   readonly formError = signal<string | null>(null);
 
   readonly eadCourses = computed(() =>
-    this.courses.filter(course => course.deliveryMode === 'ead')
+    (this.coursesRevision(), this.courses.filter(course => course.deliveryMode === 'ead'))
   );
 
   readonly selectedCourse = computed(() =>
@@ -51,7 +52,7 @@ export class AdminEadContent implements OnChanges {
 
   readonly moduleForm = this.formBuilder.group({
     title: this.formBuilder.control('', [Validators.required]),
-    sortOrder: this.formBuilder.control(0, [Validators.required, Validators.min(0)]),
+    sortOrder: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
     isActive: this.formBuilder.control(true),
   });
 
@@ -59,21 +60,21 @@ export class AdminEadContent implements OnChanges {
     title: this.formBuilder.control('', [Validators.required]),
     description: this.formBuilder.control(''),
     videoUrl: this.formBuilder.control(''),
-    durationMinutes: this.formBuilder.control(0, [Validators.required, Validators.min(0)]),
-    sortOrder: this.formBuilder.control(0, [Validators.required, Validators.min(0)]),
+    durationMinutes: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    sortOrder: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
     isActive: this.formBuilder.control(true),
   });
 
   readonly assessmentForm = this.formBuilder.group({
     title: this.formBuilder.control('Avaliacao final', [Validators.required]),
-    minimumScore: this.formBuilder.control(70, [Validators.required, Validators.min(0), Validators.max(100)]),
-    maxAttempts: this.formBuilder.control(3, [Validators.required, Validators.min(1)]),
+    minimumScore: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0), Validators.max(100)]),
+    maxAttempts: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(1)]),
     isActive: this.formBuilder.control(true),
   });
 
   readonly questionForm = this.formBuilder.group({
     statement: this.formBuilder.control('', [Validators.required]),
-    sortOrder: this.formBuilder.control(0, [Validators.required, Validators.min(0)]),
+    sortOrder: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
     correctOption: this.formBuilder.control(0, [Validators.required, Validators.min(0), Validators.max(3)]),
     option1: this.formBuilder.control('', [Validators.required]),
     option2: this.formBuilder.control('', [Validators.required]),
@@ -136,7 +137,7 @@ export class AdminEadContent implements OnChanges {
           modules: [...course.modules, module].sort(this.sortModules),
         });
         this.selectedModuleId.set(module.id);
-        this.moduleForm.reset({ title: '', sortOrder: 0, isActive: true });
+        this.moduleForm.reset({ title: '', sortOrder: null, isActive: true });
         this.notify.emit({ type: 'success', message: 'Modulo EAD criado.' });
       },
       error: response => this.formError.set(response.error?.message ?? 'Nao foi possivel criar o modulo.'),
@@ -182,8 +183,8 @@ export class AdminEadContent implements OnChanges {
           title: '',
           description: '',
           videoUrl: '',
-          durationMinutes: 0,
-          sortOrder: 0,
+          durationMinutes: null,
+          sortOrder: null,
           isActive: true,
         });
         this.notify.emit({ type: 'success', message: 'Aula EAD criada.' });
@@ -290,7 +291,7 @@ export class AdminEadContent implements OnChanges {
         this.patchAssessment(course.id, updatedAssessment);
         this.questionForm.reset({
           statement: '',
-          sortOrder: 0,
+          sortOrder: null,
           correctOption: 0,
           option1: '',
           option2: '',
@@ -313,13 +314,16 @@ export class AdminEadContent implements OnChanges {
   }
 
   private patchCourse(courseId: number, patch: Partial<Course>): void {
-    this.coursesChange.emit(this.courses.map(course =>
+    const updatedCourses = this.courses.map(course =>
       course.id === courseId ? { ...course, ...patch } : course
-    ));
+    );
+    this.courses = updatedCourses;
+    this.coursesRevision.update(value => value + 1);
+    this.coursesChange.emit(updatedCourses);
   }
 
   private patchModule(courseId: number, moduleId: number, patch: Partial<CourseModule>): void {
-    this.coursesChange.emit(this.courses.map(course => {
+    const updatedCourses = this.courses.map(course => {
       if (course.id !== courseId) return course;
 
       return {
@@ -328,11 +332,14 @@ export class AdminEadContent implements OnChanges {
           module.id === moduleId ? { ...module, ...patch } : module
         ),
       };
-    }));
+    });
+    this.courses = updatedCourses;
+    this.coursesRevision.update(value => value + 1);
+    this.coursesChange.emit(updatedCourses);
   }
 
   private patchAssessment(courseId: number, assessment: CourseAssessment): void {
-    this.coursesChange.emit(this.courses.map(course => {
+    const updatedCourses = this.courses.map(course => {
       if (course.id !== courseId) return course;
 
       return {
@@ -341,14 +348,17 @@ export class AdminEadContent implements OnChanges {
           current.id === assessment.id ? assessment : current
         ),
       };
-    }));
+    });
+    this.courses = updatedCourses;
+    this.coursesRevision.update(value => value + 1);
+    this.coursesChange.emit(updatedCourses);
   }
 
   private syncAssessmentForm(assessment: CourseAssessment | null): void {
     this.assessmentForm.reset({
       title: assessment?.title ?? 'Avaliacao final',
-      minimumScore: assessment?.minimumScore ?? 70,
-      maxAttempts: assessment?.maxAttempts ?? 3,
+      minimumScore: assessment?.minimumScore ?? null,
+      maxAttempts: assessment?.maxAttempts ?? null,
       isActive: assessment?.isActive ?? true,
     });
   }
