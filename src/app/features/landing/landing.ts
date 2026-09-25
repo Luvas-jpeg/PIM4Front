@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Course } from '../../core/models/course.models';
 import { CourseService } from '../../core/services/course.service';
@@ -9,7 +9,7 @@ import { CourseService } from '../../core/services/course.service';
   templateUrl: './landing.html',
   styleUrl: './landing.scss',
 })
-export class Landing {
+export class Landing implements AfterViewInit {
   private readonly courseService = inject(CourseService);
   private readonly currencyFormatter = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -22,6 +22,9 @@ export class Landing {
   readonly loading = signal(true);
   readonly featuredCourses = signal<Course[]>([]);
 
+  @ViewChild('categoryGrid') private categoryGrid?: ElementRef<HTMLElement>;
+  @ViewChild('trustBand') private trustBand?: ElementRef<HTMLElement>;
+
   constructor() {
     this.courseService.getCatalog({ page: 1, pageSize: 4, sort: 'relevance' }).subscribe({
       next: response => {
@@ -31,6 +34,27 @@ export class Landing {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  ngAfterViewInit(): void {
+    if (!('IntersectionObserver' in window)) {
+      this.categoryGrid?.nativeElement.classList.add('is-visible');
+      this.trustBand?.nativeElement.classList.add('is-visible');
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          const element = entry.target as HTMLElement;
+          element.classList.toggle('is-visible', entry.isIntersecting);
+        }
+      },
+      { threshold: 0.15 },
+    );
+
+    if (this.categoryGrid) observer.observe(this.categoryGrid.nativeElement);
+    if (this.trustBand) observer.observe(this.trustBand.nativeElement);
   }
 
   imageUrl(course: Course): string {
