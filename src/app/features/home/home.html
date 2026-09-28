@@ -17,13 +17,23 @@
         <h2>Cursos disponíveis</h2>
       </div>
 
-      <div class="catalog__controls">
+      <div class="catalog__search">
         <input
           type="search"
           placeholder="Buscar por nome, categoria ou descrição"
           [value]="searchTerm()"
           (input)="updateSearch($any($event.target).value)"
         />
+      </div>
+    </div>
+
+    <div class="catalog__layout">
+      <aside class="catalog__filters-panel" aria-label="Filtros do catalogo">
+        <div class="filters-panel__header">
+          <span class="section-label">Refine sua busca</span>
+          <h3>Filtros</h3>
+        </div>
+
         <div class="catalog__filters">
           <select [value]="deliveryMode()" (change)="updateDeliveryMode($any($event.target).value)">
             <option value="">Todos os formatos</option>
@@ -72,8 +82,9 @@
             <option value="name">Nome</option>
           </select>
         </div>
-      </div>
-    </div>
+      </aside>
+
+      <div class="catalog__results">
 
     @if (loading()) {
       <div class="state">Carregando catálogo...</div>
@@ -148,5 +159,7 @@
         </nav>
       }
     }
+      </div>
+    </div>
   </section>
 </main>
