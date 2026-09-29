@@ -22,7 +22,7 @@
           <div class="course-facts">
             <div>
               <span>{{ course.deliveryMode === 'ead' ? 'Modulos' : 'Turmas disponiveis' }}</span>
-              <strong>{{ course.deliveryMode === 'ead' ? course.modules.length : classes().length }}</strong>
+              <strong>{{ course.deliveryMode === 'ead' ? (course.moduleCount ?? course.modules.length) : classes().length }}</strong>
             </div>
             <div>
               <span>{{ course.deliveryMode === 'ead' ? 'Carga horaria' : 'Vagas na turma selecionada' }}</span>
@@ -36,8 +36,8 @@
                 <strong>Conteudo online</strong>
                 <span class="class-status">Acesso digital</span>
               </div>
-              <span><strong>Modulos:</strong> {{ course.modules.length }}</span>
-              <span><strong>Aulas:</strong> {{ course.modules.length ? course.modules[0].lessons.length : 0 }}</span>
+              <span><strong>Modulos:</strong> {{ course.moduleCount ?? course.modules.length }}</span>
+              <span><strong>Aulas:</strong> {{ course.lessonCount ?? 0 }}</span>
               <span><strong>Formato:</strong> estudo online sem turma presencial</span>
             </div>
           } @else {

@@ -21,6 +21,8 @@ export interface Course {
   workloadHours: number;
   isActive: boolean;
   legacyProductId?: number | null;
+  moduleCount?: number;
+  lessonCount?: number;
   classes: CourseClass[];
   modules: CourseModule[];
   assessments: CourseAssessment[];

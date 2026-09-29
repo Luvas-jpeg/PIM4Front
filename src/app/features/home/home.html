@@ -112,7 +112,7 @@
                 <span>{{ course.category || 'Saúde' }}</span>
                 <span>
                   @if (course.deliveryMode === 'ead') {
-                    {{ course.modules.length }} modulo(s)
+                    {{ course.moduleCount ?? course.modules.length }} modulo(s)
                   } @else {
                     {{ course.classes.length }} turma(s)
                   }
