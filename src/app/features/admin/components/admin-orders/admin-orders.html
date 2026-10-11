@@ -144,12 +144,12 @@
       <article class="subpanel order-items-panel">
         <h3>Itens</h3>
         <div class="table">
-          @for (item of order.itens; track item.produtoId + '-' + item.turmaId) {
+          @for (item of order.itens; track item.courseId + '-' + item.turmaId) {
             <div class="table-row order-item-row">
               <div>
                 <strong>{{ item.nome }}</strong>
                 <span>
-                  {{ item.tipoProduto === 'course' ? 'Curso' : 'Item legado' }}
+                  {{ item.itemType === 'course' ? 'Curso' : 'Item legado' }}
                   @if (item.turmaId) {
                     - Turma #{{ item.turmaId }}
                   }

@@ -58,3 +58,30 @@ textarea {
 .money-input input:focus {
   box-shadow: none;
 }
+
+.navigation-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-primary);
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  transition: background .15s ease;
+}
+.navigation-button:hover { background: #edf2ff; }
+a.navigation-button.back-link {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+}
+.navigation-button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
+.navigation-button.navigation-button--on-dark { border-color: #ffffff70; background: #ffffff12; color: #fff; }
+.navigation-button.navigation-button--on-dark:hover { background: #ffffff25; }

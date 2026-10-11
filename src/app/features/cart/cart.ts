@@ -2,7 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CartItem, CartService } from '../../core/services/cart.service';
-import { Product } from '../../core/models/product.models';
+import { Course } from '../../core/models/course.models';
 
 @Component({
   selector: 'app-cart',
@@ -26,7 +26,7 @@ export class Cart {
   readonly hasItems = computed(() => this.items().length > 0);
 
   itemSubtotal(item: CartItem): number {
-    return item.product.preco * item.quantity;
+    return item.course.preco * item.quantity;
   }
 
   increase(item: CartItem): void {
@@ -62,8 +62,8 @@ export class Cart {
     this.cartService.clear();
   }
 
-  imageUrl(product: Product): string {
-    return product.image?.trim() || this.fallbackImageUrl;
+  imageUrl(course: Course): string {
+    return course.image?.trim() || this.fallbackImageUrl;
   }
 
   setFallbackImage(event: Event): void {
@@ -80,16 +80,14 @@ export class Cart {
     return this.currencyFormatter.format(value);
   }
 
-  stockLabel(product: Product): string {
-    return product.tipoProduto === 'course'
-      ? `${product.estoque} vagas disponiveis`
-      : `${product.estoque} unidades disponiveis`;
+  stockLabel(item: CartItem): string {
+    return item.course.deliveryMode === 'ead'
+      ? 'Acesso online'
+      : item.courseClass ? `${item.courseClass.availableSeats} vagas disponiveis` : 'Selecione uma turma';
   }
 
   availableQuantity(item: CartItem): number {
-    const available = item.courseClass?.availableSeats ?? item.product.estoque;
-    return item.product.tipoProduto === 'course'
-      ? Math.min(available, CartService.maxCourseQuantity)
-      : available;
+    return Math.min(item.courseClass?.availableSeats ?? CartService.maxCourseQuantity,
+      CartService.maxCourseQuantity);
   }
 }

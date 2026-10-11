@@ -45,14 +45,9 @@ export class Checkout {
 
   readonly hasUnassignedCourse = computed(() =>
     this.items().some(item =>
-      item.product.tipoProduto === 'course' &&
-      item.product.deliveryMode !== 'ead' &&
+      item.course.deliveryMode !== 'ead' &&
       !item.courseClass
     )
-  );
-
-  readonly hasUnsupportedItems = computed(() =>
-    this.items().some(item => item.product.tipoProduto !== 'course')
   );
 
   readonly shipping = computed(() => 0);
@@ -202,11 +197,6 @@ export class Checkout {
       return;
     }
 
-    if (this.hasUnsupportedItems()) {
-      this.error.set('A loja aceita somente cursos. Remova itens legados do carrinho.');
-      return;
-    }
-
     if (this.hasUnassignedCourse()) {
       this.error.set('Selecione uma turma para cada curso presencial antes de finalizar.');
       return;
@@ -225,7 +215,7 @@ export class Checkout {
 
     const request: CreateOrderRequest = {
       itens: this.items().map(item => ({
-        produtoId: item.product.id,
+        courseId: item.course.id,
         turmaId: item.courseClass?.id ?? null,
         quantidade: item.quantity,
       })),

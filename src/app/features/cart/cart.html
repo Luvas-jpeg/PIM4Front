@@ -22,12 +22,12 @@
     } @else {
       <div class="cart-layout">
         <div class="cart-items" aria-label="Itens do carrinho">
-          @for (item of items(); track item.product.id + '-' + (item.courseClass?.id ?? 'legacy')) {
+          @for (item of items(); track item.course.id + '-' + (item.courseClass?.id ?? 'legacy')) {
             <article class="cart-item">
               <div class="cart-item__media">
                 <img
-                  [src]="imageUrl(item.product)"
-                  [alt]="item.product.nome"
+                  [src]="imageUrl(item.course)"
+                  [alt]="item.course.nome"
                   loading="eager"
                   decoding="async"
                   (error)="setFallbackImage($event)"
@@ -36,22 +36,22 @@
 
               <div class="cart-item__info">
                 <div class="cart-item__meta">
-                  <span>{{ item.product.tipoProduto === 'course' ? 'Curso' : 'Equipamento' }}</span>
-                  <span>{{ stockLabel(item.product) }}</span>
+                  <span>Curso</span>
+                  <span>{{ stockLabel(item) }}</span>
                 </div>
 
-                <h2>{{ item.product.nome }}</h2>
+                <h2>{{ item.course.nome }}</h2>
                 <p>
-                  {{ item.product.description || 'Item disponivel para compra no catalogo MediShop.' }}
+                  {{ item.course.description || 'Item disponivel para compra no catalogo MediShop.' }}
                 </p>
 
-                @if (item.product.tipoProduto === 'course') {
+                @if (item.course) {
                   <div class="course-info">
                     @if (item.courseClass; as courseClass) {
                       <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
                       <span>{{ courseClass.local }}</span>
                       <span>{{ courseClass.instructor }}</span>
-                    } @else if (item.product.deliveryMode === 'ead') {
+                    } @else if (item.course.deliveryMode === 'ead') {
                       <span>Acesso online</span>
                       <span>Curso EAD sem turma presencial</span>
                     } @else {
@@ -62,7 +62,7 @@
               </div>
 
               <div class="cart-item__actions">
-                <strong>{{ formatPrice(item.product.preco) }}</strong>
+                <strong>{{ formatPrice(item.course.preco) }}</strong>
 
                 <div class="quantity-control" aria-label="Quantidade">
                   <button

@@ -20,7 +20,6 @@ export interface Course {
   deliveryMode: 'presencial' | 'ead';
   workloadHours: number;
   isActive: boolean;
-  legacyProductId?: number | null;
   moduleCount?: number;
   lessonCount?: number;
   classes: CourseClass[];

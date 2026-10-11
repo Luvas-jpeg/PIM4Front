@@ -32,7 +32,7 @@ import { AdminStudents } from './components/admin-students/admin-students';
     AdminStudents,
   ],
   templateUrl: './admin.html',
-  styleUrl: './admin.scss',
+  styleUrls: ['./admin.scss', './admin-layout.scss'],
   encapsulation: ViewEncapsulation.None,
 })
 export class Admin {

@@ -4,8 +4,8 @@
       <span class="hero-kicker">MediShop | Formacao em saude</span>
       <h1>Formacao que acompanha o seu proximo passo.</h1>
       <p>
-        Encontre cursos EAD e presenciais para estudar no seu ritmo ou aprender
-        na pratica com instrutores e turmas selecionadas.
+        Encontre cursos presenciais para aprender na pratica com instrutores
+        e turmas selecionadas.
       </p>
 
       <div class="hero-actions">
@@ -15,7 +15,7 @@
 
       <div class="hero-proof">
         <span>Compra segura</span>
-        <span>EAD e presencial</span>
+        <span>Turmas presenciais</span>
         <span>Suporte especializado</span>
       </div>
     </div>
@@ -49,21 +49,21 @@
     <div class="section-header">
       <div>
         <span class="section-label">Encontre sua formacao</span>
-        <h2>Escolha como voce quer aprender</h2>
+        <h2>Escolha seu curso e acompanhe sua jornada</h2>
       </div>
     </div>
 
     <div #categoryGrid class="category-grid">
-      <a routerLink="/catalogo" [queryParams]="{ deliveryMode: 'ead' }" class="category-card category-card--courses">
-        <span class="category-card__eyebrow">Cursos EAD</span>
-        <strong>Estude no seu ritmo</strong>
+      <a routerLink="/catalogo" class="category-card category-card--courses">
+        <span class="category-card__eyebrow">Cursos presenciais</span>
+        <strong>Aprenda na pratica</strong>
         <span>Ver cursos <b aria-hidden="true">→</b></span>
       </a>
 
-      <a routerLink="/catalogo" [queryParams]="{ deliveryMode: 'presencial' }" class="category-card category-card--courses">
-        <span class="category-card__eyebrow">Cursos presenciais</span>
-        <strong>Aprenda na pratica</strong>
-        <span>Ver turmas <b aria-hidden="true">→</b></span>
+      <a routerLink="/area-aluno" class="category-card category-card--courses">
+        <span class="category-card__eyebrow">Área do aluno</span>
+        <strong>Acompanhe sua formação</strong>
+        <span>Ver minhas matrículas <b aria-hidden="true">→</b></span>
       </a>
     </div>
   </section>
@@ -91,7 +91,7 @@
             </div>
             <div class="featured-card__body">
               <span class="featured-card__type">
-                {{ course.deliveryMode === 'ead' ? 'EAD' : 'Presencial' }}
+                Presencial
               </span>
               <h3>{{ course.nome }}</h3>
               <p>{{ course.description || 'Conheca os detalhes e faca sua inscricao pelo catalogo MediShop.' }}</p>

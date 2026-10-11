@@ -1,9 +1,8 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { Product } from '../models/product.models';
-import { CourseClass } from '../models/course.models';
+import { Course, CourseClass } from '../models/course.models';
 
 export interface CartItem {
-  product: Product;
+  course: Course;
   quantity: number;
   courseClass?: CourseClass;
 }
@@ -11,76 +10,54 @@ export interface CartItem {
 @Injectable({ providedIn: 'root' })
 export class CartService {
   static readonly maxCourseQuantity = 5;
-  private readonly storageKey = 'medishop_cart';
-
+  // Product IDs from old carts cannot safely be interpreted as course IDs.
+  private readonly storageKey = 'pim4_courses_cart_v2';
   readonly items = signal<CartItem[]>(this.getStoredItems());
-
   readonly total = computed(() =>
-    this.items().reduce((sum, item) => sum + item.product.preco * item.quantity, 0)
-  );
-
+    this.items().reduce((sum, item) => sum + item.course.preco * item.quantity, 0));
   readonly count = computed(() =>
-    this.items().reduce((sum, item) => sum + item.quantity, 0)
-  );
+    this.items().reduce((sum, item) => sum + item.quantity, 0));
 
-  add(product: Product, quantity = 1): void {
-    this.addCourse(product, undefined, quantity);
+  add(course: Course, quantity = 1): void {
+    this.addCourse(course, undefined, quantity);
   }
 
-  addCourse(product: Product, courseClass?: CourseClass, quantity = 1): boolean {
-    if (product.tipoProduto === 'course' && quantity > CartService.maxCourseQuantity) {
+  addCourse(course: Course, courseClass?: CourseClass, quantity = 1): boolean {
+    if (!course.isActive || !Number.isInteger(quantity) || quantity <= 0 ||
+        !['presencial', 'ead'].includes(course.deliveryMode) ||
+        (courseClass && (courseClass.courseId !== course.id || course.deliveryMode === 'ead'))) {
       return false;
     }
-
-    const sameCourseWithAnotherClass = this.items().some(item =>
-      item.product.tipoProduto === 'course' &&
-      item.product.id === product.id &&
-      item.courseClass?.id !== courseClass?.id,
-    );
-
-    if (sameCourseWithAnotherClass) {
+    const items = this.items();
+    if (items.some(item => item.course.id === course.id && item.courseClass?.id !== courseClass?.id)) {
       return false;
     }
-
-    this.addCourseInternal(product, courseClass, quantity);
+    const existing = items.find(item =>
+      item.course.id === course.id && item.courseClass?.id === courseClass?.id);
+    const nextQuantity = quantity + (existing?.quantity ?? 0);
+    const maximum = Math.min(CartService.maxCourseQuantity,
+      courseClass?.availableSeats ?? CartService.maxCourseQuantity);
+    if (nextQuantity > maximum) return false;
+    this.setItems(existing
+      ? items.map(item => item === existing ? { ...item, quantity: nextQuantity } : item)
+      : [...items, { course, courseClass, quantity }]);
     return true;
   }
 
-  private addCourseInternal(product: Product, courseClass: CourseClass | undefined, quantity: number): void {
-    const items = [...this.items()];
-    const existing = items.find(item =>
-      item.product.id === product.id && item.courseClass?.id === courseClass?.id
-    );
-
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      items.push({ product, courseClass, quantity });
-    }
-
-    this.setItems(items);
-  }
-
   updateQuantity(item: CartItem, quantity: number): void {
-    const maxQuantity = item.product.tipoProduto === 'course'
-      ? Math.min(CartService.maxCourseQuantity, this.availableQuantity(item))
-      : this.availableQuantity(item);
-    const items = this.items()
-      .map(current => current === item
-        ? { ...current, quantity: Math.min(quantity, maxQuantity) }
-        : current)
-      .filter(item => item.quantity > 0);
-
-    this.setItems(items);
+    if (!Number.isInteger(quantity)) return;
+    const maximum = Math.min(CartService.maxCourseQuantity,
+      item.courseClass?.availableSeats ?? CartService.maxCourseQuantity);
+    this.setItems(this.items()
+      .map(current => current === item ? { ...current, quantity: Math.min(quantity, maximum) } : current)
+      .filter(current => current.quantity > 0));
   }
 
   remove(item: CartItem): void {
     this.setItems(this.items().filter(current => current !== item));
   }
 
-  clear(): void {
-    this.setItems([]);
-  }
+  clear(): void { this.setItems([]); }
 
   private setItems(items: CartItem[]): void {
     this.items.set(items);
@@ -88,11 +65,18 @@ export class CartService {
   }
 
   private getStoredItems(): CartItem[] {
-    const rawItems = localStorage.getItem(this.storageKey);
-    return rawItems ? JSON.parse(rawItems) as CartItem[] : [];
-  }
-
-  private availableQuantity(item: CartItem): number {
-    return item.courseClass?.availableSeats ?? item.product.estoque;
+    try {
+      const parsed: unknown = JSON.parse(localStorage.getItem(this.storageKey) ?? '[]');
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((item): item is CartItem =>
+        !!item?.course && Number.isInteger(item.course.id) &&
+        ['presencial', 'ead'].includes(item.course.deliveryMode) &&
+        item.course.isActive === true &&
+        Number.isInteger(item.quantity) && item.quantity > 0 &&
+        item.quantity <= CartService.maxCourseQuantity &&
+        (!item.courseClass || item.courseClass.courseId === item.course.id));
+    } catch {
+      return [];
+    }
   }
 }

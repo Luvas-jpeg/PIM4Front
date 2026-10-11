@@ -2,7 +2,6 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
-import { Product } from '../../core/models/product.models';
 import { Course, CourseClass } from '../../core/models/course.models';
 import { CourseService } from '../../core/services/course.service';
 
@@ -143,7 +142,7 @@ export class CourseDetail {
 
     this.quantityError.set(null);
     const added = this.cartService.addCourse(
-      this.toCartProduct(course),
+      course,
       selectedClass ?? undefined,
       this.quantity(),
     );
@@ -154,26 +153,6 @@ export class CourseDetail {
 
     this.cartError.set(null);
     void this.router.navigate(['/carrinho']);
-  }
-
-  private toCartProduct(course: Course): Product {
-    return {
-      id: course.id,
-      nome: course.nome,
-      preco: course.preco,
-      tipoProduto: 'course',
-      estoque: course.deliveryMode === 'ead'
-        ? this.maxCourseQuantity
-        : course.classes.reduce((total, item) => total + item.availableSeats, 0),
-      description: course.description,
-      image: course.image,
-      category: course.category,
-      deliveryMode: course.deliveryMode,
-      workloadHours: course.workloadHours,
-      date: '',
-      location: '',
-      instructor: '',
-    };
   }
 
   isEad(course: Course): boolean {

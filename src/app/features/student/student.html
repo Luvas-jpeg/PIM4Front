@@ -1,0 +1,94 @@
+<main class="student-page">
+  <section class="student-hero">
+    <div class="shell">
+      <span class="eyebrow">Área do aluno</span>
+      <h1>Sua formação, em um só lugar.</h1>
+      <p>Olá, {{ user()?.nome || 'aluno' }}. Acompanhe seus cursos e consulte as informações das suas turmas.</p>
+      <nav class="student-actions" aria-label="Atalhos do aluno">
+        <a routerLink="/catalogo">Explorar cursos</a>
+        <a routerLink="/conta">Minha conta e pedidos</a>
+      </nav>
+    </div>
+  </section>
+
+  <div class="shell student-content">
+    @if (loading()) {
+      <p class="state" role="status">Carregando suas matrículas...</p>
+    } @else if (error(); as message) {
+      <div class="state state--error" role="alert">
+        <p>{{ message }}</p>
+        <button type="button" (click)="load()">Tentar novamente</button>
+      </div>
+    } @else {
+      <section class="overview" aria-label="Resumo das matrículas">
+        <article><span>Ativas</span><strong>{{ activeCount() }}</strong></article>
+        <article><span>Concluídas</span><strong>{{ completedCount() }}</strong></article>
+        <article><span>Canceladas</span><strong>{{ cancelledCount() }}</strong></article>
+      </section>
+
+      <section class="courses-panel" aria-labelledby="student-courses-title">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Minha jornada</span>
+            <h2 id="student-courses-title">Meus cursos</h2>
+          </div>
+          @if (enrollments().length > 0) {
+            <div class="filters">
+              <input type="search" aria-label="Buscar minhas matrículas" placeholder="Buscar curso, local ou instrutor"
+                [value]="search()" (input)="search.set($any($event.target).value)" />
+              <select aria-label="Status da matrícula" [value]="status()" (change)="status.set($any($event.target).value)">
+                <option value="">Todas as matrículas</option>
+                <option value="active">Ativas</option>
+                <option value="completed">Concluídas</option>
+                <option value="cancelled">Canceladas</option>
+              </select>
+            </div>
+          }
+        </div>
+
+        @if (enrollments().length === 0) {
+          <div class="state">
+            <h3>Seu próximo passo começa aqui.</h3>
+            <p>Você ainda não possui matrículas. Elas aparecem após a confirmação do pagamento.</p>
+            <a routerLink="/catalogo" class="primary-link">Encontrar um curso</a>
+            <a routerLink="/conta" class="navigation-button">Consultar meus pedidos</a>
+          </div>
+        } @else if (filteredEnrollments().length === 0) {
+          <p class="state">Nenhuma matrícula encontrada com esses filtros.</p>
+        } @else {
+          <div class="course-grid">
+            @for (enrollment of filteredEnrollments(); track enrollment.enrollmentId) {
+              <article class="course-card">
+                @if (enrollment.courseImage) {
+                  <img [src]="enrollment.courseImage" [alt]="enrollment.courseName" loading="lazy" />
+                }
+                <div class="course-card__body">
+                  <div class="card-meta">
+                    <span>{{ enrollment.deliveryMode === 'ead' ? 'Online' : 'Presencial' }}</span>
+                    <span class="badge" [class.badge--cancelled]="enrollment.enrollmentStatus === 'cancelled'">
+                      {{ statusLabel(enrollment.enrollmentStatus) }}
+                    </span>
+                  </div>
+                  <h3>{{ enrollment.courseName }}</h3>
+                  @if (enrollment.deliveryMode === 'presencial') {
+                    <p>{{ enrollment.startDate | date:'dd/MM/yyyy HH:mm' }}</p>
+                    <p>{{ enrollment.location }}</p>
+                    @if (enrollment.instructor) { <p>Instrutor: {{ enrollment.instructor }}</p> }
+                  } @else {
+                    <p>Acesso ao conteúdo e às atividades do curso.</p>
+                  }
+                  <div class="card-actions">
+                    <a class="primary-link" [routerLink]="['/area-aluno/matricula', enrollment.enrollmentId]">
+                      {{ enrollment.deliveryMode === 'ead' && enrollment.enrollmentStatus === 'active' ? 'Acessar curso' : 'Ver minha matrícula' }}
+                    </a>
+                    <a class="navigation-button" [routerLink]="['/conta/pedido', enrollment.orderId]">Ver pedido</a>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    }
+  </div>
+</main>

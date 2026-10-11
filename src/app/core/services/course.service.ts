@@ -40,7 +40,7 @@ export class CourseService {
         ...(query.city ? { city: query.city } : {}),
         ...(query.startDate ? { startDate: query.startDate } : {}),
         ...(query.endDate ? { endDate: query.endDate } : {}),
-        availableOnly: query.availableOnly ?? true,
+        availableOnly: query.availableOnly ?? false,
         sort: query.sort ?? 'date',
         page: query.page ?? 1,
         pageSize: query.pageSize ?? 9,

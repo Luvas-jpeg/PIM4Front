@@ -5,7 +5,6 @@ import { Course, CourseRequest } from '../../../../core/models/course.models';
 import { CourseService } from '../../../../core/services/course.service';
 import { AdminNotification } from '../../admin.types';
 
-type ProductType = 'course';
 type DeliveryMode = 'presencial' | 'ead';
 
 @Component({
@@ -33,16 +32,11 @@ export class AdminCourses {
   readonly form = this.formBuilder.group({
     nome: this.formBuilder.control('', [Validators.required]),
     preco: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
-    tipoProduto: this.formBuilder.control<ProductType>('course', [Validators.required]),
     deliveryMode: this.formBuilder.control<DeliveryMode>('presencial', [Validators.required]),
     workloadHours: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
-    estoque: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
     description: this.formBuilder.control(''),
     image: this.formBuilder.control(''),
     category: this.formBuilder.control(''),
-    date: this.formBuilder.control(''),
-    location: this.formBuilder.control(''),
-    instructor: this.formBuilder.control(''),
   });
 
   formatPrice(value: number): string {
@@ -65,16 +59,11 @@ export class AdminCourses {
     this.form.reset({
       nome: '',
       preco: null,
-      tipoProduto: 'course',
       deliveryMode: 'presencial',
       workloadHours: null,
-      estoque: null,
       description: '',
       image: '',
       category: '',
-      date: '',
-      location: '',
-      instructor: '',
     });
   }
 
@@ -84,16 +73,11 @@ export class AdminCourses {
     this.form.setValue({
       nome: course.nome,
       preco: course.preco,
-      tipoProduto: 'course',
       deliveryMode: course.deliveryMode ?? 'presencial',
       workloadHours: course.workloadHours ?? null,
-      estoque: null,
       description: course.description ?? '',
       image: course.image ?? '',
       category: course.category ?? '',
-      date: '',
-      location: '',
-      instructor: '',
     });
   }
 

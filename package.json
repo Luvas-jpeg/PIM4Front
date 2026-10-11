@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:e2e": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-LocalEnrollmentFlow.ps1",
+    "test:e2e:report": "playwright show-report"
   },
   "private": true,
   "packageManager": "npm@10.9.4",
@@ -28,6 +30,7 @@
     "@emnapi/core": "1.11.3",
     "@emnapi/runtime": "1.11.3",
     "@emnapi/wasi-threads": "1.2.3",
+    "@playwright/test": "^1.64.0",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",

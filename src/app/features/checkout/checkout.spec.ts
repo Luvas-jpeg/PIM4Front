@@ -8,7 +8,7 @@ import { Checkout } from './checkout';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
 import { PromoCodeService } from '../../core/services/promo-code.service';
-import { Product } from '../../core/models/product.models';
+import { Course } from '../../core/models/course.models';
 import { CourseClass } from '../../core/models/course.models';
 import { CreateOrderRequest } from '../../core/models/order.models';
 import { AuthService } from '../../core/services/auth.service';
@@ -47,18 +47,17 @@ describe('Checkout', () => {
     updateProfile: vi.fn(),
   };
 
-  const product: Product = {
+  const baseCourse: Course = {
     id: 1,
     nome: 'Estetoscopio',
     preco: 120,
-    tipoProduto: 'equipment',
-    estoque: 5,
     description: 'Equipamento para atendimento clinico.',
     image: '',
-    category: 'Diagnostico',
-    date: '',
-    location: '',
-    instructor: '',
+    category: 'Formacao',
+    deliveryMode: 'ead',
+    workloadHours: 10,
+    isActive: true,
+    classes: [], modules: [], assessments: [],
   };
 
   const courseClass: CourseClass = {
@@ -67,7 +66,7 @@ describe('Checkout', () => {
     startDate: '2026-10-01T09:00:00',
     endDate: null,
     local: 'Sao Paulo',
-    instructor: 'Instrutor Teste',
+    instructor: 'Instrutor teste',
     capacity: 20,
     availableSeats: 19,
     status: 'scheduled',
@@ -102,19 +101,19 @@ describe('Checkout', () => {
   });
 
   it('should not charge shipping', () => {
-    cartService.add(product, 1);
+    cartService.add(baseCourse, 1);
 
     expect(component.shipping()).toBe(0);
   });
 
   it('should not charge shipping for course-only orders', () => {
-    cartService.add({ ...product, tipoProduto: 'course' }, 1);
+    cartService.add({ ...baseCourse, deliveryMode: 'presencial' as const }, 1);
 
     expect(component.shipping()).toBe(0);
   });
 
   it('should apply percentage coupon', () => {
-    cartService.add(product, 1);
+    cartService.add(baseCourse, 1);
     promoCodeServiceMock.validate.mockReturnValue(of({
       id: 1,
       code: 'MED10',
@@ -134,7 +133,7 @@ describe('Checkout', () => {
 
   it('should submit course order and clear cart', () => {
     cartService.addCourse(
-      { ...product, tipoProduto: 'course', nome: 'Curso teste' },
+      { ...baseCourse, deliveryMode: 'presencial' as const, nome: 'Curso teste' },
       courseClass,
       2,
     );
@@ -148,7 +147,7 @@ describe('Checkout', () => {
 
     const request = orderServiceMock.create.mock.calls[0][0] as CreateOrderRequest;
     expect(request.itens).toEqual([{
-      produtoId: 1,
+      courseId: 1,
       turmaId: 7,
       quantidade: 2,
     }]);
@@ -158,7 +157,7 @@ describe('Checkout', () => {
 
   it('should send the selected class when submitting a course order', () => {
     cartService.addCourse(
-      { ...product, tipoProduto: 'course', id: 1, preco: 250 },
+      { ...baseCourse, deliveryMode: 'presencial' as const, id: 1, preco: 250 },
       courseClass,
       2,
     );
@@ -172,14 +171,14 @@ describe('Checkout', () => {
 
     const request = orderServiceMock.create.mock.calls[0][0] as CreateOrderRequest;
     expect(request.itens).toEqual([{
-      produtoId: 1,
+      courseId: 1,
       turmaId: 7,
       quantidade: 2,
     }]);
   });
 
   it('should block a course order without a selected class', () => {
-    cartService.add({ ...product, tipoProduto: 'course' }, 1);
+    cartService.add({ ...baseCourse, deliveryMode: 'presencial' as const }, 1);
 
     component.submit();
 
@@ -187,12 +186,12 @@ describe('Checkout', () => {
     expect(orderServiceMock.create).not.toHaveBeenCalled();
   });
 
-  it('should reject legacy equipment items in checkout', () => {
-    cartService.add(product, 1);
-
+  it('should submit EAD without a class using courseId', () => {
+    cartService.add(baseCourse, 1);
+    orderServiceMock.create.mockReturnValue(of({ message: 'Pedido criado', orderId: 12, total: 120 }));
     component.submit();
-
-    expect(component.error()).toContain('somente cursos');
-    expect(orderServiceMock.create).not.toHaveBeenCalled();
+    expect(orderServiceMock.create.mock.calls[0][0].itens).toEqual([
+      { courseId: 1, turmaId: null, quantidade: 1 },
+    ]);
   });
 });

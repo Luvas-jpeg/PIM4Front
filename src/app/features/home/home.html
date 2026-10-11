@@ -35,11 +35,6 @@
         </div>
 
         <div class="catalog__filters">
-          <select [value]="deliveryMode()" (change)="updateDeliveryMode($any($event.target).value)">
-            <option value="">Todos os formatos</option>
-            <option value="ead">EAD</option>
-            <option value="presencial">Presencial</option>
-          </select>
           <select [value]="category()" (change)="updateCategory($any($event.target).value)">
             <option value="">Todas as categorias</option>
             @for (item of categories(); track item) {
@@ -105,17 +100,13 @@
                 (error)="setFallbackImage($event)"
               />
 
-              <span class="product-card__badge">{{ course.deliveryMode === 'ead' ? 'EAD' : 'Presencial' }}</span>
+              <span class="product-card__badge">Presencial</span>
             </div>
             <div class="product-card__body">
               <div class="product-card__meta">
                 <span>{{ course.category || 'Saúde' }}</span>
                 <span>
-                  @if (course.deliveryMode === 'ead') {
-                    {{ course.moduleCount ?? course.modules.length }} modulo(s)
-                  } @else {
-                    {{ course.classes.length }} turma(s)
-                  }
+                  {{ course.classes.length }} turma(s)
                 </span>
               </div>
 

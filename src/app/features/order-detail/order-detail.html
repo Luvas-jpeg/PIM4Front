@@ -1,7 +1,7 @@
 <main class="order-detail-page">
   <section class="order-detail-hero">
     <div class="order-detail-hero__content">
-      <a routerLink="/conta" class="back-link">Voltar para minha conta</a>
+      <a routerLink="/conta" class="back-link navigation-button navigation-button--on-dark">Voltar para minha conta</a>
       <span class="section-label">Historico de pedidos</span>
       <h1>Detalhes do pedido</h1>
     </div>
@@ -32,7 +32,7 @@
       <section class="order-panel">
         <span class="section-label">Itens</span>
         <div class="order-items">
-          @for (item of currentOrder.itens; track item.produtoId + '-' + (item.turmaId ?? 'legacy')) {
+          @for (item of currentOrder.itens; track item.courseId + '-' + (item.turmaId ?? 'legacy')) {
             <article class="order-item">
               <div>
                 <h3>{{ item.nome }}</h3>

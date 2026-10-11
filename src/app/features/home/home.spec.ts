@@ -78,6 +78,32 @@ describe('Home', () => {
     vi.clearAllMocks();
   });
 
+  it('does not advertise a class that already started today', () => {
+    const now = new Date('2026-10-08T18:00:00Z').getTime();
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(now);
+    try {
+      const currentCourse: Course = {
+        ...courses[0],
+        classes: [
+          {
+            id: 11, courseId: courses[0].id, startDate: '2026-10-08T17:51:00Z',
+            local: 'Sao Paulo', instructor: 'Instrutor', capacity: 30,
+            availableSeats: 30, status: 'scheduled',
+          },
+          {
+            id: 12, courseId: courses[0].id, startDate: '2026-10-08T20:00:00Z',
+            local: 'Sao Paulo', instructor: 'Instrutor', capacity: 30,
+            availableSeats: 30, status: 'scheduled',
+          },
+        ],
+      };
+      expect(component.nextClass(currentCourse)?.id).toBe(12);
+      expect(component.nextClass({ ...currentCourse, classes: [currentCourse.classes[0]] })).toBeNull();
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });

@@ -105,21 +105,21 @@
           <span class="section-label">Resumo</span>
 
           <div class="summary-items">
-            @for (item of items(); track item.product.id + '-' + (item.courseClass?.id ?? 'legacy')) {
+            @for (item of items(); track item.course.id + '-' + (item.courseClass?.id ?? 'legacy')) {
               <div class="summary-item">
                 <div>
-                  <strong>{{ item.product.nome }}</strong>
+                  <strong>{{ item.course.nome }}</strong>
                   <span>
                     {{ item.quantity }} inscricao(oes)
                     @if (item.courseClass; as courseClass) {
                       - {{ courseClass.local }}
-                    } @else if (item.product.deliveryMode === 'ead') {
+                    } @else if (item.course.deliveryMode === 'ead') {
                       - EAD
                     }
                   </span>
                 </div>
 
-                <span>{{ formatPrice(item.product.preco * item.quantity) }}</span>
+                <span>{{ formatPrice(item.course.preco * item.quantity) }}</span>
               </div>
             }
           </div>

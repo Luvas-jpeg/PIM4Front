@@ -97,7 +97,7 @@
               [disabled]="(course.deliveryMode !== 'ead' && !selectedClass()) || !!quantityError()"
               (click)="addToCart()"
             >
-              {{ course.deliveryMode === 'ead' || selectedClass() ? 'Inscrever-se agora' : 'Turma lotada' }}
+              {{ course.deliveryMode === 'ead' || selectedClass() ? 'Inscrever-se agora' : 'Sem turma disponivel' }}
             </button>
           </div>
           @if (quantityError()) {

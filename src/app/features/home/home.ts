@@ -27,9 +27,6 @@ export class Home {
   readonly error = signal<string | null>(null);
   readonly searchTerm = signal('');
   readonly category = signal('');
-  readonly deliveryMode = signal<'presencial' | 'ead' | ''>(
-    this.readDeliveryMode(this.route.snapshot.queryParamMap.get('deliveryMode')),
-  );
   readonly city = signal('');
   readonly startDate = signal('');
   readonly endDate = signal('');
@@ -50,25 +47,19 @@ export class Home {
         this.error.set('Nao foi possivel carregar as opcoes de filtro.');
       },
     });
-    this.loadProducts();
+    this.loadCourses();
   }
 
   updateSearch(value: string): void {
     this.searchTerm.set(value);
     this.page.set(1);
-    this.loadProducts();
+    this.loadCourses();
   }
 
   updateCategory(value: string): void {
     this.category.set(value);
     this.page.set(1);
-    this.loadProducts();
-  }
-
-  updateDeliveryMode(value: string): void {
-    this.deliveryMode.set(this.readDeliveryMode(value));
-    this.page.set(1);
-    this.loadProducts();
+    this.loadCourses();
   }
 
   updateCity(value: string): void {
@@ -85,13 +76,12 @@ export class Home {
 
   applyFilters(): void {
     this.page.set(1);
-    this.loadProducts();
+    this.loadCourses();
   }
 
   clearFilters(): void {
     this.searchTerm.set('');
     this.category.set('');
-    this.deliveryMode.set('');
     this.city.set('');
     this.startDate.set('');
     this.endDate.set('');
@@ -104,19 +94,19 @@ export class Home {
       replaceUrl: true,
     });
 
-    this.loadProducts();
+    this.loadCourses();
   }
 
   updateSort(value: string): void {
     this.sort.set(value);
     this.page.set(1);
-    this.loadProducts();
+    this.loadCourses();
   }
 
   changePage(page: number): void {
     if (page < 1 || page > this.totalPages()) return;
     this.page.set(page);
-    this.loadProducts();
+    this.loadCourses();
   }
 
   imageUrl(course: Course): string {
@@ -138,10 +128,12 @@ export class Home {
   }
 
   nextClass(course: Course) {
-    if (course.deliveryMode === 'ead') return null;
-
     return course.classes
-      .filter((courseClass) => courseClass.status === 'scheduled' && courseClass.availableSeats > 0)
+      .filter((courseClass) =>
+        courseClass.status === 'scheduled' &&
+        courseClass.availableSeats > 0 &&
+        new Date(courseClass.startDate).getTime() >= Date.now(),
+      )
       .sort((first, second) =>
         new Date(first.startDate).getTime() - new Date(second.startDate).getTime(),
       )[0] ?? null;
@@ -157,21 +149,17 @@ export class Home {
   }
 
   hasAvailability(course: Course): boolean {
-    return course.deliveryMode === 'ead' || this.nextClass(course) !== null;
+    return this.nextClass(course) !== null;
   }
 
-  private readDeliveryMode(value: string | null): 'presencial' | 'ead' | '' {
-    return value === 'ead' || value === 'presencial' ? value : '';
-  }
-
-  private loadProducts(): void {
+  private loadCourses(): void {
     this.loading.set(true);
     this.error.set(null);
 
     this.courseService.getCatalog({
       search: this.searchTerm(),
       category: this.category(),
-      deliveryMode: this.deliveryMode() || undefined,
+      deliveryMode: 'presencial',
       city: this.city(),
       startDate: this.startDate(),
       endDate: this.endDate(),

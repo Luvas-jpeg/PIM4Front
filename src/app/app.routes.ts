@@ -20,6 +20,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
   },
   {
+    path: 'area-aluno',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/student/student').then(m => m.Student)
+  },
+  {
+    path: 'area-aluno/matricula/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/enrollment-detail/enrollment-detail').then(m => m.EnrollmentDetail)
+  },
+  {
     path: 'conta',
     canActivate: [authGuard],
     loadComponent: () => import('./features/account/account').then(m => m.Account)
@@ -31,8 +41,8 @@ export const routes: Routes = [
   },
   {
     path: 'conta/matricula/:id',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/enrollment-detail/enrollment-detail').then(m => m.EnrollmentDetail)
+    redirectTo: 'area-aluno/matricula/:id',
+    pathMatch: 'full'
   },
   {
     path: 'carrinho',

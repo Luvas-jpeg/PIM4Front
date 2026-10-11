@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 
 import { Cart } from './cart';
 import { CartService } from '../../core/services/cart.service';
-import { Product } from '../../core/models/product.models';
+import { Course } from '../../core/models/course.models';
 import { CourseClass } from '../../core/models/course.models';
 
 describe('Cart', () => {
@@ -11,26 +11,24 @@ describe('Cart', () => {
   let fixture: ComponentFixture<Cart>;
   let cartService: CartService;
 
-  const product: Product = {
+  const baseCourse: Course = {
     id: 1,
     nome: 'Estetoscopio',
     preco: 120,
-    tipoProduto: 'equipment',
-    estoque: 3,
     description: 'Equipamento para atendimento clinico.',
     image: '',
-    category: 'Diagnostico',
-    date: '',
-    location: '',
-    instructor: '',
+    category: 'Formacao',
+    deliveryMode: 'ead',
+    workloadHours: 10,
+    isActive: true,
+    classes: [], modules: [], assessments: [],
   };
 
-  const course: Product = {
-    ...product,
+  const course: Course = {
+    ...baseCourse,
     id: 10,
     nome: 'Curso de primeiros socorros',
-    tipoProduto: 'course',
-    estoque: 10,
+    deliveryMode: 'presencial',
   };
 
   const firstClass: CourseClass = {
@@ -39,7 +37,7 @@ describe('Cart', () => {
     startDate: '2026-10-01T09:00:00Z',
     endDate: null,
     local: 'Sao Paulo',
-    instructor: 'Instrutor',
+    instructor: 'Instrutor teste',
     capacity: 10,
     availableSeats: 10,
     status: 'scheduled',
@@ -73,21 +71,21 @@ describe('Cart', () => {
   });
 
   it('should calculate item subtotal', () => {
-    expect(component.itemSubtotal({ product, quantity: 2 })).toBe(240);
+    expect(component.itemSubtotal({ course: baseCourse, quantity: 2 })).toBe(240);
   });
 
   it('should increase quantity up to stock limit', () => {
-    cartService.add(product, 2);
+    cartService.add(baseCourse, 2);
     const item = cartService.items()[0];
 
     component.increase(item);
-    component.increase(cartService.items()[0]);
+    for (let index = 0; index < 6; index++) component.increase(cartService.items()[0]);
 
-    expect(cartService.items()[0].quantity).toBe(3);
+    expect(cartService.items()[0].quantity).toBe(5);
   });
 
   it('should decrease quantity and remove item when quantity reaches zero', () => {
-    cartService.add(product, 1);
+    cartService.add(baseCourse, 1);
 
     component.decrease(cartService.items()[0]);
 
@@ -95,7 +93,7 @@ describe('Cart', () => {
   });
 
   it('should clear cart', () => {
-    cartService.add(product, 1);
+    cartService.add(baseCourse, 1);
 
     component.clear();
 
@@ -120,5 +118,22 @@ describe('Cart', () => {
     component.updateQuantity(cartService.items()[0], '9');
 
     expect(cartService.items()[0].quantity).toBe(5);
+  });
+  it('should not reinterpret IDs from a legacy cart as course IDs', () => {
+    localStorage.setItem('medishop_cart', JSON.stringify([
+      { product: { id: 999, nome: 'Legado' }, quantity: 1 },
+    ]));
+    expect(new CartService().items()).toEqual([]);
+  });
+
+  it('should recover from malformed cart storage', () => {
+    localStorage.setItem('pim4_courses_cart_v2', '{invalid-json');
+    expect(new CartService().items()).toEqual([]);
+  });
+
+  it('should enforce the quantity limit when adding the same course again', () => {
+    expect(cartService.addCourse(course, firstClass, 4)).toBe(true);
+    expect(cartService.addCourse(course, firstClass, 2)).toBe(false);
+    expect(cartService.items()[0].quantity).toBe(4);
   });
 });

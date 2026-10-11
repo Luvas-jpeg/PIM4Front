@@ -1,5 +1,5 @@
 export interface CreateOrderItem {
-    produtoId: number;
+    courseId: number;
     turmaId?: number | null;
     quantidade: number;
 }
@@ -19,9 +19,9 @@ export interface CreateOrderResponse {
 }
 
 export interface OrderItem {
-    produtoId: number;
+    courseId: number | null;
     nome: string;
-    tipoProduto: 'equipment' | 'course';
+    itemType: 'equipment' | 'course';
     turmaId?: number | null;
     quantidade: number;
     precoUnitario: number;

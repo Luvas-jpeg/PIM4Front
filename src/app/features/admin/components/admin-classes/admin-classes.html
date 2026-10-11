@@ -23,7 +23,8 @@
       <div class="form-grid">
         <label class="field">
           <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
-          <input type="datetime-local" formControlName="startDate" required aria-required="true" />
+          <input type="datetime-local" formControlName="startDate" required aria-required="true" aria-describedby="class-start-hint" />
+          <small id="class-start-hint">As inscricoes ficam abertas somente ate este horario de inicio.</small>
         </label>
         <label class="field">
           <span>Fim <span class="optional-label">(opcional)</span></span>
@@ -75,13 +76,15 @@
         @if (course.deliveryMode === 'ead') {
           <p class="muted">Cursos EAD nao precisam de agenda, local, instrutor ou vagas.</p>
         } @else {
+          <div class="class-course-grid">
           @for (courseClass of course.classes; track courseClass.id) {
             <article class="class-card">
               <button type="button" class="class-card__content" (click)="openClassModal(course, courseClass)">
-                <span class="class-card__type">Curso presencial</span>
-                <strong class="class-card__title">{{ course.nome }}</strong>
-                <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
-                <span>{{ courseClass.local }} - {{ courseClass.instructor }}</span>
+                <span class="class-card__type">{{ courseClass.status === 'completed' ? 'Concluida' : courseClass.status === 'cancelled' ? 'Cancelada' : 'Agendada' }}</span>
+                <strong class="class-card__title">Turma #{{ courseClass.id }}</strong>
+                <span>Inicio: {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span>Local: {{ courseClass.local }}</span>
+                <span>Instrutor: {{ courseClass.instructor }}</span>
                 <span class="class-card__footer">
                   <b>{{ courseClass.availableSeats }}/{{ courseClass.capacity }} vagas restantes</b>
                   <b>Ver alunos <span aria-hidden="true">-&gt;</span></b>
@@ -94,6 +97,7 @@
           } @empty {
             <p class="muted">Nenhuma turma cadastrada para este curso.</p>
           }
+          </div>
         }
       </div>
     } @empty {
