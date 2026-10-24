@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Course } from '../../core/models/course.models';
 import { CourseService } from '../../core/services/course.service';
@@ -11,6 +19,7 @@ import { CourseService } from '../../core/services/course.service';
 })
 export class Landing implements AfterViewInit {
   private readonly courseService = inject(CourseService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly currencyFormatter = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -27,7 +36,7 @@ export class Landing implements AfterViewInit {
 
   constructor() {
     this.courseService.getCatalog({ page: 1, pageSize: 4, sort: 'relevance' }).subscribe({
-      next: response => {
+      next: (response) => {
         this.courses.set(response.items);
         this.featuredCourses.set(response.items);
         this.loading.set(false);
@@ -44,14 +53,18 @@ export class Landing implements AfterViewInit {
     }
 
     const observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
           const element = entry.target as HTMLElement;
-          element.classList.toggle('is-visible', entry.isIntersecting);
+          element.classList.add('is-visible');
+          observer.unobserve(element);
         }
       },
       { threshold: 0.15 },
     );
+
+    this.destroyRef.onDestroy(() => observer.disconnect());
 
     if (this.categoryGrid) observer.observe(this.categoryGrid.nativeElement);
     if (this.trustBand) observer.observe(this.trustBand.nativeElement);

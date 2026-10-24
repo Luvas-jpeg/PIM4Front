@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.angular/
+out-tsc/
+coverage/
+playwright-report/
+test-results/
+__screenshots__/
+tmp/
+.local-backups/
+package-lock.json
+.env
+.env.*
+.vscode/mcp.json

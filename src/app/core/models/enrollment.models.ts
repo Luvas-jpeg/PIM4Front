@@ -1,6 +1,14 @@
 import { CourseModule } from './course.models';
 
+export interface Participation {
+  status: 'not_applicable' | 'unavailable' | 'waiting' | 'pending' | 'closed' | 'confirmed';
+  opensAt: string | null;
+  confirmedAt: string | null;
+  canConfirm: boolean;
+}
+
 export interface MyEnrollment {
+  participation?: Participation;
   enrollmentId: number;
   courseId: number | null;
   classId: number | null;

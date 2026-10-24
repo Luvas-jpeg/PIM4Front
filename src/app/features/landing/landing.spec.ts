@@ -11,22 +11,21 @@ describe('Landing', () => {
   let fixture: ComponentFixture<Landing>;
 
   const courseServiceMock = {
-    getCatalog: vi.fn(() => of({
-      items: [],
-      page: 1,
-      pageSize: 4,
-      totalItems: 0,
-      totalPages: 0,
-    })),
+    getCatalog: vi.fn(() =>
+      of({
+        items: [],
+        page: 1,
+        pageSize: 4,
+        totalItems: 0,
+        totalPages: 0,
+      }),
+    ),
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Landing],
-      providers: [
-        provideRouter([]),
-        { provide: CourseService, useValue: courseServiceMock },
-      ],
+      providers: [provideRouter([]), { provide: CourseService, useValue: courseServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Landing);

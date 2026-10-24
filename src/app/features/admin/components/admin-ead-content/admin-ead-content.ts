@@ -1,4 +1,14 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   Course,
@@ -34,25 +44,31 @@ export class AdminEadContent implements OnChanges {
   readonly savingQuestion = signal(false);
   readonly formError = signal<string | null>(null);
 
-  readonly eadCourses = computed(() =>
-    (this.coursesRevision(), this.courses.filter(course => course.deliveryMode === 'ead'))
+  readonly eadCourses = computed(
+    () => (this.coursesRevision(), this.courses.filter((course) => course.deliveryMode === 'ead')),
   );
 
-  readonly selectedCourse = computed(() =>
-    this.eadCourses().find(course => course.id === this.selectedCourseId()) ?? this.eadCourses()[0] ?? null
+  readonly selectedCourse = computed(
+    () =>
+      this.eadCourses().find((course) => course.id === this.selectedCourseId()) ??
+      this.eadCourses()[0] ??
+      null,
   );
 
-  readonly selectedModule = computed(() =>
-    this.selectedCourse()?.modules.find(module => module.id === this.selectedModuleId()) ?? null
+  readonly selectedModule = computed(
+    () =>
+      this.selectedCourse()?.modules.find((module) => module.id === this.selectedModuleId()) ??
+      null,
   );
 
-  readonly selectedAssessment = computed(() =>
-    this.selectedCourse()?.assessments[0] ?? null
-  );
+  readonly selectedAssessment = computed(() => this.selectedCourse()?.assessments[0] ?? null);
 
   readonly moduleForm = this.formBuilder.group({
     title: this.formBuilder.control('', [Validators.required]),
-    sortOrder: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    sortOrder: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
     isActive: this.formBuilder.control(true),
   });
 
@@ -60,22 +76,42 @@ export class AdminEadContent implements OnChanges {
     title: this.formBuilder.control('', [Validators.required]),
     description: this.formBuilder.control(''),
     videoUrl: this.formBuilder.control(''),
-    durationMinutes: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
-    sortOrder: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    durationMinutes: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
+    sortOrder: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
     isActive: this.formBuilder.control(true),
   });
 
   readonly assessmentForm = this.formBuilder.group({
     title: this.formBuilder.control('Avaliacao final', [Validators.required]),
-    minimumScore: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0), Validators.max(100)]),
-    maxAttempts: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(1)]),
+    minimumScore: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(100),
+    ]),
+    maxAttempts: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+    ]),
     isActive: this.formBuilder.control(true),
   });
 
   readonly questionForm = this.formBuilder.group({
     statement: this.formBuilder.control('', [Validators.required]),
-    sortOrder: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
-    correctOption: this.formBuilder.control(0, [Validators.required, Validators.min(0), Validators.max(3)]),
+    sortOrder: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
+    correctOption: this.formBuilder.control(0, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(3),
+    ]),
     option1: this.formBuilder.control('', [Validators.required]),
     option2: this.formBuilder.control('', [Validators.required]),
     option3: this.formBuilder.control(''),
@@ -97,7 +133,7 @@ export class AdminEadContent implements OnChanges {
 
   selectCourse(courseId: number): void {
     this.selectedCourseId.set(courseId);
-    const course = this.eadCourses().find(item => item.id === courseId);
+    const course = this.eadCourses().find((item) => item.id === courseId);
     this.selectedModuleId.set(course?.modules[0]?.id ?? null);
     this.syncAssessmentForm(course?.assessments[0] ?? null);
     this.formError.set(null);
@@ -132,7 +168,7 @@ export class AdminEadContent implements OnChanges {
 
     this.savingModule.set(true);
     this.courseService.createModule(course.id, request).subscribe({
-      next: module => {
+      next: (module) => {
         this.patchCourse(course.id, {
           modules: [...course.modules, module].sort(this.sortModules),
         });
@@ -140,7 +176,8 @@ export class AdminEadContent implements OnChanges {
         this.moduleForm.reset({ title: '', sortOrder: null, isActive: true });
         this.notify.emit({ type: 'success', message: 'Modulo EAD criado.' });
       },
-      error: response => this.formError.set(response.error?.message ?? 'Nao foi possivel criar o modulo.'),
+      error: (response) =>
+        this.formError.set(response.error?.message ?? 'Nao foi possivel criar o modulo.'),
       complete: () => this.savingModule.set(false),
     });
   }
@@ -173,10 +210,11 @@ export class AdminEadContent implements OnChanges {
 
     this.savingLesson.set(true);
     this.courseService.createLesson(course.id, module.id, request).subscribe({
-      next: lesson => {
+      next: (lesson) => {
         this.patchModule(course.id, module.id, {
-          lessons: [...module.lessons, lesson].sort((first, second) =>
-            first.sortOrder - second.sortOrder || first.title.localeCompare(second.title)
+          lessons: [...module.lessons, lesson].sort(
+            (first, second) =>
+              first.sortOrder - second.sortOrder || first.title.localeCompare(second.title),
           ),
         });
         this.lessonForm.reset({
@@ -189,7 +227,8 @@ export class AdminEadContent implements OnChanges {
         });
         this.notify.emit({ type: 'success', message: 'Aula EAD criada.' });
       },
-      error: response => this.formError.set(response.error?.message ?? 'Nao foi possivel criar a aula.'),
+      error: (response) =>
+        this.formError.set(response.error?.message ?? 'Nao foi possivel criar a aula.'),
       complete: () => this.savingLesson.set(false),
     });
   }
@@ -223,16 +262,19 @@ export class AdminEadContent implements OnChanges {
 
     this.savingAssessment.set(true);
     action.subscribe({
-      next: savedAssessment => {
+      next: (savedAssessment) => {
         this.patchCourse(course.id, {
           assessments: assessment
-            ? course.assessments.map(current => current.id === savedAssessment.id ? savedAssessment : current)
+            ? course.assessments.map((current) =>
+                current.id === savedAssessment.id ? savedAssessment : current,
+              )
             : [savedAssessment, ...course.assessments],
         });
         this.syncAssessmentForm(savedAssessment);
         this.notify.emit({ type: 'success', message: 'Avaliacao EAD salva.' });
       },
-      error: response => this.formError.set(response.error?.message ?? 'Nao foi possivel salvar a avaliacao.'),
+      error: (response) =>
+        this.formError.set(response.error?.message ?? 'Nao foi possivel salvar a avaliacao.'),
       complete: () => this.savingAssessment.set(false),
     });
   }
@@ -256,14 +298,14 @@ export class AdminEadContent implements OnChanges {
     const raw = this.questionForm.getRawValue();
     const optionTexts = [raw.option1, raw.option2, raw.option3, raw.option4]
       .map((text, index) => ({ text: text.trim(), index }))
-      .filter(option => option.text);
+      .filter((option) => option.text);
 
     if (optionTexts.length < 2) {
       this.formError.set('A questao deve possuir ao menos duas alternativas.');
       return;
     }
 
-    if (!optionTexts.some(option => option.index === Number(raw.correctOption))) {
+    if (!optionTexts.some((option) => option.index === Number(raw.correctOption))) {
       this.formError.set('A alternativa correta deve estar preenchida.');
       return;
     }
@@ -281,11 +323,11 @@ export class AdminEadContent implements OnChanges {
 
     this.savingQuestion.set(true);
     this.courseService.createQuestion(course.id, assessment.id, request).subscribe({
-      next: question => {
+      next: (question) => {
         const updatedAssessment: CourseAssessment = {
           ...assessment,
-          questions: [...assessment.questions, question].sort((first, second) =>
-            first.sortOrder - second.sortOrder || first.id - second.id
+          questions: [...assessment.questions, question].sort(
+            (first, second) => first.sortOrder - second.sortOrder || first.id - second.id,
           ),
         };
         this.patchAssessment(course.id, updatedAssessment);
@@ -301,56 +343,58 @@ export class AdminEadContent implements OnChanges {
         });
         this.notify.emit({ type: 'success', message: 'Questao adicionada.' });
       },
-      error: response => this.formError.set(response.error?.message ?? 'Nao foi possivel criar a questao.'),
+      error: (response) =>
+        this.formError.set(response.error?.message ?? 'Nao foi possivel criar a questao.'),
       complete: () => this.savingQuestion.set(false),
     });
   }
 
   correctOptionText(assessment: CourseAssessment, questionId: number): string {
-    return assessment.questions
-      .find(question => question.id === questionId)
-      ?.options.find(option => option.isCorrect)
-      ?.text ?? 'Nao definida';
+    return (
+      assessment.questions
+        .find((question) => question.id === questionId)
+        ?.options.find((option) => option.isCorrect)?.text ?? 'Nao definida'
+    );
   }
 
   private patchCourse(courseId: number, patch: Partial<Course>): void {
-    const updatedCourses = this.courses.map(course =>
-      course.id === courseId ? { ...course, ...patch } : course
+    const updatedCourses = this.courses.map((course) =>
+      course.id === courseId ? { ...course, ...patch } : course,
     );
     this.courses = updatedCourses;
-    this.coursesRevision.update(value => value + 1);
+    this.coursesRevision.update((value) => value + 1);
     this.coursesChange.emit(updatedCourses);
   }
 
   private patchModule(courseId: number, moduleId: number, patch: Partial<CourseModule>): void {
-    const updatedCourses = this.courses.map(course => {
+    const updatedCourses = this.courses.map((course) => {
       if (course.id !== courseId) return course;
 
       return {
         ...course,
-        modules: course.modules.map(module =>
-          module.id === moduleId ? { ...module, ...patch } : module
+        modules: course.modules.map((module) =>
+          module.id === moduleId ? { ...module, ...patch } : module,
         ),
       };
     });
     this.courses = updatedCourses;
-    this.coursesRevision.update(value => value + 1);
+    this.coursesRevision.update((value) => value + 1);
     this.coursesChange.emit(updatedCourses);
   }
 
   private patchAssessment(courseId: number, assessment: CourseAssessment): void {
-    const updatedCourses = this.courses.map(course => {
+    const updatedCourses = this.courses.map((course) => {
       if (course.id !== courseId) return course;
 
       return {
         ...course,
-        assessments: course.assessments.map(current =>
-          current.id === assessment.id ? assessment : current
+        assessments: course.assessments.map((current) =>
+          current.id === assessment.id ? assessment : current,
         ),
       };
     });
     this.courses = updatedCourses;
-    this.coursesRevision.update(value => value + 1);
+    this.coursesRevision.update((value) => value + 1);
     this.coursesChange.emit(updatedCourses);
   }
 

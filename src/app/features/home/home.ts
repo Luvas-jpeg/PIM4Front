@@ -128,15 +128,19 @@ export class Home {
   }
 
   nextClass(course: Course) {
-    return course.classes
-      .filter((courseClass) =>
-        courseClass.status === 'scheduled' &&
-        courseClass.availableSeats > 0 &&
-        new Date(courseClass.startDate).getTime() >= Date.now(),
-      )
-      .sort((first, second) =>
-        new Date(first.startDate).getTime() - new Date(second.startDate).getTime(),
-      )[0] ?? null;
+    return (
+      course.classes
+        .filter(
+          (courseClass) =>
+            courseClass.status === 'scheduled' &&
+            courseClass.availableSeats > 0 &&
+            new Date(courseClass.startDate).getTime() >= Date.now(),
+        )
+        .sort(
+          (first, second) =>
+            new Date(first.startDate).getTime() - new Date(second.startDate).getTime(),
+        )[0] ?? null
+    );
   }
 
   availabilityLabel(course: Course): string {
@@ -156,27 +160,29 @@ export class Home {
     this.loading.set(true);
     this.error.set(null);
 
-    this.courseService.getCatalog({
-      search: this.searchTerm(),
-      category: this.category(),
-      deliveryMode: 'presencial',
-      city: this.city(),
-      startDate: this.startDate(),
-      endDate: this.endDate(),
-      availableOnly: false,
-      sort: this.sort(),
-      page: this.page(),
-      pageSize: 9,
-    }).subscribe({
-      next: (response: PagedCourseResponse) => {
-        this.courses.set(response.items);
-        this.totalPages.set(response.totalPages || 1);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Nao foi possivel carregar os cursos.');
-        this.loading.set(false);
-      },
-    });
+    this.courseService
+      .getCatalog({
+        search: this.searchTerm(),
+        category: this.category(),
+        deliveryMode: 'presencial',
+        city: this.city(),
+        startDate: this.startDate(),
+        endDate: this.endDate(),
+        availableOnly: false,
+        sort: this.sort(),
+        page: this.page(),
+        pageSize: 9,
+      })
+      .subscribe({
+        next: (response: PagedCourseResponse) => {
+          this.courses.set(response.items);
+          this.totalPages.set(response.totalPages || 1);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set('Nao foi possivel carregar os cursos.');
+          this.loading.set(false);
+        },
+      });
   }
 }

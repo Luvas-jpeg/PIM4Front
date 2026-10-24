@@ -31,10 +31,9 @@ export class OrderService {
   }
 
   updateStatus(id: number, status: string): Observable<{ id: number; status: string }> {
-    return this.http.put<{ id: number; status: string }>(
-      `${API_URL}/Orders/${id}/status`,
-      { status }
-    );
+    return this.http.put<{ id: number; status: string }>(`${API_URL}/Orders/${id}/status`, {
+      status,
+    });
   }
 
   refund(id: number): Observable<Order> {

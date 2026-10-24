@@ -24,28 +24,29 @@ export class AdminStudents {
     const search = this.search().trim().toLowerCase();
     const status = this.statusFilter();
 
-    return this.studentsSignal().filter(student => {
-      const matchesSearch = !search
-        || student.name.toLowerCase().includes(search)
-        || student.email.toLowerCase().includes(search)
-        || student.phone.toLowerCase().includes(search)
-        || student.courseName.toLowerCase().includes(search);
+    return this.studentsSignal().filter((student) => {
+      const matchesSearch =
+        !search ||
+        student.name.toLowerCase().includes(search) ||
+        student.email.toLowerCase().includes(search) ||
+        student.phone.toLowerCase().includes(search) ||
+        student.courseName.toLowerCase().includes(search);
       const matchesStatus = status === 'all' || student.status === status;
 
       return matchesSearch && matchesStatus;
     });
   });
 
-  readonly activeCount = computed(() =>
-    this.studentsSignal().filter(student => student.status === 'active').length
+  readonly activeCount = computed(
+    () => this.studentsSignal().filter((student) => student.status === 'active').length,
   );
 
-  readonly completedCount = computed(() =>
-    this.studentsSignal().filter(student => student.status === 'completed').length
+  readonly completedCount = computed(
+    () => this.studentsSignal().filter((student) => student.status === 'completed').length,
   );
 
-  readonly cancelledCount = computed(() =>
-    this.studentsSignal().filter(student => student.status === 'cancelled').length
+  readonly cancelledCount = computed(
+    () => this.studentsSignal().filter((student) => student.status === 'cancelled').length,
   );
 
   setSearch(value: string): void {

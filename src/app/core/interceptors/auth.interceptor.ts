@@ -1,41 +1,37 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { switchMap, catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { API_URL } from '../config/api.config';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const authService = inject(AuthService);
-  const token = authService.getToken();
-
-  const authorizedRequest = token
-    ? request.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+  if (!request.url.startsWith(API_URL + '/')) return next(request);
+  const auth = inject(AuthService);
+  const token = auth.getToken();
+  const version = auth.sessionVersion;
+  const authorized = token
+    ? request.clone({ setHeaders: { Authorization: 'Bearer ' + token } })
     : request;
-
-  return next(authorizedRequest).pipe(
+  return next(authorized).pipe(
     catchError((error: HttpErrorResponse) => {
-      const isRefreshRequest = request.url.endsWith('/Auth/refresh');
-      const canRefresh = error.status === 401
-        && !isRefreshRequest
-        && !!authService.getRefreshToken();
-
-      if (!canRefresh) {
+      if (
+        error.status !== 401 ||
+        /\/Auth\/(login|cadastrar|refresh|logout)$/.test(request.url) ||
+        version !== auth.sessionVersion ||
+        !auth.getRefreshToken()
+      )
         return throwError(() => error);
-      }
-
-      return authService.refresh().pipe(
-        switchMap(() => next(request.clone({
-          setHeaders: {
-            Authorization: `Bearer ${authService.getToken()}`,
-          },
-        }))),
-        catchError(refreshError => {
-          authService.logout();
-          return throwError(() => refreshError);
-        }),
+      // A late 401 for the previous access token can arrive after rotation ended.
+      if (auth.getToken() !== token)
+        return next(request.clone({ setHeaders: { Authorization: 'Bearer ' + auth.getToken() } }));
+      return auth.refresh().pipe(
+        switchMap(() =>
+          next(
+            request.clone({
+              setHeaders: { Authorization: 'Bearer ' + auth.getToken() },
+            }),
+          ),
+        ),
       );
     }),
   );

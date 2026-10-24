@@ -7,7 +7,11 @@
   </div>
 
   @if (formOpen() && selectedCourse(); as course) {
-    <form class="subpanel creation-form creation-form--open" [formGroup]="form" (ngSubmit)="saveClass()">
+    <form
+      class="subpanel creation-form creation-form--open"
+      [formGroup]="form"
+      (ngSubmit)="saveClass()"
+    >
       <div class="panel__header">
         <div>
           <span class="section-label">Turma de {{ course.nome }}</span>
@@ -23,8 +27,16 @@
       <div class="form-grid">
         <label class="field">
           <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
-          <input type="datetime-local" formControlName="startDate" required aria-required="true" aria-describedby="class-start-hint" />
-          <small id="class-start-hint">As inscricoes ficam abertas somente ate este horario de inicio.</small>
+          <input
+            type="datetime-local"
+            formControlName="startDate"
+            required
+            aria-required="true"
+            aria-describedby="class-start-hint"
+          />
+          <small id="class-start-hint"
+            >As inscricoes ficam abertas somente ate este horario de inicio.</small
+          >
         </label>
         <label class="field">
           <span>Fim <span class="optional-label">(opcional)</span></span>
@@ -40,7 +52,15 @@
         </label>
         <label class="field">
           <span>Capacidade <span class="required-marker" aria-hidden="true">*</span></span>
-          <input type="number" min="1" inputmode="numeric" placeholder="Digite a capacidade" formControlName="capacity" required aria-required="true" />
+          <input
+            type="number"
+            min="1"
+            inputmode="numeric"
+            placeholder="Digite a capacidade"
+            formControlName="capacity"
+            required
+            aria-required="true"
+          />
         </label>
         <label class="field">
           <span>Status <span class="required-marker" aria-hidden="true">*</span></span>
@@ -77,26 +97,43 @@
           <p class="muted">Cursos EAD nao precisam de agenda, local, instrutor ou vagas.</p>
         } @else {
           <div class="class-course-grid">
-          @for (courseClass of course.classes; track courseClass.id) {
-            <article class="class-card">
-              <button type="button" class="class-card__content" (click)="openClassModal(course, courseClass)">
-                <span class="class-card__type">{{ courseClass.status === 'completed' ? 'Concluida' : courseClass.status === 'cancelled' ? 'Cancelada' : 'Agendada' }}</span>
-                <strong class="class-card__title">Turma #{{ courseClass.id }}</strong>
-                <span>Inicio: {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
-                <span>Local: {{ courseClass.local }}</span>
-                <span>Instrutor: {{ courseClass.instructor }}</span>
-                <span class="class-card__footer">
-                  <b>{{ courseClass.availableSeats }}/{{ courseClass.capacity }} vagas restantes</b>
-                  <b>Ver alunos <span aria-hidden="true">-&gt;</span></b>
-                </span>
-              </button>
-              <button type="button" class="ghost-button" (click)="openClassForm(course, courseClass)">
-                Editar turma
-              </button>
-            </article>
-          } @empty {
-            <p class="muted">Nenhuma turma cadastrada para este curso.</p>
-          }
+            @for (courseClass of course.classes; track courseClass.id) {
+              <article class="class-card">
+                <button
+                  type="button"
+                  class="class-card__content"
+                  (click)="openClassModal(course, courseClass)"
+                >
+                  <span class="class-card__type">{{
+                    courseClass.status === 'completed'
+                      ? 'Concluida'
+                      : courseClass.status === 'cancelled'
+                        ? 'Cancelada'
+                        : 'Agendada'
+                  }}</span>
+                  <strong class="class-card__title">Turma #{{ courseClass.id }}</strong>
+                  <span>Inicio: {{ courseClass.startDate | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  <span>Local: {{ courseClass.local }}</span>
+                  <span>Instrutor: {{ courseClass.instructor }}</span>
+                  <span class="class-card__footer">
+                    <b
+                      >{{ courseClass.availableSeats }}/{{ courseClass.capacity }} vagas
+                      restantes</b
+                    >
+                    <b>Ver alunos <span aria-hidden="true">-&gt;</span></b>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="ghost-button"
+                  (click)="openClassForm(course, courseClass)"
+                >
+                  Editar turma
+                </button>
+              </article>
+            } @empty {
+              <p class="muted">Nenhuma turma cadastrada para este curso.</p>
+            }
           </div>
         }
       </div>
@@ -120,15 +157,21 @@
           <div>
             <span class="section-label">Turma</span>
             <h2 id="class-modal-title">{{ course.nome }}</h2>
-            <p>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}</p>
+            <p>{{ courseClass.startDate | date: 'dd/MM/yyyy HH:mm' }} - {{ courseClass.local }}</p>
             <p>Instrutor: {{ courseClass.instructor }}</p>
           </div>
-          <button type="button" class="icon-button" aria-label="Fechar" (click)="closeClassModal()">X</button>
+          <button type="button" class="icon-button" aria-label="Fechar" (click)="closeClassModal()">
+            X
+          </button>
         </div>
 
         <div class="class-modal__summary">
-          <span><b>{{ studentsForCourse(course.id).length }}</b> matriculado(s)</span>
-          <span><b>{{ courseClass.availableSeats }}</b> vaga(s) restante(s)</span>
+          <span
+            ><b>{{ studentsForCourse(course.id).length }}</b> matriculado(s)</span
+          >
+          <span
+            ><b>{{ courseClass.availableSeats }}</b> vaga(s) restante(s)</span
+          >
           <button
             type="button"
             class="ghost-button"
@@ -140,10 +183,14 @@
         </div>
 
         <div class="class-modal__students">
-          @for (student of studentsForCourse(course.id); track student.id) {
+          @for (student of studentsForCourse(course.id); track student.enrollmentId ?? student.id) {
             <div class="class-student">
               <div>
                 <strong>{{ student.name }}</strong>
+                <span>{{ participationLabel(student) }}</span>
+                @if (student.participation?.confirmedAt; as confirmedAt) {
+                  <span>Confirmada em {{ confirmedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                }
                 <span>{{ student.email }}</span>
                 @if (student.phone) {
                   <span>{{ student.phone }}</span>
@@ -174,8 +221,10 @@
                       targetClass.availableSeats > 0
                     ) {
                       <option [value]="targetClass.id">
-                        {{ targetClass.local }} - {{ targetClass.startDate | date:'short' }}
-                        ({{ targetClass.availableSeats }} vaga(s))
+                        {{ targetClass.local }} - {{ targetClass.startDate | date: 'short' }} ({{
+                          targetClass.availableSeats
+                        }}
+                        vaga(s))
                       </option>
                     }
                   }

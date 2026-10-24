@@ -6,12 +6,22 @@
     </div>
 
     <div class="period-control">
-      <button type="button" [class.active]="period() === 'day'" (click)="setPeriod('day')">Dia</button>
-      <button type="button" [class.active]="period() === 'week'" (click)="setPeriod('week')">Semana</button>
-      <button type="button" [class.active]="period() === 'month'" (click)="setPeriod('month')">Mes</button>
-      <button type="button" [class.active]="period() === 'year'" (click)="setPeriod('year')">Ano</button>
+      <button type="button" [class.active]="period() === 'day'" (click)="setPeriod('day')">
+        Dia
+      </button>
+      <button type="button" [class.active]="period() === 'week'" (click)="setPeriod('week')">
+        Semana
+      </button>
+      <button type="button" [class.active]="period() === 'month'" (click)="setPeriod('month')">
+        Mes
+      </button>
+      <button type="button" [class.active]="period() === 'year'" (click)="setPeriod('year')">
+        Ano
+      </button>
     </div>
-    <button type="button" class="ghost-button" (click)="exportReports()">Exportar relatorio CSV</button>
+    <button type="button" class="ghost-button" (click)="exportReports()">
+      Exportar relatorio CSV
+    </button>
   </div>
 
   <div class="metric-grid">
@@ -112,7 +122,9 @@
           @for (item of occupancyReport(); track item.classId) {
             <div class="list-row">
               <span>{{ item.courseName }} - {{ item.label }}</span>
-              <strong>{{ item.occupied }}/{{ item.capacity }} ({{ formatPercent(item.percent) }})</strong>
+              <strong
+                >{{ item.occupied }}/{{ item.capacity }} ({{ formatPercent(item.percent) }})</strong
+              >
             </div>
           }
         </div>

@@ -63,14 +63,14 @@ export class AdminDashboard {
   readonly period = signal<Period>('day');
 
   readonly activeOrders = computed(() =>
-    this.ordersSignal().filter(order => order.status !== 'cancelled')
+    this.ordersSignal().filter((order) => order.status !== 'cancelled'),
   );
 
   readonly filteredOrders = computed(() => {
     const now = new Date();
     const selectedPeriod = this.period();
 
-    return this.activeOrders().filter(order => {
+    return this.activeOrders().filter((order) => {
       const orderDate = new Date(order.dataPedido);
 
       if (Number.isNaN(orderDate.getTime())) {
@@ -89,8 +89,9 @@ export class AdminDashboard {
       }
 
       if (selectedPeriod === 'month') {
-        return orderDate.getMonth() === now.getMonth()
-          && orderDate.getFullYear() === now.getFullYear();
+        return (
+          orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear()
+        );
       }
 
       return orderDate.getFullYear() === now.getFullYear();
@@ -98,7 +99,7 @@ export class AdminDashboard {
   });
 
   readonly revenue = computed(() =>
-    this.filteredOrders().reduce((sum, order) => sum + order.total, 0)
+    this.filteredOrders().reduce((sum, order) => sum + order.total, 0),
   );
 
   readonly averageTicket = computed(() => {
@@ -108,13 +109,13 @@ export class AdminDashboard {
 
   readonly lowStockClasses = computed(() =>
     this.coursesSignal()
-      .flatMap(course => course.classes)
-      .filter(courseClass => courseClass.availableSeats <= 5)
-      .map(courseClass => ({
+      .flatMap((course) => course.classes)
+      .filter((courseClass) => courseClass.availableSeats <= 5)
+      .map((courseClass) => ({
         id: courseClass.id,
         nome: `${courseClass.local} - ${courseClass.instructor}`,
         estoque: courseClass.availableSeats,
-      }))
+      })),
   );
 
   readonly revenueChart = computed<RevenueChartPoint[]>(() => {
@@ -125,12 +126,12 @@ export class AdminDashboard {
       return date;
     });
 
-    const values = days.map(day => {
+    const values = days.map((day) => {
       const nextDay = new Date(day);
       nextDay.setDate(day.getDate() + 1);
 
       const value = this.activeOrders()
-        .filter(order => {
+        .filter((order) => {
           const orderDate = new Date(order.dataPedido);
           return orderDate >= day && orderDate < nextDay;
         })
@@ -142,9 +143,9 @@ export class AdminDashboard {
       };
     });
 
-    const maxValue = Math.max(...values.map(item => item.value), 1);
+    const maxValue = Math.max(...values.map((item) => item.value), 1);
 
-    return values.map(item => ({
+    return values.map((item) => ({
       ...item,
       percent: Math.max((item.value / maxValue) * 100, item.value > 0 ? 8 : 0),
     }));
@@ -154,8 +155,8 @@ export class AdminDashboard {
     const statuses = ['pending', 'processing', 'completed', 'cancelled'];
     const total = Math.max(this.ordersSignal().length, 1);
 
-    return statuses.map(status => {
-      const count = this.ordersSignal().filter(order => order.status === status).length;
+    return statuses.map((status) => {
+      const count = this.ordersSignal().filter((order) => order.status === status).length;
 
       return {
         status: this.orderStatusLabel(status),
@@ -181,16 +182,16 @@ export class AdminDashboard {
       .map(([name, value]) => ({ name, ...value }))
       .sort((a, b) => b.total - a.total)
       .slice(0, 5);
-    const maxTotal = Math.max(...topItems.map(item => item.total), 1);
+    const maxTotal = Math.max(...topItems.map((item) => item.total), 1);
 
-    return topItems.map(item => ({
+    return topItems.map((item) => ({
       ...item,
       percent: Math.max((item.total / maxTotal) * 100, 8),
     }));
   });
 
   readonly occupancyRate = computed(() => {
-    const classes = this.coursesSignal().flatMap(course => course.classes);
+    const classes = this.coursesSignal().flatMap((course) => course.classes);
     const capacity = classes.reduce((sum, courseClass) => sum + courseClass.capacity, 0);
     const occupied = classes.reduce(
       (sum, courseClass) => sum + courseClass.capacity - courseClass.availableSeats,
@@ -202,25 +203,27 @@ export class AdminDashboard {
 
   readonly cancellationRate = computed(() => {
     const orders = this.ordersSignal();
-    const cancelled = orders.filter(order => order.status === 'cancelled').length;
+    const cancelled = orders.filter((order) => order.status === 'cancelled').length;
     return orders.length ? (cancelled / orders.length) * 100 : 0;
   });
 
   readonly occupancyReport = computed<OccupancyReportItem[]>(() =>
     this.coursesSignal()
-      .flatMap(course => course.classes.map(courseClass => {
-        const occupied = Math.max(0, courseClass.capacity - courseClass.availableSeats);
-        return {
-          courseName: course.nome,
-          classId: courseClass.id,
-          label: `${courseClass.local} - ${this.formatShortDate(courseClass.startDate)}`,
-          occupied,
-          capacity: courseClass.capacity,
-          percent: courseClass.capacity ? (occupied / courseClass.capacity) * 100 : 0,
-        };
-      }))
+      .flatMap((course) =>
+        course.classes.map((courseClass) => {
+          const occupied = Math.max(0, courseClass.capacity - courseClass.availableSeats);
+          return {
+            courseName: course.nome,
+            classId: courseClass.id,
+            label: `${courseClass.local} - ${this.formatShortDate(courseClass.startDate)}`,
+            occupied,
+            capacity: courseClass.capacity,
+            percent: courseClass.capacity ? (occupied / courseClass.capacity) * 100 : 0,
+          };
+        }),
+      )
       .sort((a, b) => b.percent - a.percent)
-      .slice(0, 6)
+      .slice(0, 6),
   );
 
   readonly categoryReport = computed<CategoryReportItem[]>(() => {
@@ -228,8 +231,9 @@ export class AdminDashboard {
 
     for (const order of this.activeOrders()) {
       for (const item of order.itens) {
-        const course = this.coursesSignal().find(current =>
-          current.nome.toLowerCase() === item.nome.toLowerCase());
+        const course = this.coursesSignal().find(
+          (current) => current.nome.toLowerCase() === item.nome.toLowerCase(),
+        );
         const category = course?.category?.trim() || 'Sem categoria';
         totals.set(category, (totals.get(category) ?? 0) + item.quantidade * item.precoUnitario);
       }
@@ -238,9 +242,9 @@ export class AdminDashboard {
     const items = [...totals.entries()]
       .map(([category, total]) => ({ category, total, percent: 0 }))
       .sort((a, b) => b.total - a.total);
-    const maxTotal = Math.max(...items.map(item => item.total), 1);
+    const maxTotal = Math.max(...items.map((item) => item.total), 1);
 
-    return items.map(item => ({
+    return items.map((item) => ({
       ...item,
       percent: Math.max((item.total / maxTotal) * 100, 8),
     }));
@@ -274,19 +278,19 @@ export class AdminDashboard {
       ['Relatorio', 'Indicador', 'Valor'],
       ['Resumo', 'Taxa de ocupacao', this.formatPercent(this.occupancyRate())],
       ['Resumo', 'Taxa de cancelamento', this.formatPercent(this.cancellationRate())],
-      ...this.occupancyReport().map(item => [
+      ...this.occupancyReport().map((item) => [
         'Ocupacao por turma',
         `${item.courseName} - ${item.label}`,
         `${item.occupied}/${item.capacity} (${this.formatPercent(item.percent)})`,
       ]),
-      ...this.categoryReport().map(item => [
+      ...this.categoryReport().map((item) => [
         'Receita por categoria',
         item.category,
         this.formatPrice(item.total),
       ]),
     ];
     const csv = rows
-      .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(';'))
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(';'))
       .join('\r\n');
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

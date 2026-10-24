@@ -1,16 +1,16 @@
 :root {
-  --color-bg: #f7f9fb;
+  --color-bg: #faf8f7;
   --color-surface: #ffffff;
-  --color-text: #172033;
-  --color-muted: #64748b;
-  --color-border: #d7dee8;
-  --color-primary: #315cfd;
-  --color-primary-dark: #2447c6;
-  --color-accent: #7c3aed;
-  --color-success: #2563eb;
-  --color-success-bg: #eff6ff;
-  --color-success-border: #bfdbfe;
-  --font-sans: "Segoe UI", "Inter", Roboto, Arial, sans-serif;
+  --color-text: #282327;
+  --color-muted: #6c6267;
+  --color-border: #e9dfe0;
+  --color-primary: #b91c2b;
+  --color-primary-dark: #931523;
+  --color-accent: #b91c2b;
+  --color-success: #286043;
+  --color-success-bg: #f0f7f3;
+  --color-success-border: #c7e1d1;
+  --font-sans: 'Segoe UI', 'Inter', Roboto, Arial, sans-serif;
 }
 
 * {
@@ -74,14 +74,65 @@ textarea {
   line-height: 1.4;
   text-align: center;
   text-decoration: none;
-  transition: background .15s ease;
+  transition: background 0.15s ease;
 }
-.navigation-button:hover { background: #edf2ff; }
+.navigation-button:hover {
+  background: #fff0f2;
+}
 a.navigation-button.back-link {
   display: flex;
   width: fit-content;
   max-width: 100%;
 }
-.navigation-button:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 3px; }
-.navigation-button.navigation-button--on-dark { border-color: #ffffff70; background: #ffffff12; color: #fff; }
-.navigation-button.navigation-button--on-dark:hover { background: #ffffff25; }
+.navigation-button:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+.navigation-button.navigation-button--on-dark {
+  border-color: #ffffff70;
+  background: #ffffff12;
+  color: #fff;
+}
+.navigation-button.navigation-button--on-dark:hover {
+  background: #ffffff25;
+}
+
+/* Shared interaction and typography for all application screens. */
+:root {
+  --color-primary-soft: #fff0f2;
+  --color-hero-label: #ffd8dc;
+}
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-primary);
+}
+:where(h1, h2, h3) {
+  overflow-wrap: anywhere;
+}
+:where(input, select, textarea) {
+  min-width: 0;
+}
+:where(.primary-button, .submit-button, .primary-link, .checkout-link):hover:not(:disabled) {
+  filter: brightness(0.94);
+}
+:where(.account-hero, .auth-hero, .cart-hero, .checkout-hero, .admin-hero) .section-label {
+  color: var(--color-hero-label);
+}
+:where(
+    .account-hero,
+    .auth-hero,
+    .cart-hero,
+    .checkout-hero,
+    .admin-hero,
+    .student-hero,
+    .enrollment-detail-hero,
+    .order-detail-hero
+  )
+  h1 {
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}

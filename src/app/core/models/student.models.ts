@@ -1,6 +1,9 @@
 import { CourseClass } from './course.models';
+import { Participation } from './enrollment.models';
 
 export interface Student {
+  enrollmentId?: number;
+  participation?: Participation | null;
   id: number;
   name: string;
   email: string;

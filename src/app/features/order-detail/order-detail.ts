@@ -28,8 +28,8 @@ export class OrderDetail {
     }
 
     this.orderService.getById(orderId).subscribe({
-      next: order => this.order.set(order),
-      error: response => {
+      next: (order) => this.order.set(order),
+      error: (response) => {
         this.error.set(response.error?.message ?? 'Nao foi possivel carregar o pedido.');
         this.loading.set(false);
       },

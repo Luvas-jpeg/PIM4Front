@@ -1,5 +1,7 @@
 # Teste pratico de compra e matricula
 
+**Estado em 12/10/2026:** falha intermitente identificada no carregamento inicial do admin. Uma resposta antiga sobrescrevia o curso/turma criados durante o teste. O frontend agora preserva as atualizacoes recentes e os cursos existentes.
+
 Este teste abre o Chrome e utiliza o frontend, a API e o PostgreSQL locais reais.
 Nao ha interceptacao de respostas nem mocks. A confirmacao e feita pelo webhook
 interno de teste: nao realiza cobranca nem valida o futuro provedor de pagamento.
@@ -33,6 +35,24 @@ O script e a configuracao do Playwright rejeitam enderecos externos. Para execut
 sem perguntas em automacao, forneca `PIM4_E2E_ADMIN_EMAIL` e
 `PIM4_E2E_ADMIN_PASSWORD` como variaveis temporarias do processo, sem registrar
 credenciais em arquivos. O script restaura as variaveis que altera ao finalizar.
+
+## Regressao da resposta inicial atrasada
+
+Para testar a condicao que reproduzia a falha, execute:
+
+```powershell
+npm run test:e2e -- -DelayInitialCourses
+```
+
+Essa opcao consulta os dados reais da API e entrega a primeira listagem de cursos
+ao navegador somente depois da resposta de criacao da turma. Nao substitui dados
+por mocks nem faz parte da execucao padrao. O teste deve continuar ate a matricula.
+
+O terminal mostra cada etapa com prefixo [E2E]. Falhas de cadastro, incluindo
+HTTP 429, agora sao verificadas antes de aguardar o login automatico.
+A API limita cadastro/login/refresh por IP; aguarde pelo menos um minuto entre
+execucoes completas consecutivas se atingir esse limite. O teste nao desabilita
+nem contorna a protecao da API.
 
 ## O que verifica
 

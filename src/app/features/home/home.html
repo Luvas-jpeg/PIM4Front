@@ -1,26 +1,46 @@
 <main class="home-page">
-  <section class="hero">
-    <div class="hero__content">
-      <span class="hero__eyebrow">MediShop</span>
-      <h1>Cursos presenciais para profissionais da saúde</h1>
-      <p>
-        Encontre cursos presenciais para desenvolver sua prática e evoluir na
-        área da saúde.
-      </p>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__inner">
+      <div class="hero__content">
+        <span class="hero__eyebrow">Conhecimento que transforma o cuidado</span>
+        <h1 id="hero-title">Seu próximo passo<br />na área da <em>saúde.</em></h1>
+        <p>
+          Aprenda presencialmente, desenvolva sua prática e encontre novas possibilidades para sua
+          formação.
+        </p>
+        <a class="hero__cta" href="#catalogo">Explorar cursos <span aria-hidden="true">↗</span></a>
+        <div class="hero__topics">
+          <span>Cursos presenciais</span><span>Turmas e datas à sua escolha</span>
+        </div>
+      </div>
+      <div class="hero__visual" role="img" aria-label="Ambiente de formação na área da saúde">
+        <div class="hero__note">
+          <span class="hero__note-icon" aria-hidden="true">+</span>
+          <div>
+            <strong>Mais preparo para cuidar.</strong
+            ><span>Sua formação começa com o próximo passo.</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="catalog">
+  <section class="catalog" id="catalogo" aria-labelledby="catalog-title">
     <div class="catalog__header">
       <div>
         <span class="section-label">Catálogo</span>
-        <h2>Cursos disponíveis</h2>
+        <h2 id="catalog-title">Encontre sua próxima formação</h2>
+        <p class="catalog__intro">
+          Explore os cursos e escolha a turma que combina com sua rotina.
+        </p>
       </div>
 
       <div class="catalog__search">
+        <label class="search-label" for="catalog-search">O que você quer aprender?</label>
         <input
+          id="catalog-search"
           type="search"
-          placeholder="Buscar por nome, categoria ou descrição"
+          placeholder="Busque um curso ou assunto"
           [value]="searchTerm()"
           (input)="updateSearch($any($event.target).value)"
         />
@@ -28,27 +48,33 @@
     </div>
 
     <div class="catalog__layout">
-      <aside class="catalog__filters-panel" aria-label="Filtros do catalogo">
+      <aside class="catalog__filters-panel" aria-label="Filtros do catálogo">
         <div class="filters-panel__header">
           <span class="section-label">Refine sua busca</span>
           <h3>Filtros</h3>
         </div>
 
         <div class="catalog__filters">
-          <select [value]="category()" (change)="updateCategory($any($event.target).value)">
-            <option value="">Todas as categorias</option>
-            @for (item of categories(); track item) {
-              <option [value]="item">{{ item }}</option>
-            }
-          </select>
-          <select [value]="city()" (change)="updateCity($any($event.target).value)">
-            <option value="">Todos os locais</option>
-            @for (item of cities(); track item) {
-              <option [value]="item">{{ item }}</option>
-            }
-          </select>
+          <label
+            ><span>Categoria</span
+            ><select [value]="category()" (change)="updateCategory($any($event.target).value)">
+              <option value="">Todas as categorias</option>
+              @for (item of categories(); track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select></label
+          >
+          <label
+            ><span>Local</span
+            ><select [value]="city()" (change)="updateCity($any($event.target).value)">
+              <option value="">Todos os locais</option>
+              @for (item of cities(); track item) {
+                <option [value]="item">{{ item }}</option>
+              }
+            </select></label
+          >
           <label>
-            <span>De</span>
+            <span>Data inicial</span>
             <input
               type="date"
               [value]="startDate()"
@@ -56,7 +82,7 @@
             />
           </label>
           <label>
-            <span>Até</span>
+            <span>Data final</span>
             <input
               type="date"
               [value]="endDate()"
@@ -69,87 +95,112 @@
           <button type="button" class="filter-reset-button" (click)="clearFilters()">
             Limpar filtros
           </button>
-          <select [value]="sort()" (change)="updateSort($any($event.target).value)">
-            <option value="relevance">Mais relevantes</option>
-            <option value="date">Próxima turma</option>
-            <option value="price-asc">Menor preço</option>
-            <option value="price-desc">Maior preço</option>
-            <option value="name">Nome</option>
-          </select>
+          <label class="catalog__sort"
+            ><span>Ordenar por</span
+            ><select [value]="sort()" (change)="updateSort($any($event.target).value)">
+              <option value="relevance">Mais relevantes</option>
+              <option value="date">Próxima turma</option>
+              <option value="price-asc">Menor preço</option>
+              <option value="price-desc">Maior preço</option>
+              <option value="name">Nome</option>
+            </select></label
+          >
         </div>
       </aside>
 
-      <div class="catalog__results">
+      <div class="catalog__results" [attr.aria-busy]="loading()">
+        @if (loading()) {
+          <div class="state">Carregando catálogo...</div>
+        } @else if (error()) {
+          <div class="state state--error" role="alert">
+            <strong>Não conseguimos carregar o catálogo</strong>
+            <p>{{ error() }}</p>
+            <button type="button" class="filter-button" (click)="applyFilters()">
+              Tentar novamente
+            </button>
+          </div>
+        } @else if (courses().length === 0) {
+          <div class="state" role="status">
+            <strong>Nenhum curso encontrado.</strong>
+            <p>Experimente outro termo ou remova os filtros para explorar mais opções.</p>
+            <button type="button" class="filter-reset-button" (click)="clearFilters()">
+              Limpar filtros
+            </button>
+          </div>
+        } @else {
+          <div class="course-grid">
+            @for (course of courses(); track course.id) {
+              <article class="course-card">
+                <div class="course-card__media">
+                  <img
+                    [src]="imageUrl(course)"
+                    [alt]="course.nome"
+                    loading="lazy"
+                    decoding="async"
+                    (error)="setFallbackImage($event)"
+                  />
 
-    @if (loading()) {
-      <div class="state">Carregando catálogo...</div>
-    } @else if (error()) {
-      <div class="state state--error">{{ error() }}</div>
-    } @else if (courses().length === 0) {
-      <div class="state">Nenhum curso encontrado.</div>
-    } @else {
-      <div class="product-grid">
-        @for (course of courses(); track course.id) {
-          <article class="product-card">
-            <div class="product-card__media">
-              <img
-                [src]="imageUrl(course)"
-                [alt]="course.nome"
-                loading="eager"
-                decoding="async"
-                (error)="setFallbackImage($event)"
-              />
-
-              <span class="product-card__badge">Presencial</span>
-            </div>
-            <div class="product-card__body">
-              <div class="product-card__meta">
-                <span>{{ course.category || 'Saúde' }}</span>
-                <span>
-                  {{ course.classes.length }} turma(s)
-                </span>
-              </div>
-
-              <h3><a [routerLink]="['/curso', course.id]">{{ course.nome }}</a></h3>
-              <p>{{ course.description || 'Curso presencial disponível no catálogo.' }}</p>
-
-              @if (nextClass(course); as courseClass) {
-                <div class="course-info" [class.course-info--available]="hasAvailability(course)">
-                  <span>Próxima turma: {{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
-                  <span>{{ courseClass.local }} · {{ availabilityLabel(course) }}</span>
+                  <span class="course-card__badge">Presencial</span>
                 </div>
-              } @else {
-                <div
-                  class="course-info"
-                  [class.course-info--available]="hasAvailability(course)"
-                  [class.course-info--unavailable]="!hasAvailability(course)"
-                >
-                  <span>{{ availabilityLabel(course) }}</span>
-                </div>
-              }
+                <div class="course-card__body">
+                  <div class="course-card__meta">
+                    <span>{{ course.category || 'Saúde' }}</span>
+                    <span> {{ course.classes.length }} turma(s) </span>
+                  </div>
 
-              <div class="product-card__footer">
-                <strong>{{ formatPrice(course.preco) }}</strong>
-                <a class="product-card__details" [routerLink]="['/curso', course.id]">
-                  Ver detalhes
-                </a>
-              </div>
-            </div>
-          </article>
+                  <h3>
+                    <a [routerLink]="['/curso', course.id]">{{ course.nome }}</a>
+                  </h3>
+                  <p>{{ course.description || 'Curso presencial disponível no catálogo.' }}</p>
+
+                  @if (nextClass(course); as courseClass) {
+                    <div
+                      class="course-info"
+                      [class.course-info--available]="hasAvailability(course)"
+                    >
+                      <span
+                        >Próxima turma: {{ courseClass.startDate | date: 'dd/MM/yyyy HH:mm' }}</span
+                      >
+                      <span>{{ courseClass.local }} · {{ availabilityLabel(course) }}</span>
+                    </div>
+                  } @else {
+                    <div
+                      class="course-info"
+                      [class.course-info--available]="hasAvailability(course)"
+                      [class.course-info--unavailable]="!hasAvailability(course)"
+                    >
+                      <span>{{ availabilityLabel(course) }}</span>
+                    </div>
+                  }
+
+                  <div class="course-card__footer">
+                    <div class="course-card__price">
+                      <span>Investimento</span><strong>{{ formatPrice(course.preco) }}</strong>
+                    </div>
+                    <a class="course-card__details" [routerLink]="['/curso', course.id]">
+                      Ver detalhes
+                    </a>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+          @if (totalPages() > 1) {
+            <nav class="pagination" aria-label="Paginação do catálogo">
+              <button type="button" (click)="changePage(page() - 1)" [disabled]="page() === 1">
+                Anterior
+              </button>
+              <span>Página {{ page() }} de {{ totalPages() }}</span>
+              <button
+                type="button"
+                (click)="changePage(page() + 1)"
+                [disabled]="page() === totalPages()"
+              >
+                Próxima
+              </button>
+            </nav>
+          }
         }
-      </div>
-      @if (totalPages() > 1) {
-        <nav class="pagination" aria-label="Paginação do catálogo">
-          <button type="button" (click)="changePage(page() - 1)" [disabled]="page() === 1">
-            Anterior
-          </button>
-          <span>Página {{ page() }} de {{ totalPages() }}</span>
-          <button type="button" (click)="changePage(page() + 1)" [disabled]="page() === totalPages()">
-            Próxima
-          </button>
-        </nav>
-      }
-    }
       </div>
     </div>
   </section>

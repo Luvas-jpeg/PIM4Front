@@ -1,13 +1,12 @@
 <main class="cart-page">
   <section class="cart-hero">
     <div class="cart-hero__content">
-      <a routerLink="/catalogo" class="back-link">Voltar ao catalogo</a>
+      <a routerLink="/catalogo" class="back-link navigation-button navigation-button--on-dark"
+        >Voltar ao catalogo</a
+      >
       <span class="section-label">Carrinho</span>
       <h1>Revise sua compra</h1>
-      <p>
-        Confira os itens selecionados antes de seguir para a finalizacao do
-        pedido.
-      </p>
+      <p>Confira os itens selecionados antes de seguir para a finalizacao do pedido.</p>
     </div>
   </section>
 
@@ -42,13 +41,15 @@
 
                 <h2>{{ item.course.nome }}</h2>
                 <p>
-                  {{ item.course.description || 'Item disponivel para compra no catalogo MediShop.' }}
+                  {{
+                    item.course.description || 'Item disponivel para compra no catalogo MediShop.'
+                  }}
                 </p>
 
                 @if (item.course) {
                   <div class="course-info">
                     @if (item.courseClass; as courseClass) {
-                      <span>{{ courseClass.startDate | date:'dd/MM/yyyy HH:mm' }}</span>
+                      <span>{{ courseClass.startDate | date: 'dd/MM/yyyy HH:mm' }}</span>
                       <span>{{ courseClass.local }}</span>
                       <span>{{ courseClass.instructor }}</span>
                     } @else if (item.course.deliveryMode === 'ead') {
@@ -64,44 +65,11 @@
               <div class="cart-item__actions">
                 <strong>{{ formatPrice(item.course.preco) }}</strong>
 
-                <div class="quantity-control" aria-label="Quantidade">
-                  <button
-                    type="button"
-                    aria-label="Diminuir quantidade"
-                    (click)="decrease(item)"
-                  >
-                    -
-                  </button>
+                <span class="quantity-control" aria-label="Quantidade">1 vaga para você</span>
 
-                  <input
-                    type="number"
-                    min="1"
-                    [max]="availableQuantity(item)"
-                    [value]="item.quantity"
-                    (change)="updateQuantity(item, $any($event.target).value)"
-                  />
+                <span class="subtotal"> Subtotal: {{ formatPrice(itemSubtotal(item)) }} </span>
 
-                  <button
-                    type="button"
-                    aria-label="Aumentar quantidade"
-                    [disabled]="item.quantity >= availableQuantity(item)"
-                    (click)="increase(item)"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <span class="subtotal">
-                  Subtotal: {{ formatPrice(itemSubtotal(item)) }}
-                </span>
-
-                <button
-                  type="button"
-                  class="remove-button"
-                  (click)="remove(item)"
-                >
-                  Remover
-                </button>
+                <button type="button" class="remove-button" (click)="remove(item)">Remover</button>
               </div>
             </article>
           }
@@ -122,9 +90,7 @@
 
           <a routerLink="/checkout" class="checkout-link">Finalizar pedido</a>
 
-          <button type="button" class="clear-button" (click)="clear()">
-            Limpar carrinho
-          </button>
+          <button type="button" class="clear-button" (click)="clear()">Limpar carrinho</button>
         </aside>
       </div>
     }

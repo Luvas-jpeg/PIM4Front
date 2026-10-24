@@ -90,12 +90,18 @@
             <p>{{ student.phone }}</p>
           }
         </div>
-        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeStudent()">X</button>
+        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeStudent()">
+          X
+        </button>
       </div>
 
       <div class="class-modal__summary">
-        <span><b>{{ studentStatusLabel(student.status) }}</b> status</span>
-        <span><b>{{ student.courseName || 'Curso nao informado' }}</b> curso</span>
+        <span
+          ><b>{{ studentStatusLabel(student.status) }}</b> status</span
+        >
+        <span
+          ><b>{{ student.courseName || 'Curso nao informado' }}</b> curso</span
+        >
       </div>
 
       <div class="list">

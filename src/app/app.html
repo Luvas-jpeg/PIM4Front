@@ -3,14 +3,18 @@
     <a routerLink="/" class="brand">MediShop</a>
 
     <div class="header-actions">
-      <a routerLink="/catalogo" class="nav-link">Catalogo</a>
+      <a routerLink="/catalogo" class="nav-link">Catálogo</a>
       <a routerLink="/area-aluno" class="nav-link">Área do aluno</a>
 
       @if (isAdmin()) {
         <a routerLink="/admin" class="header-link">Admin</a>
       }
 
-      <a [routerLink]="user() ? '/conta' : '/login'" class="account-link" aria-label="Entrar ou acessar conta">
+      <a
+        [routerLink]="user() ? '/conta' : '/login'"
+        class="account-link"
+        aria-label="Entrar ou acessar conta"
+      >
         <span class="account-icon" aria-hidden="true"></span>
         <span class="account-link__text">
           {{ user()?.nome || 'Entrar' }}

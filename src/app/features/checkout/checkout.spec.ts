@@ -57,7 +57,9 @@ describe('Checkout', () => {
     deliveryMode: 'ead',
     workloadHours: 10,
     isActive: true,
-    classes: [], modules: [], assessments: [],
+    classes: [],
+    modules: [],
+    assessments: [],
   };
 
   const courseClass: CourseClass = {
@@ -114,16 +116,18 @@ describe('Checkout', () => {
 
   it('should apply percentage coupon', () => {
     cartService.add(baseCourse, 1);
-    promoCodeServiceMock.validate.mockReturnValue(of({
-      id: 1,
-      code: 'MED10',
-      discount: 10,
-      discountType: 'percentage',
-      startDate: '',
-      endDate: '',
-      isActive: true,
-      usageCount: 0,
-    }));
+    promoCodeServiceMock.validate.mockReturnValue(
+      of({
+        id: 1,
+        code: 'MED10',
+        discount: 10,
+        discountType: 'percentage',
+        startDate: '',
+        endDate: '',
+        isActive: true,
+        usageCount: 0,
+      }),
+    );
 
     component.form.controls.promoCode.setValue('med10');
     component.applyCoupon();
@@ -135,22 +139,26 @@ describe('Checkout', () => {
     cartService.addCourse(
       { ...baseCourse, deliveryMode: 'presencial' as const, nome: 'Curso teste' },
       courseClass,
-      2,
+      1,
     );
-    orderServiceMock.create.mockReturnValue(of({
-      message: 'Pedido criado com sucesso!',
-      orderId: 10,
-      total: 240,
-    }));
+    orderServiceMock.create.mockReturnValue(
+      of({
+        message: 'Pedido criado com sucesso!',
+        orderId: 10,
+        total: 120,
+      }),
+    );
 
     component.submit();
 
     const request = orderServiceMock.create.mock.calls[0][0] as CreateOrderRequest;
-    expect(request.itens).toEqual([{
-      courseId: 1,
-      turmaId: 7,
-      quantidade: 2,
-    }]);
+    expect(request.itens).toEqual([
+      {
+        courseId: 1,
+        turmaId: 7,
+        quantidade: 1,
+      },
+    ]);
     expect(request.paymentMethod).toBe('pix');
     expect(cartService.items()).toEqual([]);
   });
@@ -159,22 +167,26 @@ describe('Checkout', () => {
     cartService.addCourse(
       { ...baseCourse, deliveryMode: 'presencial' as const, id: 1, preco: 250 },
       courseClass,
-      2,
+      1,
     );
-    orderServiceMock.create.mockReturnValue(of({
-      message: 'Pedido criado com sucesso!',
-      orderId: 11,
-      total: 500,
-    }));
+    orderServiceMock.create.mockReturnValue(
+      of({
+        message: 'Pedido criado com sucesso!',
+        orderId: 11,
+        total: 250,
+      }),
+    );
 
     component.submit();
 
     const request = orderServiceMock.create.mock.calls[0][0] as CreateOrderRequest;
-    expect(request.itens).toEqual([{
-      courseId: 1,
-      turmaId: 7,
-      quantidade: 2,
-    }]);
+    expect(request.itens).toEqual([
+      {
+        courseId: 1,
+        turmaId: 7,
+        quantidade: 1,
+      },
+    ]);
   });
 
   it('should block a course order without a selected class', () => {
@@ -188,7 +200,9 @@ describe('Checkout', () => {
 
   it('should submit EAD without a class using courseId', () => {
     cartService.add(baseCourse, 1);
-    orderServiceMock.create.mockReturnValue(of({ message: 'Pedido criado', orderId: 12, total: 120 }));
+    orderServiceMock.create.mockReturnValue(
+      of({ message: 'Pedido criado', orderId: 12, total: 120 }),
+    );
     component.submit();
     expect(orderServiceMock.create.mock.calls[0][0].itens).toEqual([
       { courseId: 1, turmaId: null, quantidade: 1 },

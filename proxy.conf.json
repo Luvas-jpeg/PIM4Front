@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "http://localhost:5278",
+    "target": "https://pim4-api-demo.onrender.com",
     "secure": false,
     "changeOrigin": true
   }

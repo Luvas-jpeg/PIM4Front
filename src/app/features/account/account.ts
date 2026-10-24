@@ -57,18 +57,18 @@ export class Account {
     this.error.set(null);
     this.cancellingOrderId.set(order.id);
 
-    this.orderService.cancel(order.id)
+    this.orderService
+      .cancel(order.id)
       .pipe(finalize(() => this.cancellingOrderId.set(null)))
       .subscribe({
-        next: cancelledOrder => {
-          this.orders.update(orders => orders.map(current =>
-            current.id === order.id ? cancelledOrder : current
-          ));
+        next: (cancelledOrder) => {
+          this.orders.update((orders) =>
+            orders.map((current) => (current.id === order.id ? cancelledOrder : current)),
+          );
           this.success.set(`Pedido #${order.id} cancelado.`);
         },
-        error: response => this.error.set(
-          response.error?.message ?? 'Nao foi possivel cancelar o pedido.'
-        ),
+        error: (response) =>
+          this.error.set(response.error?.message ?? 'Nao foi possivel cancelar o pedido.'),
       });
   }
 
@@ -85,11 +85,14 @@ export class Account {
   }
 
   private loadOrders(): void {
-    this.orderService.getMyOrders().pipe(finalize(() => this.loadingOrders.set(false))).subscribe({
-      next: orders => this.orders.set(orders),
-      error: () => this.error.set('Nao foi possivel carregar seu historico de pedidos.'),
-      complete: () => this.loadingOrders.set(false),
-    });
+    this.orderService
+      .getMyOrders()
+      .pipe(finalize(() => this.loadingOrders.set(false)))
+      .subscribe({
+        next: (orders) => this.orders.set(orders),
+        error: () => this.error.set('Nao foi possivel carregar seu historico de pedidos.'),
+        complete: () => this.loadingOrders.set(false),
+      });
   }
 
   save(): void {
@@ -104,11 +107,13 @@ export class Account {
 
     this.saving.set(true);
 
-    this.authService.updateProfile(this.normalizeRequest())
+    this.authService
+      .updateProfile(this.normalizeRequest())
       .pipe(finalize(() => this.saving.set(false)))
       .subscribe({
         next: () => this.success.set('Dados atualizados com sucesso.'),
-        error: response => this.error.set(response.error?.message ?? 'Nao foi possivel atualizar sua conta.'),
+        error: (response) =>
+          this.error.set(response.error?.message ?? 'Nao foi possivel atualizar sua conta.'),
       });
   }
 
@@ -150,4 +155,3 @@ export class Account {
     };
   }
 }
-

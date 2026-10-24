@@ -120,15 +120,15 @@ Angular, evitando valores fixos no codigo.
 
 ## Rotas da aplicacao
 
-| Rota | Acesso | Funcao |
-|---|---|---|
-| `/` | Publico | Landing page |
-| `/catalogo` | Publico | Catalogo de cursos e turmas |
-| `/login` | Publico | Login e cadastro |
-| `/carrinho` | Publico | Itens selecionados |
-| `/checkout` | Autenticado | Finalizacao da compra |
-| `/conta` | Autenticado | Perfil e endereco |
-| `/admin` | Administrador | Painel administrativo |
+| Rota        | Acesso        | Funcao                      |
+| ----------- | ------------- | --------------------------- |
+| `/`         | Publico       | Landing page                |
+| `/catalogo` | Publico       | Catalogo de cursos e turmas |
+| `/login`    | Publico       | Login e cadastro            |
+| `/carrinho` | Publico       | Itens selecionados          |
+| `/checkout` | Autenticado   | Finalizacao da compra       |
+| `/conta`    | Autenticado   | Perfil e endereco           |
+| `/admin`    | Administrador | Painel administrativo       |
 
 Rotas autenticadas usam `authGuard`. A rota administrativa usa
 `adminGuard`, que exige usuario autenticado com role `Admin`.

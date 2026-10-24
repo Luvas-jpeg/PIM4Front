@@ -60,7 +60,8 @@ export class Login {
 
     this.loading.set(true);
 
-    this.authService.login(this.loginForm.getRawValue() as LoginRequest)
+    this.authService
+      .login(this.loginForm.getRawValue() as LoginRequest)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => this.navigateAfterAuth(),
@@ -88,7 +89,8 @@ export class Login {
 
     this.loading.set(true);
 
-    this.authService.register(registerRequest)
+    this.authService
+      .register(registerRequest)
       .pipe(
         switchMap(() => this.authService.login(loginRequest)),
         finalize(() => this.loading.set(false)),

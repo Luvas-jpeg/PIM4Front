@@ -40,10 +40,12 @@ describe('Login', () => {
 
   beforeEach(async () => {
     authServiceMock.login.mockReturnValue(of(authResponse));
-    authServiceMock.register.mockReturnValue(of({
-      message: 'Usuario cadastrado com sucesso!',
-      userId: 1,
-    }));
+    authServiceMock.register.mockReturnValue(
+      of({
+        message: 'Usuario cadastrado com sucesso!',
+        userId: 1,
+      }),
+    );
 
     await TestBed.configureTestingModule({
       imports: [Login],

@@ -1,7 +1,9 @@
 <main class="enrollment-detail-page">
   <section class="enrollment-detail-hero">
     <div class="enrollment-detail-hero__content">
-      <a routerLink="/area-aluno" class="back-link navigation-button navigation-button--on-dark">Voltar para meus cursos</a>
+      <a routerLink="/area-aluno" class="back-link navigation-button navigation-button--on-dark"
+        >Voltar para meus cursos</a
+      >
       <span class="section-label">Area do aluno</span>
       <h1>Detalhes da matricula</h1>
     </div>
@@ -14,7 +16,10 @@
       <section class="enrollment-panel feedback feedback--error">{{ error() }}</section>
     } @else if (enrollment(); as current) {
       @if (notice(); as currentNotice) {
-        <section class="enrollment-notice" [class]="'enrollment-notice enrollment-notice--' + currentNotice.type">
+        <section
+          class="enrollment-notice"
+          [class]="'enrollment-notice enrollment-notice--' + currentNotice.type"
+        >
           {{ currentNotice.text }}
         </section>
       }
@@ -37,10 +42,15 @@
           <div class="enrollment-data">
             <p><strong>Carga horaria:</strong> {{ current.workloadHours || 0 }}h</p>
             <p><strong>Modulos:</strong> {{ current.modules.length }}</p>
-            <p><strong>Progresso:</strong> {{ progress()?.percent ?? 0 }}% ({{ completedLessons() }}/{{ totalLessons() }} aulas)</p>
+            <p>
+              <strong>Progresso:</strong> {{ progress()?.percent ?? 0 }}% ({{
+                completedLessons()
+              }}/{{ totalLessons() }} aulas)
+            </p>
           </div>
         } @else {
           <span class="section-label">Sua turma</span>
+          <app-enrollment-schedule [enrollment]="current" />
           <div class="enrollment-data">
             <p><strong>Data:</strong> {{ formatDate(current.startDate) }}</p>
             @if (current.endDate) {
@@ -65,7 +75,10 @@
               <h3>{{ module.title }}</h3>
               <div class="lesson-list">
                 @for (lesson of module.lessons; track lesson.id) {
-                  <article class="lesson-row" [class.lesson-row--done]="isLessonCompleted(lesson.id)">
+                  <article
+                    class="lesson-row"
+                    [class.lesson-row--done]="isLessonCompleted(lesson.id)"
+                  >
                     <div>
                       <strong>{{ lesson.title }}</strong>
                       @if (lesson.description) {
@@ -104,9 +117,17 @@
             <div class="feedback feedback--error">{{ assessmentError() }}</div>
           }
           @if (assessmentResult(); as result) {
-            <div class="enrollment-notice" [class]="result.passed ? 'enrollment-notice enrollment-notice--success' : 'enrollment-notice enrollment-notice--warning'">
-              Nota {{ result.score }}%. {{ result.passed ? 'Aprovado.' : 'Nao aprovado.' }}
-              Tentativas restantes: {{ result.remainingAttempts }}.
+            <div
+              class="enrollment-notice"
+              [class]="
+                result.passed
+                  ? 'enrollment-notice enrollment-notice--success'
+                  : 'enrollment-notice enrollment-notice--warning'
+              "
+            >
+              Nota {{ result.score }}%.
+              {{ result.passed ? 'Aprovado.' : 'Nao aprovado.' }} Tentativas restantes:
+              {{ result.remainingAttempts }}.
             </div>
           }
 
@@ -115,8 +136,8 @@
               <div>
                 <h3>{{ assessment.title }}</h3>
                 <p class="muted">
-                  Nota minima: {{ assessment.minimumScore }}% -
-                  tentativas: {{ attemptsForAssessment(assessment.id).length }}/{{ assessment.maxAttempts }}
+                  Nota minima: {{ assessment.minimumScore }}% - tentativas:
+                  {{ attemptsForAssessment(assessment.id).length }}/{{ assessment.maxAttempts }}
                 </p>
                 @if (latestAttempt(assessment.id); as attempt) {
                   <p class="muted">
@@ -149,10 +170,16 @@
               <button
                 type="button"
                 class="lesson-action"
-                [disabled]="remainingAttempts(assessment) === 0 || submittingAssessmentId() === assessment.id || assessment.questions.length === 0"
+                [disabled]="
+                  remainingAttempts(assessment) === 0 ||
+                  submittingAssessmentId() === assessment.id ||
+                  assessment.questions.length === 0
+                "
                 (click)="submitAssessment(assessment)"
               >
-                {{ submittingAssessmentId() === assessment.id ? 'Enviando...' : 'Enviar avaliacao' }}
+                {{
+                  submittingAssessmentId() === assessment.id ? 'Enviando...' : 'Enviar avaliacao'
+                }}
               </button>
             </div>
           } @empty {
@@ -175,7 +202,11 @@
               <p><strong>Emissao:</strong> {{ formatDate(certificate.issuedAt) }}</p>
             </div>
           } @else {
-            <p class="muted">{{ certificateStatus()?.reason || 'Conclua os requisitos para liberar o certificado.' }}</p>
+            <p class="muted">
+              {{
+                certificateStatus()?.reason || 'Conclua os requisitos para liberar o certificado.'
+              }}
+            </p>
             <button
               type="button"
               class="lesson-action"

@@ -21,7 +21,9 @@ describe('Cart', () => {
     deliveryMode: 'ead',
     workloadHours: 10,
     isActive: true,
-    classes: [], modules: [], assessments: [],
+    classes: [],
+    modules: [],
+    assessments: [],
   };
 
   const course: Course = {
@@ -74,14 +76,14 @@ describe('Cart', () => {
     expect(component.itemSubtotal({ course: baseCourse, quantity: 2 })).toBe(240);
   });
 
-  it('should increase quantity up to stock limit', () => {
-    cartService.add(baseCourse, 2);
+  it('keeps one seat per student even after repeated increases', () => {
+    cartService.add(baseCourse, 1);
     const item = cartService.items()[0];
 
     component.increase(item);
     for (let index = 0; index < 6; index++) component.increase(cartService.items()[0]);
 
-    expect(cartService.items()[0].quantity).toBe(5);
+    expect(cartService.items()[0].quantity).toBe(1);
   });
 
   it('should decrease quantity and remove item when quantity reaches zero', () => {
@@ -110,19 +112,20 @@ describe('Cart', () => {
     expect(cartService.items()).toHaveLength(1);
   });
 
-  it('should cap course quantities at five enrollments', () => {
+  it('caps course quantities at one seat', () => {
     expect(cartService.addCourse(course, firstClass, 6)).toBe(false);
     expect(cartService.items()).toHaveLength(0);
 
     cartService.addCourse(course, firstClass, 1);
     component.updateQuantity(cartService.items()[0], '9');
 
-    expect(cartService.items()[0].quantity).toBe(5);
+    expect(cartService.items()[0].quantity).toBe(1);
   });
   it('should not reinterpret IDs from a legacy cart as course IDs', () => {
-    localStorage.setItem('medishop_cart', JSON.stringify([
-      { product: { id: 999, nome: 'Legado' }, quantity: 1 },
-    ]));
+    localStorage.setItem(
+      'medishop_cart',
+      JSON.stringify([{ product: { id: 999, nome: 'Legado' }, quantity: 1 }]),
+    );
     expect(new CartService().items()).toEqual([]);
   });
 
@@ -132,8 +135,8 @@ describe('Cart', () => {
   });
 
   it('should enforce the quantity limit when adding the same course again', () => {
-    expect(cartService.addCourse(course, firstClass, 4)).toBe(true);
+    expect(cartService.addCourse(course, firstClass, 1)).toBe(true);
     expect(cartService.addCourse(course, firstClass, 2)).toBe(false);
-    expect(cartService.items()[0].quantity).toBe(4);
+    expect(cartService.items()[0].quantity).toBe(1);
   });
 });

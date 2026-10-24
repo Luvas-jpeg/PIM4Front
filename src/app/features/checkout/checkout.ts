@@ -44,10 +44,7 @@ export class Checkout {
   readonly addressModalOpen = signal(false);
 
   readonly hasUnassignedCourse = computed(() =>
-    this.items().some(item =>
-      item.course.deliveryMode !== 'ead' &&
-      !item.courseClass
-    )
+    this.items().some((item) => item.course.deliveryMode !== 'ead' && !item.courseClass),
   );
 
   readonly shipping = computed(() => 0);
@@ -66,9 +63,7 @@ export class Checkout {
     return Math.min(coupon.discount, this.subtotal());
   });
 
-  readonly total = computed(() =>
-    Math.max(this.subtotal() + this.shipping() - this.discount(), 0)
-  );
+  readonly total = computed(() => Math.max(this.subtotal() + this.shipping() - this.discount(), 0));
 
   readonly form = this.formBuilder.group({
     paymentMethod: this.formBuilder.control<PaymentMethod>('pix', {
@@ -115,7 +110,8 @@ export class Checkout {
 
     this.validatingCoupon.set(true);
 
-    this.promoCodeService.validate(code)
+    this.promoCodeService
+      .validate(code)
       .pipe(finalize(() => this.validatingCoupon.set(false)))
       .subscribe({
         next: (coupon) => {
@@ -177,14 +173,16 @@ export class Checkout {
 
     this.savingAddress.set(true);
 
-    this.authService.updateProfile(request)
+    this.authService
+      .updateProfile(request)
       .pipe(finalize(() => this.savingAddress.set(false)))
       .subscribe({
         next: () => {
           this.addressModalOpen.set(false);
           this.success.set('Endereco atualizado. Frete recalculado.');
         },
-        error: response => this.error.set(response.error?.message ?? 'Nao foi possivel salvar o endereco.'),
+        error: (response) =>
+          this.error.set(response.error?.message ?? 'Nao foi possivel salvar o endereco.'),
       });
   }
 
@@ -209,12 +207,11 @@ export class Checkout {
     }
 
     const paymentMethod = this.form.controls.paymentMethod.value;
-    const installments = paymentMethod === 'credit_card'
-      ? this.form.controls.installments.value
-      : null;
+    const installments =
+      paymentMethod === 'credit_card' ? this.form.controls.installments.value : null;
 
     const request: CreateOrderRequest = {
-      itens: this.items().map(item => ({
+      itens: this.items().map((item) => ({
         courseId: item.course.id,
         turmaId: item.courseClass?.id ?? null,
         quantidade: item.quantity,
@@ -227,7 +224,8 @@ export class Checkout {
 
     this.submitting.set(true);
 
-    this.orderService.create(request, crypto.randomUUID())
+    this.orderService
+      .create(request, crypto.randomUUID())
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
         next: (response) => {
@@ -258,5 +256,4 @@ export class Checkout {
       zipCode: user.zipCode ?? '',
     });
   }
-
 }

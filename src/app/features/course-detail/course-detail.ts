@@ -12,7 +12,7 @@ import { CourseService } from '../../core/services/course.service';
   styleUrl: './course-detail.scss',
 })
 export class CourseDetail {
-  readonly maxCourseQuantity = 5;
+  readonly maxCourseQuantity = 1;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly courseService = inject(CourseService);
@@ -39,16 +39,17 @@ export class CourseDetail {
     }
 
     this.courseService.getById(id).subscribe({
-      next: course => {
+      next: (course) => {
         this.course.set(course);
         const now = Date.now();
-        const classes = course.classes.filter(item =>
-          item.status === 'scheduled' &&
-          item.availableSeats > 0 &&
-          new Date(item.startDate).getTime() >= now,
+        const classes = course.classes.filter(
+          (item) =>
+            item.status === 'scheduled' &&
+            item.availableSeats > 0 &&
+            new Date(item.startDate).getTime() >= now,
         );
         this.classes.set(classes);
-        this.selectedClass.set(course.deliveryMode === 'ead' ? null : classes[0] ?? null);
+        this.selectedClass.set(course.deliveryMode === 'ead' ? null : (classes[0] ?? null));
         this.loading.set(false);
       },
       error: () => {
@@ -68,22 +69,19 @@ export class CourseDetail {
   }
 
   decreaseQuantity(): void {
-    this.quantity.update(value => Math.max(1, value - 1));
+    this.quantity.update((value) => Math.max(1, value - 1));
     this.quantityError.set(null);
     this.cartError.set(null);
   }
 
   increaseQuantity(): void {
-    const available = Math.min(
-      this.availableQuantity(),
-      this.maxCourseQuantity,
-    );
-    this.quantity.update(value => Math.min(available, value + 1));
+    const available = Math.min(this.availableQuantity(), this.maxCourseQuantity);
+    this.quantity.update((value) => Math.min(available, value + 1));
     this.quantityError.set(null);
   }
 
   selectClass(classId: number): void {
-    const selected = this.classes().find(item => item.id === classId) ?? null;
+    const selected = this.classes().find((item) => item.id === classId) ?? null;
     this.selectedClass.set(selected);
     this.quantity.set(1);
     this.quantityError.set(null);
@@ -113,10 +111,13 @@ export class CourseDetail {
     }
 
     const end = new Date(courseClass.endDate);
-    return `${start.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} até ${end.toLocaleString('pt-BR', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    })}`;
+    return `${start.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })} até ${end.toLocaleString(
+      'pt-BR',
+      {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      },
+    )}`;
   }
 
   addToCart(): void {
@@ -141,13 +142,11 @@ export class CourseDetail {
     }
 
     this.quantityError.set(null);
-    const added = this.cartService.addCourse(
-      course,
-      selectedClass ?? undefined,
-      this.quantity(),
-    );
+    const added = this.cartService.addCourse(course, selectedClass ?? undefined, this.quantity());
     if (!added) {
-      this.cartError.set('Este curso ja possui outra turma no carrinho. Remova-a antes de escolher uma turma diferente.');
+      this.cartError.set(
+        'Este curso ja possui outra turma no carrinho. Remova-a antes de escolher uma turma diferente.',
+      );
       return;
     }
 
@@ -162,6 +161,6 @@ export class CourseDetail {
   availableQuantity(): number {
     return this.course()?.deliveryMode === 'ead'
       ? this.maxCourseQuantity
-      : this.selectedClass()?.availableSeats ?? 1;
+      : (this.selectedClass()?.availableSeats ?? 1);
   }
 }

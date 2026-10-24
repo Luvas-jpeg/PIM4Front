@@ -96,12 +96,26 @@ export class CourseService {
     return this.http.post<CourseModule>(`${API_URL}/courses/${courseId}/modules`, request);
   }
 
-  updateModule(courseId: number, moduleId: number, request: CourseModuleRequest): Observable<CourseModule> {
-    return this.http.put<CourseModule>(`${API_URL}/courses/${courseId}/modules/${moduleId}`, request);
+  updateModule(
+    courseId: number,
+    moduleId: number,
+    request: CourseModuleRequest,
+  ): Observable<CourseModule> {
+    return this.http.put<CourseModule>(
+      `${API_URL}/courses/${courseId}/modules/${moduleId}`,
+      request,
+    );
   }
 
-  createLesson(courseId: number, moduleId: number, request: CourseLessonRequest): Observable<CourseLesson> {
-    return this.http.post<CourseLesson>(`${API_URL}/courses/${courseId}/modules/${moduleId}/lessons`, request);
+  createLesson(
+    courseId: number,
+    moduleId: number,
+    request: CourseLessonRequest,
+  ): Observable<CourseLesson> {
+    return this.http.post<CourseLesson>(
+      `${API_URL}/courses/${courseId}/modules/${moduleId}/lessons`,
+      request,
+    );
   }
 
   updateLesson(
@@ -120,7 +134,10 @@ export class CourseService {
     return this.http.get<CourseAssessment[]>(`${API_URL}/courses/${courseId}/assessments`);
   }
 
-  createAssessment(courseId: number, request: CourseAssessmentRequest): Observable<CourseAssessment> {
+  createAssessment(
+    courseId: number,
+    request: CourseAssessmentRequest,
+  ): Observable<CourseAssessment> {
     return this.http.post<CourseAssessment>(`${API_URL}/courses/${courseId}/assessments`, request);
   }
 
@@ -155,10 +172,11 @@ export class CourseService {
     classId: number,
     studentId: number,
     status: Student['status'],
+    enrollmentId?: number,
   ): Observable<Student> {
     return this.http.patch<Student>(
       `${API_URL}/courses/${courseId}/classes/${classId}/students/${studentId}/status`,
-      { status },
+      { status, enrollmentId },
     );
   }
 
@@ -167,10 +185,11 @@ export class CourseService {
     classId: number,
     studentId: number,
     targetClassId: number,
+    enrollmentId?: number,
   ): Observable<TransferEnrollmentResponse> {
     return this.http.post<TransferEnrollmentResponse>(
       `${API_URL}/courses/${courseId}/classes/${classId}/students/${studentId}/transfer`,
-      { targetClassId },
+      { targetClassId, enrollmentId },
     );
   }
 }

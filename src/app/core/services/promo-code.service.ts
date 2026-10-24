@@ -6,7 +6,7 @@ import { API_URL } from '../config/api.config';
 
 @Injectable({ providedIn: 'root' })
 export class PromoCodeService {
-  private readonly http = inject(HttpClient)
+  private readonly http = inject(HttpClient);
 
   getAll(): Observable<PromoCode[]> {
     return this.http.get<PromoCode[]>(`${API_URL}/PromoCodes`);
@@ -26,7 +26,7 @@ export class PromoCodeService {
 
   validate(code: string): Observable<PromoCode> {
     return this.http.get<PromoCode>(
-      `${API_URL}/PromoCodes/validate?code=${encodeURIComponent(code)}`
+      `${API_URL}/PromoCodes/validate?code=${encodeURIComponent(code)}`,
     );
   }
 }

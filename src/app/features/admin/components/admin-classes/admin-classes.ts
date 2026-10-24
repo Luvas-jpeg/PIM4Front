@@ -32,7 +32,10 @@ export class AdminClasses {
     endDate: this.formBuilder.control(''),
     local: this.formBuilder.control('', [Validators.required]),
     instructor: this.formBuilder.control('', [Validators.required]),
-    capacity: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(1)]),
+    capacity: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(1),
+    ]),
     status: this.formBuilder.control('scheduled', [Validators.required]),
   });
 
@@ -92,19 +95,22 @@ export class AdminClasses {
       : this.courseService.createClass(course.id, request);
 
     action.subscribe({
-      next: savedClass => {
-        this.coursesChange.emit(this.courses.map(current => {
-          if (current.id !== course.id) return current;
+      next: (savedClass) => {
+        this.coursesChange.emit(
+          this.courses.map((current) => {
+            if (current.id !== course.id) return current;
 
-          const classes = editingId
-            ? current.classes.map(item => item.id === savedClass.id ? savedClass : item)
-            : [...current.classes, savedClass];
-          return { ...current, classes };
-        }));
+            const classes = editingId
+              ? current.classes.map((item) => (item.id === savedClass.id ? savedClass : item))
+              : [...current.classes, savedClass];
+            return { ...current, classes };
+          }),
+        );
         this.closeForm();
         this.notify.emit({ type: 'success', message: 'Turma salva com sucesso.' });
       },
-      error: response => this.formError.set(response.error?.message ?? 'Nao foi possivel salvar a turma.'),
+      error: (response) =>
+        this.formError.set(response.error?.message ?? 'Nao foi possivel salvar a turma.'),
     });
   }
 
@@ -113,8 +119,12 @@ export class AdminClasses {
     this.selectedClass.set(courseClass);
     this.selectedStudents.set([]);
     this.courseService.getClassStudents(course.id, courseClass.id).subscribe({
-      next: students => this.selectedStudents.set(students),
-      error: () => this.notify.emit({ type: 'error', message: 'Nao foi possivel carregar os alunos da turma.' }),
+      next: (students) => this.selectedStudents.set(students),
+      error: () =>
+        this.notify.emit({
+          type: 'error',
+          message: 'Nao foi possivel carregar os alunos da turma.',
+        }),
     });
   }
 
@@ -128,6 +138,21 @@ export class AdminClasses {
     return courseId === this.selectedCourse()?.id ? this.selectedStudents() : [];
   }
 
+  participationLabel(student: Student): string {
+    return (
+      (
+        {
+          confirmed: 'Participação confirmada',
+          pending: 'Aguardando confirmação',
+          waiting: 'Confirmação ainda não abriu',
+          closed: 'Prazo de confirmação encerrado',
+          unavailable: 'Confirmação indisponível',
+          not_applicable: 'Não se aplica',
+        } as Record<string, string>
+      )[student.participation?.status ?? ''] ?? 'Sem confirmação registrada'
+    );
+  }
+
   exportClassStudents(): void {
     const course = this.selectedCourse();
     const courseClass = this.selectedClass();
@@ -135,16 +160,26 @@ export class AdminClasses {
 
     if (!course || !courseClass || !students.length) return;
 
-    const headers = ['Nome', 'E-mail', 'Telefone', 'Data da matricula', 'Status'];
-    const rows = students.map(student => [
+    const headers = [
+      'Nome',
+      'E-mail',
+      'Telefone',
+      'Data da matricula',
+      'Status',
+      'Participação',
+      'Confirmação',
+    ];
+    const rows = students.map((student) => [
       student.name,
       student.email,
       student.phone,
       student.enrollmentDate,
       this.studentStatusLabel(student.status),
+      this.participationLabel(student),
+      student.participation?.confirmedAt ?? '',
     ]);
     const csv = [headers, ...rows]
-      .map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(';'))
+      .map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(';'))
       .join('\r\n');
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -164,27 +199,38 @@ export class AdminClasses {
     if (!course || !courseClass) return;
 
     const previousStatus = student.status;
-    this.courseService.updateStudentStatus(course.id, courseClass.id, student.id, status).subscribe({
-      next: updatedStudent => {
-        this.selectedStudents.update(students => students.map(current =>
-          current.id === updatedStudent.id ? updatedStudent : current
-        ));
-        this.patchClassSeats(
-          course.id,
-          courseClass.id,
-          previousStatus !== 'cancelled' && status === 'cancelled'
-            ? 1
-            : previousStatus === 'cancelled' && status !== 'cancelled'
-              ? -1
-              : 0,
-        );
-        this.notify.emit({ type: 'success', message: 'Status da matricula atualizado.' });
-      },
-      error: response => this.notify.emit({
-        type: 'error',
-        message: response.error?.message ?? 'Nao foi possivel atualizar o status da matricula.',
-      }),
-    });
+    this.courseService
+      .updateStudentStatus(
+        course.id,
+        courseClass.id,
+        student.id,
+        status,
+        student.enrollmentId ?? undefined,
+      )
+      .subscribe({
+        next: (updatedStudent) => {
+          this.selectedStudents.update((students) =>
+            students.map((current) =>
+              current.enrollmentId === updatedStudent.enrollmentId ? updatedStudent : current,
+            ),
+          );
+          this.patchClassSeats(
+            course.id,
+            courseClass.id,
+            previousStatus !== 'cancelled' && status === 'cancelled'
+              ? 1
+              : previousStatus === 'cancelled' && status !== 'cancelled'
+                ? -1
+                : 0,
+          );
+          this.notify.emit({ type: 'success', message: 'Status da matricula atualizado.' });
+        },
+        error: (response) =>
+          this.notify.emit({
+            type: 'error',
+            message: response.error?.message ?? 'Nao foi possivel atualizar o status da matricula.',
+          }),
+      });
   }
 
   transferStudent(student: Student, targetClassId: number): void {
@@ -194,32 +240,43 @@ export class AdminClasses {
     if (!course || !currentClass || !targetClassId) return;
 
     this.transferringStudentId.set(student.id);
-    this.courseService.transferStudent(course.id, currentClass.id, student.id, targetClassId).subscribe({
-      next: response => {
-        this.selectedStudents.update(students =>
-          students.filter(current => current.id !== student.id)
-        );
-        this.coursesChange.emit(this.courses.map(currentCourse => {
-          if (currentCourse.id !== course.id) return currentCourse;
+    this.courseService
+      .transferStudent(
+        course.id,
+        currentClass.id,
+        student.id,
+        targetClassId,
+        student.enrollmentId ?? undefined,
+      )
+      .subscribe({
+        next: (response) => {
+          this.selectedStudents.update((students) =>
+            students.filter((current) => current.enrollmentId !== student.enrollmentId),
+          );
+          this.coursesChange.emit(
+            this.courses.map((currentCourse) => {
+              if (currentCourse.id !== course.id) return currentCourse;
 
-          return {
-            ...currentCourse,
-            classes: currentCourse.classes.map(courseClass => {
-              if (courseClass.id === response.sourceClass.id) return response.sourceClass;
-              if (courseClass.id === response.targetClass.id) return response.targetClass;
-              return courseClass;
+              return {
+                ...currentCourse,
+                classes: currentCourse.classes.map((courseClass) => {
+                  if (courseClass.id === response.sourceClass.id) return response.sourceClass;
+                  if (courseClass.id === response.targetClass.id) return response.targetClass;
+                  return courseClass;
+                }),
+              };
             }),
-          };
-        }));
-        this.selectedClass.set(response.sourceClass);
-        this.notify.emit({ type: 'success', message: 'Aluno transferido para outra turma.' });
-      },
-      error: response => this.notify.emit({
-        type: 'error',
-        message: response.error?.message ?? 'Nao foi possivel transferir o aluno.',
-      }),
-      complete: () => this.transferringStudentId.set(null),
-    });
+          );
+          this.selectedClass.set(response.sourceClass);
+          this.notify.emit({ type: 'success', message: 'Aluno transferido para outra turma.' });
+        },
+        error: (response) =>
+          this.notify.emit({
+            type: 'error',
+            message: response.error?.message ?? 'Nao foi possivel transferir o aluno.',
+          }),
+        complete: () => this.transferringStudentId.set(null),
+      });
   }
 
   toNumber(value: string): number {
@@ -239,12 +296,12 @@ export class AdminClasses {
   private patchClassSeats(courseId: number, classId: number, delta: number): void {
     if (delta === 0) return;
 
-    const updatedCourses = this.courses.map(course => {
+    const updatedCourses = this.courses.map((course) => {
       if (course.id !== courseId) return course;
 
       return {
         ...course,
-        classes: course.classes.map(courseClass =>
+        classes: course.classes.map((courseClass) =>
           courseClass.id === classId
             ? {
                 ...courseClass,
@@ -253,18 +310,20 @@ export class AdminClasses {
                   Math.max(0, courseClass.availableSeats + delta),
                 ),
               }
-            : courseClass
+            : courseClass,
         ),
       };
     });
 
     this.coursesChange.emit(updatedCourses);
-    this.selectedClass.update(current => current && current.id === classId
-      ? {
-          ...current,
-          availableSeats: Math.min(current.capacity, Math.max(0, current.availableSeats + delta)),
-        }
-      : current);
+    this.selectedClass.update((current) =>
+      current && current.id === classId
+        ? {
+            ...current,
+            availableSeats: Math.min(current.capacity, Math.max(0, current.availableSeats + delta)),
+          }
+        : current,
+    );
   }
 
   private toDateTimeLocal(value: string): string {
@@ -274,11 +333,13 @@ export class AdminClasses {
   }
 
   private slugify(value: string): string {
-    return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '') || 'curso';
+    return (
+      value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '') || 'curso'
+    );
   }
 }

@@ -18,13 +18,15 @@ export class AdminAudit {
   readonly entityFilter = signal('all');
 
   readonly actions = computed(() =>
-    [...new Set(this.auditLogsSignal().map(log => log.action))]
-      .sort((first, second) => first.localeCompare(second))
+    [...new Set(this.auditLogsSignal().map((log) => log.action))].sort((first, second) =>
+      first.localeCompare(second),
+    ),
   );
 
   readonly entities = computed(() =>
-    [...new Set(this.auditLogsSignal().map(log => log.entityType))]
-      .sort((first, second) => first.localeCompare(second))
+    [...new Set(this.auditLogsSignal().map((log) => log.entityType))].sort((first, second) =>
+      first.localeCompare(second),
+    ),
   );
 
   readonly filteredLogs = computed(() => {
@@ -32,12 +34,13 @@ export class AdminAudit {
     const action = this.actionFilter();
     const entity = this.entityFilter();
 
-    return this.auditLogsSignal().filter(log => {
-      const matchesSearch = !search
-        || log.userName?.toLowerCase().includes(search)
-        || log.entityId.toLowerCase().includes(search)
-        || log.previousValue?.toLowerCase().includes(search)
-        || log.newValue?.toLowerCase().includes(search);
+    return this.auditLogsSignal().filter((log) => {
+      const matchesSearch =
+        !search ||
+        log.userName?.toLowerCase().includes(search) ||
+        log.entityId.toLowerCase().includes(search) ||
+        log.previousValue?.toLowerCase().includes(search) ||
+        log.newValue?.toLowerCase().includes(search);
       const matchesAction = action === 'all' || log.action === action;
       const matchesEntity = entity === 'all' || log.entityType === entity;
 
@@ -113,7 +116,7 @@ export class AdminAudit {
   exportAuditCsv(): void {
     const rows = [
       ['Data', 'Usuario', 'Acao', 'Entidade', 'Id', 'Antes', 'Depois'],
-      ...this.filteredLogs().map(log => [
+      ...this.filteredLogs().map((log) => [
         this.formatAuditDate(log.createdAt),
         log.userName || 'Sistema',
         this.auditActionLabel(log.action),
@@ -124,7 +127,7 @@ export class AdminAudit {
       ]),
     ];
     const csv = rows
-      .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(';'))
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(';'))
       .join('\r\n');
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

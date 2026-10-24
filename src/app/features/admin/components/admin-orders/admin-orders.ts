@@ -38,12 +38,13 @@ export class AdminOrders {
     const status = this.orderStatusFilter();
     const paymentStatus = this.paymentStatusFilter();
 
-    return this.ordersSignal().filter(order => {
-      const matchesSearch = !search
-        || String(order.id).includes(search)
-        || order.usuario?.nome?.toLowerCase().includes(search)
-        || order.usuario?.email?.toLowerCase().includes(search)
-        || order.itens.some(item => item.nome.toLowerCase().includes(search));
+    return this.ordersSignal().filter((order) => {
+      const matchesSearch =
+        !search ||
+        String(order.id).includes(search) ||
+        order.usuario?.nome?.toLowerCase().includes(search) ||
+        order.usuario?.email?.toLowerCase().includes(search) ||
+        order.itens.some((item) => item.nome.toLowerCase().includes(search));
       const matchesStatus = status === 'all' || order.status === status;
       const matchesPayment = paymentStatus === 'all' || order.paymentStatus === paymentStatus;
 
@@ -114,32 +115,49 @@ export class AdminOrders {
 
   updateOrderStatus(order: Order, status: string): void {
     this.orderService.updateStatus(order.id, status).subscribe({
-      next: response => {
-        this.ordersChange.emit(this.ordersSignal().map(current =>
-          current.id === order.id ? { ...current, status: response.status } : current
-        ));
+      next: (response) => {
+        this.ordersChange.emit(
+          this.ordersSignal().map((current) =>
+            current.id === order.id ? { ...current, status: response.status } : current,
+          ),
+        );
         this.notify.emit({ type: 'success', message: 'Status do pedido atualizado.' });
       },
-      error: () => this.notify.emit({ type: 'error', message: 'Nao foi possivel atualizar o pedido.' }),
+      error: () =>
+        this.notify.emit({ type: 'error', message: 'Nao foi possivel atualizar o pedido.' }),
     });
   }
 
   refundOrder(order: Order): void {
     this.orderService.refund(order.id).subscribe({
-      next: refundedOrder => {
-        this.ordersChange.emit(this.ordersSignal().map(current =>
-          current.id === order.id ? refundedOrder : current
-        ));
-        this.notify.emit({ type: 'success', message: 'Reembolso processado e matriculas canceladas.' });
+      next: (refundedOrder) => {
+        this.ordersChange.emit(
+          this.ordersSignal().map((current) => (current.id === order.id ? refundedOrder : current)),
+        );
+        this.notify.emit({
+          type: 'success',
+          message: 'Reembolso processado e matriculas canceladas.',
+        });
       },
-      error: () => this.notify.emit({ type: 'error', message: 'Nao foi possivel processar o reembolso.' }),
+      error: () =>
+        this.notify.emit({ type: 'error', message: 'Nao foi possivel processar o reembolso.' }),
     });
   }
 
   exportOrdersCsv(): void {
     const rows = [
-      ['Pedido', 'Data', 'Cliente', 'E-mail', 'Status pedido', 'Status pagamento', 'Metodo', 'Gateway', 'Total'],
-      ...this.filteredOrders().map(order => [
+      [
+        'Pedido',
+        'Data',
+        'Cliente',
+        'E-mail',
+        'Status pedido',
+        'Status pagamento',
+        'Metodo',
+        'Gateway',
+        'Total',
+      ],
+      ...this.filteredOrders().map((order) => [
         order.id,
         this.formatDate(order.dataPedido),
         order.usuario?.nome || 'Cliente',
@@ -152,7 +170,7 @@ export class AdminOrders {
       ]),
     ];
     const csv = rows
-      .map(row => row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(';'))
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(';'))
       .join('\r\n');
     const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -183,11 +201,12 @@ export class AdminOrders {
     this.webhookEvents.set([]);
 
     this.paymentService.getWebhookEvents(orderId).subscribe({
-      next: events => this.webhookEvents.set(events),
-      error: () => this.notify.emit({
-        type: 'error',
-        message: 'Nao foi possivel carregar os eventos de pagamento.',
-      }),
+      next: (events) => this.webhookEvents.set(events),
+      error: () =>
+        this.notify.emit({
+          type: 'error',
+          message: 'Nao foi possivel carregar os eventos de pagamento.',
+        }),
       complete: () => this.loadingWebhookEvents.set(false),
     });
   }

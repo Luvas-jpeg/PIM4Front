@@ -36,6 +36,7 @@ import { AdminStudents } from './components/admin-students/admin-students';
   encapsulation: ViewEncapsulation.None,
 })
 export class Admin {
+  private coursesRevision = 0;
   private readonly courseService = inject(CourseService);
   private readonly orderService = inject(OrderService);
   private readonly auditService = inject(AuditService);
@@ -63,6 +64,7 @@ export class Admin {
   }
 
   setCourses(courses: Course[]): void {
+    this.coursesRevision++;
     this.courses.set(courses);
   }
 
@@ -83,28 +85,38 @@ export class Admin {
     this.loading.set(true);
     this.error.set(null);
 
+    const coursesRevision = this.coursesRevision;
     this.courseService.getAll().subscribe({
-      next: courses => this.courses.set(courses),
+      next: (courses) => {
+        // Uma consulta iniciada antes de um cadastro nao pode apagar sua atualizacao.
+        if (this.coursesRevision === coursesRevision) {
+          this.courses.set(courses);
+        } else {
+          const latest = this.courses();
+          const currentIds = new Set(latest.map((course) => course.id));
+          this.courses.set([...latest, ...courses.filter((course) => !currentIds.has(course.id))]);
+        }
+      },
       error: () => this.error.set('Nao foi possivel carregar cursos.'),
     });
 
     this.orderService.getAll().subscribe({
-      next: orders => this.orders.set(orders),
+      next: (orders) => this.orders.set(orders),
       error: () => this.error.set('Nao foi possivel carregar pedidos.'),
     });
 
     this.promoCodeService.getAll().subscribe({
-      next: promoCodes => this.promoCodes.set(promoCodes),
+      next: (promoCodes) => this.promoCodes.set(promoCodes),
       error: () => this.error.set('Nao foi possivel carregar cupons.'),
     });
 
     this.studentService.getAll().subscribe({
-      next: students => this.students.set(students),
+      next: (students) => this.students.set(students),
       error: () => this.error.set('Nao foi possivel carregar alunos.'),
     });
 
     this.auditService.getAll().subscribe({
-      next: auditLogs => this.auditLogs.set(auditLogs),
+      next: (auditLogs) => this.auditLogs.set(auditLogs),
       error: () => this.error.set('Nao foi possivel carregar a auditoria.'),
     });
 

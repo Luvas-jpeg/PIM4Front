@@ -9,7 +9,11 @@
 
   <section class="admin-shell">
     <nav class="admin-tabs" aria-label="Areas administrativas">
-      <button type="button" [class.active]="activeTab() === 'dashboard'" (click)="setTab('dashboard')">
+      <button
+        type="button"
+        [class.active]="activeTab() === 'dashboard'"
+        (click)="setTab('dashboard')"
+      >
         Dashboard
       </button>
       <button type="button" [class.active]="activeTab() === 'audit'" (click)="setTab('audit')">
@@ -18,13 +22,21 @@
       <button type="button" [class.active]="activeTab() === 'courses'" (click)="setTab('courses')">
         Cursos
       </button>
-      <button type="button" [class.active]="activeTab() === 'ead-content'" (click)="setTab('ead-content')">
+      <button
+        type="button"
+        [class.active]="activeTab() === 'ead-content'"
+        (click)="setTab('ead-content')"
+      >
         Conteudo EAD
       </button>
       <button type="button" [class.active]="activeTab() === 'classes'" (click)="setTab('classes')">
         Turmas
       </button>
-      <button type="button" [class.active]="activeTab() === 'students'" (click)="setTab('students')">
+      <button
+        type="button"
+        [class.active]="activeTab() === 'students'"
+        (click)="setTab('students')"
+      >
         Alunos
       </button>
       <button type="button" [class.active]="activeTab() === 'coupons'" (click)="setTab('coupons')">
@@ -76,10 +88,7 @@
     }
 
     @if (activeTab() === 'students') {
-      <app-admin-students
-        [students]="students()"
-        (notify)="handleNotification($event)"
-      />
+      <app-admin-students [students]="students()" (notify)="handleNotification($event)" />
     }
 
     @if (activeTab() === 'coupons') {

@@ -5,6 +5,7 @@ import {
   CourseProgress,
   CertificateStatus,
   MyEnrollment,
+  Participation,
   SubmitAssessmentRequest,
   SubmitAssessmentResponse,
   UpdateProgressRequest,
@@ -14,6 +15,10 @@ import { API_URL } from '../config/api.config';
 @Injectable({ providedIn: 'root' })
 export class EnrollmentService {
   private readonly http = inject(HttpClient);
+
+  confirmParticipation(id: number): Observable<Participation> {
+    return this.http.post<Participation>(`${API_URL}/me/enrollments/${id}/participation`, {});
+  }
 
   getMine(): Observable<MyEnrollment[]> {
     return this.http.get<MyEnrollment[]>(`${API_URL}/me/courses`);
@@ -47,6 +52,9 @@ export class EnrollmentService {
   }
 
   issueCertificate(courseId: number): Observable<CertificateStatus> {
-    return this.http.post<CertificateStatus>(`${API_URL}/me/courses/${courseId}/certificate/issue`, {});
+    return this.http.post<CertificateStatus>(
+      `${API_URL}/me/courses/${courseId}/certificate/issue`,
+      {},
+    );
   }
 }

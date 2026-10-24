@@ -19,7 +19,7 @@
 .back-link {
   display: inline-flex;
   margin-bottom: 20px;
-  color: #d9e5ec;
+  color: #f2dfe3;
   font-weight: 800;
   text-decoration: none;
 }
@@ -40,7 +40,7 @@
   gap: 16px;
   padding: 24px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
 }
 
@@ -73,7 +73,7 @@
 .order-statuses strong {
   padding: 8px 12px;
   border-radius: 999px;
-  background: #f1f5f9;
+  background: #f5eff0;
   color: var(--color-muted);
 }
 
@@ -88,8 +88,8 @@
   gap: 16px;
   padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: #f8fafc;
+  border-radius: 10px;
+  background: #faf7f7;
 }
 
 .order-total {
@@ -119,4 +119,19 @@
     justify-items: start;
     text-align: left;
   }
+}
+
+.order-panel {
+  border-radius: 16px;
+}
+.order-detail-hero {
+  background: linear-gradient(120deg, #490e1a, #8e2533);
+}
+.order-summary,
+.order-total {
+  gap: 20px;
+}
+.order-item > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

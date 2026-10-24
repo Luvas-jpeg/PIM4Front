@@ -83,11 +83,15 @@ export class Cart {
   stockLabel(item: CartItem): string {
     return item.course.deliveryMode === 'ead'
       ? 'Acesso online'
-      : item.courseClass ? `${item.courseClass.availableSeats} vagas disponiveis` : 'Selecione uma turma';
+      : item.courseClass
+        ? `${item.courseClass.availableSeats} vagas disponiveis`
+        : 'Selecione uma turma';
   }
 
   availableQuantity(item: CartItem): number {
-    return Math.min(item.courseClass?.availableSeats ?? CartService.maxCourseQuantity,
-      CartService.maxCourseQuantity);
+    return Math.min(
+      item.courseClass?.availableSeats ?? CartService.maxCourseQuantity,
+      CartService.maxCourseQuantity,
+    );
   }
 }

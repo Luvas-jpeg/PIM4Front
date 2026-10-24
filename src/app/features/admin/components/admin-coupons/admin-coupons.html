@@ -1,5 +1,10 @@
 <section class="panel">
-  <form class="panel creation-form" [class.creation-form--open]="formOpen()" [formGroup]="form" (ngSubmit)="save()">
+  <form
+    class="panel creation-form"
+    [class.creation-form--open]="formOpen()"
+    [formGroup]="form"
+    (ngSubmit)="save()"
+  >
     <div class="panel__header">
       <div>
         <span class="section-label">Promocoes</span>
@@ -30,13 +35,31 @@
       <label class="field">
         <span>Desconto <span class="required-marker" aria-hidden="true">*</span></span>
         <div class="money-input">
-          <span aria-hidden="true">{{ form.controls.discountType.value === 'fixed' ? 'R$' : '%' }}</span>
-          <input type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00" formControlName="discount" required aria-required="true" />
+          <span aria-hidden="true">{{
+            form.controls.discountType.value === 'fixed' ? 'R$' : '%'
+          }}</span>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="0,00"
+            formControlName="discount"
+            required
+            aria-required="true"
+          />
         </div>
       </label>
       <label class="field">
         <span>Limite de uso <span class="optional-label">(opcional)</span></span>
-        <input type="number" min="0" step="1" inputmode="numeric" placeholder="Sem limite" formControlName="usageLimit" />
+        <input
+          type="number"
+          min="0"
+          step="1"
+          inputmode="numeric"
+          placeholder="Sem limite"
+          formControlName="usageLimit"
+        />
       </label>
       <label class="field">
         <span>Inicio <span class="required-marker" aria-hidden="true">*</span></span>
@@ -64,7 +87,9 @@
         <span class="section-label">Cupons</span>
         <h2>Codigos cadastrados</h2>
       </div>
-      <button type="button" class="primary-button" (click)="openCreateForm()">Adicionar cupom</button>
+      <button type="button" class="primary-button" (click)="openCreateForm()">
+        Adicionar cupom
+      </button>
     </div>
 
     <div class="table">
@@ -72,7 +97,11 @@
         <article class="table-row">
           <div>
             <strong>{{ coupon.code }}</strong>
-            <span>{{ coupon.discountType === 'percentage' ? coupon.discount + '%' : formatPrice(coupon.discount) }}</span>
+            <span>{{
+              coupon.discountType === 'percentage'
+                ? coupon.discount + '%'
+                : formatPrice(coupon.discount)
+            }}</span>
           </div>
           <span>{{ coupon.usageCount }}/{{ coupon.usageLimit ?? 'sem limite' }}</span>
           <div class="actions">

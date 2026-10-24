@@ -1,11 +1,18 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CertificateStatus, CourseProgress, MyCourseAssessment, MyEnrollment, SubmitAssessmentResponse } from '../../core/models/enrollment.models';
+import {
+  CertificateStatus,
+  CourseProgress,
+  MyCourseAssessment,
+  MyEnrollment,
+  SubmitAssessmentResponse,
+} from '../../core/models/enrollment.models';
 import { EnrollmentService } from '../../core/services/enrollment.service';
+import { EnrollmentSchedule } from '../../shared/enrollment-schedule/enrollment-schedule';
 
 @Component({
   selector: 'app-enrollment-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, EnrollmentSchedule],
   templateUrl: './enrollment-detail.html',
   styleUrl: './enrollment-detail.scss',
 })
@@ -26,8 +33,8 @@ export class EnrollmentDetail {
   readonly savingLessonId = signal<number | null>(null);
   readonly submittingAssessmentId = signal<number | null>(null);
   readonly issuingCertificate = signal(false);
-  readonly certificate = computed(() =>
-    this.certificateStatus()?.certificate ?? this.enrollment()?.certificate ?? null
+  readonly certificate = computed(
+    () => this.certificateStatus()?.certificate ?? this.enrollment()?.certificate ?? null,
   );
 
   readonly notice = computed(() => {
@@ -93,7 +100,7 @@ export class EnrollmentDetail {
     }
 
     this.enrollmentService.getById(enrollmentId).subscribe({
-      next: enrollment => {
+      next: (enrollment) => {
         this.enrollment.set(enrollment);
 
         if (enrollment.deliveryMode === 'ead' && enrollment.courseId) {
@@ -101,7 +108,7 @@ export class EnrollmentDetail {
           this.loadCertificateStatus(enrollment.courseId);
         }
       },
-      error: response => {
+      error: (response) => {
         this.error.set(response.error?.message ?? 'Nao foi possivel carregar a matricula.');
         this.loading.set(false);
       },
@@ -113,7 +120,6 @@ export class EnrollmentDetail {
     return new Intl.DateTimeFormat('pt-BR', {
       dateStyle: 'medium',
       timeStyle: 'short',
-      timeZone: 'UTC',
     }).format(new Date(value));
   }
 
@@ -134,8 +140,9 @@ export class EnrollmentDetail {
   }
 
   totalLessons(): number {
-    return this.enrollment()?.modules
-      .reduce((total, module) => total + module.lessons.length, 0) ?? 0;
+    return (
+      this.enrollment()?.modules.reduce((total, module) => total + module.lessons.length, 0) ?? 0
+    );
   }
 
   completedLessons(): number {
@@ -151,27 +158,29 @@ export class EnrollmentDetail {
 
     const totalLessons = this.totalLessons();
     const nextCompleted = this.completedLessons() + 1;
-    const percent = totalLessons > 0
-      ? Math.min(100, Math.round((nextCompleted / totalLessons) * 100))
-      : 0;
+    const percent =
+      totalLessons > 0 ? Math.min(100, Math.round((nextCompleted / totalLessons) * 100)) : 0;
 
     this.savingLessonId.set(lessonId);
     this.progressError.set(null);
-    this.enrollmentService.updateProgress(enrollment.courseId, {
-      percent,
-      completedLessonId: lessonId,
-    }).subscribe({
-      next: progress => {
-        this.progress.set(progress);
-        if (progress.percent >= 100) {
-          this.refreshCertificateStatus();
-        }
-      },
-      error: response => this.progressError.set(
-        response.error?.message ?? 'Nao foi possivel atualizar seu progresso.'
-      ),
-      complete: () => this.savingLessonId.set(null),
-    });
+    this.enrollmentService
+      .updateProgress(enrollment.courseId, {
+        percent,
+        completedLessonId: lessonId,
+      })
+      .subscribe({
+        next: (progress) => {
+          this.progress.set(progress);
+          if (progress.percent >= 100) {
+            this.refreshCertificateStatus();
+          }
+        },
+        error: (response) =>
+          this.progressError.set(
+            response.error?.message ?? 'Nao foi possivel atualizar seu progresso.',
+          ),
+        complete: () => this.savingLessonId.set(null),
+      });
   }
 
   selectedOption(questionId: number): number | null {
@@ -179,7 +188,7 @@ export class EnrollmentDetail {
   }
 
   selectOption(questionId: number, optionId: number): void {
-    this.assessmentAnswers.update(answers => ({
+    this.assessmentAnswers.update((answers) => ({
       ...answers,
       [questionId]: optionId,
     }));
@@ -187,8 +196,11 @@ export class EnrollmentDetail {
   }
 
   attemptsForAssessment(assessmentId: number) {
-    return this.enrollment()?.assessmentAttempts
-      .filter(attempt => attempt.assessmentId === assessmentId) ?? [];
+    return (
+      this.enrollment()?.assessmentAttempts.filter(
+        (attempt) => attempt.assessmentId === assessmentId,
+      ) ?? []
+    );
   }
 
   remainingAttempts(assessment: MyCourseAssessment): number {
@@ -204,12 +216,12 @@ export class EnrollmentDetail {
 
     if (!enrollment?.courseId) return;
 
-    const answers = assessment.questions.map(question => ({
+    const answers = assessment.questions.map((question) => ({
       questionId: question.id,
       selectedOptionId: this.selectedOption(question.id) ?? 0,
     }));
 
-    if (answers.some(answer => !answer.selectedOptionId)) {
+    if (answers.some((answer) => !answer.selectedOptionId)) {
       this.assessmentError.set('Responda todas as questoes antes de enviar.');
       return;
     }
@@ -217,35 +229,39 @@ export class EnrollmentDetail {
     this.submittingAssessmentId.set(assessment.id);
     this.assessmentError.set(null);
     this.assessmentResult.set(null);
-    this.enrollmentService.submitAssessment(enrollment.courseId, assessment.id, { answers }).subscribe({
-      next: result => {
-        this.assessmentResult.set(result);
-        this.enrollment.update(current => current
-          ? {
-              ...current,
-              assessmentAttempts: [
-                {
-                  id: Date.now(),
-                  assessmentId: result.assessmentId,
-                  attemptNumber: result.attemptNumber,
-                  score: result.score,
-                  passed: result.passed,
-                  submittedAt: new Date().toISOString(),
-                },
-                ...current.assessmentAttempts,
-              ],
-            }
-          : current
-        );
-        if (result.passed) {
-          this.refreshCertificateStatus();
-        }
-      },
-      error: response => this.assessmentError.set(
-        response.error?.message ?? 'Nao foi possivel enviar a avaliacao.'
-      ),
-      complete: () => this.submittingAssessmentId.set(null),
-    });
+    this.enrollmentService
+      .submitAssessment(enrollment.courseId, assessment.id, { answers })
+      .subscribe({
+        next: (result) => {
+          this.assessmentResult.set(result);
+          this.enrollment.update((current) =>
+            current
+              ? {
+                  ...current,
+                  assessmentAttempts: [
+                    {
+                      id: Date.now(),
+                      assessmentId: result.assessmentId,
+                      attemptNumber: result.attemptNumber,
+                      score: result.score,
+                      passed: result.passed,
+                      submittedAt: new Date().toISOString(),
+                    },
+                    ...current.assessmentAttempts,
+                  ],
+                }
+              : current,
+          );
+          if (result.passed) {
+            this.refreshCertificateStatus();
+          }
+        },
+        error: (response) =>
+          this.assessmentError.set(
+            response.error?.message ?? 'Nao foi possivel enviar a avaliacao.',
+          ),
+        complete: () => this.submittingAssessmentId.set(null),
+      });
   }
 
   issueCertificate(): void {
@@ -255,40 +271,44 @@ export class EnrollmentDetail {
     this.issuingCertificate.set(true);
     this.certificateError.set(null);
     this.enrollmentService.issueCertificate(courseId).subscribe({
-      next: status => {
+      next: (status) => {
         this.certificateStatus.set(status);
-        this.enrollment.update(current => current
-          ? { ...current, certificate: status.certificate ?? current.certificate }
-          : current
+        this.enrollment.update((current) =>
+          current
+            ? { ...current, certificate: status.certificate ?? current.certificate }
+            : current,
         );
       },
-      error: response => this.certificateError.set(
-        response.error?.message ?? 'Nao foi possivel emitir o certificado.'
-      ),
+      error: (response) =>
+        this.certificateError.set(
+          response.error?.message ?? 'Nao foi possivel emitir o certificado.',
+        ),
       complete: () => this.issuingCertificate.set(false),
     });
   }
 
   private loadProgress(courseId: number): void {
     this.enrollmentService.getProgress(courseId).subscribe({
-      next: progress => {
+      next: (progress) => {
         this.progress.set(progress);
         if (progress.percent >= 100) {
           this.refreshCertificateStatus();
         }
       },
-      error: response => this.progressError.set(
-        response.error?.message ?? 'Nao foi possivel carregar seu progresso.'
-      ),
+      error: (response) =>
+        this.progressError.set(
+          response.error?.message ?? 'Nao foi possivel carregar seu progresso.',
+        ),
     });
   }
 
   private loadCertificateStatus(courseId: number): void {
     this.enrollmentService.getCertificateStatus(courseId).subscribe({
-      next: status => this.certificateStatus.set(status),
-      error: response => this.certificateError.set(
-        response.error?.message ?? 'Nao foi possivel carregar o status do certificado.'
-      ),
+      next: (status) => this.certificateStatus.set(status),
+      error: (response) =>
+        this.certificateError.set(
+          response.error?.message ?? 'Nao foi possivel carregar o status do certificado.',
+        ),
     });
   }
 

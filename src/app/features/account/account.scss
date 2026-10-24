@@ -10,7 +10,7 @@
   min-height: 300px;
   padding: 48px 24px;
   background:
-    linear-gradient(90deg, rgba(9, 31, 48, 0.92), rgba(9, 31, 48, 0.58)),
+    linear-gradient(90deg, rgba(73, 14, 26, 0.92), rgba(73, 14, 26, 0.58)),
     url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1800&q=80')
       center / cover;
   color: #fff;
@@ -27,7 +27,7 @@
   align-items: center;
   min-height: 42px;
   margin-bottom: 20px;
-  color: #d9e5ec;
+  color: #f2dfe3;
   font-weight: 800;
   text-decoration: none;
 }
@@ -53,7 +53,7 @@
 .account-hero p {
   max-width: 620px;
   margin: 18px 0 0;
-  color: #d9e5ec;
+  color: #f2dfe3;
   font-size: 1.05rem;
   line-height: 1.6;
 }
@@ -74,7 +74,7 @@
   gap: 8px;
   padding: 18px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
 }
 
@@ -92,7 +92,7 @@
   gap: 18px;
   padding: 24px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
 }
 
@@ -133,7 +133,7 @@
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
   color: var(--color-text);
   font: inherit;
 }
@@ -152,8 +152,8 @@
   justify-content: space-between;
   padding: 16px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: #f8fafc;
+  border-radius: 10px;
+  background: #faf7f7;
 }
 
 .enrollment-card img {
@@ -198,7 +198,7 @@
 .primary-button,
 .ghost-button {
   min-height: 44px;
-  border-radius: 8px;
+  border-radius: 10px;
   font: inherit;
   font-weight: 800;
   cursor: pointer;
@@ -212,20 +212,20 @@
 
 .primary-button:disabled {
   background: #cbd5e1;
-  color: #64748b;
+  color: var(--color-muted);
   cursor: not-allowed;
 }
 
 .ghost-button {
   padding: 0 16px;
   border: 1px solid var(--color-border);
-  background: #f8fafc;
+  background: #faf7f7;
   color: var(--color-text);
 }
 
 .feedback {
   padding: 14px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .feedback--error {
@@ -262,4 +262,25 @@
     justify-items: start;
     text-align: left;
   }
+}
+
+.account-panel,
+.overview-card {
+  border-radius: 16px;
+}
+.overview-card strong {
+  color: var(--color-primary);
+}
+.field,
+.enrollment-card > div,
+.order-card > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.field input {
+  width: 100%;
+}
+
+.account-hero .section-label {
+  color: var(--color-hero-label);
 }

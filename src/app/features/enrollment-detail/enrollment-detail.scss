@@ -19,7 +19,7 @@
 .back-link {
   display: inline-flex;
   margin-bottom: 20px;
-  color: #d9e5ec;
+  color: #f2dfe3;
   font-weight: 800;
   text-decoration: none;
 }
@@ -40,14 +40,14 @@
   gap: 16px;
   padding: 24px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
 }
 
 .enrollment-notice {
   padding: 16px 18px;
   border: 1px solid;
-  border-radius: 8px;
+  border-radius: 10px;
   font-weight: 700;
 }
 
@@ -79,7 +79,7 @@
   width: 180px;
   height: 130px;
   flex: 0 0 auto;
-  border-radius: 8px;
+  border-radius: 10px;
   object-fit: cover;
 }
 
@@ -118,8 +118,8 @@
   justify-content: space-between;
   padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: #f8fafc;
+  border-radius: 10px;
+  background: #faf7f7;
 }
 
 .lesson-row--done {
@@ -145,7 +145,7 @@
   min-height: 40px;
   padding: 0 14px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--color-primary);
   color: #fff;
   font: inherit;
@@ -155,7 +155,7 @@
 
 .lesson-action:disabled {
   background: #cbd5e1;
-  color: #475569;
+  color: #6c6267;
   cursor: not-allowed;
 }
 
@@ -165,7 +165,7 @@
   margin: 0;
   padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 10px;
 }
 
 .question-block legend {
@@ -185,7 +185,7 @@
   gap: 8px;
   padding: 16px;
   border: 1px solid #bbf7d0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #f0fdf4;
 }
 
@@ -217,4 +217,19 @@
   .lesson-row {
     display: grid;
   }
+}
+
+.enrollment-panel {
+  border-radius: 16px;
+}
+.enrollment-detail-hero {
+  background: linear-gradient(120deg, #490e1a, #8e2533);
+}
+.enrollment-header > div,
+.lesson-row > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.enrollment-notice {
+  line-height: 1.6;
 }

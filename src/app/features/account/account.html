@@ -1,7 +1,9 @@
 <main class="account-page">
   <section class="account-hero">
     <div class="account-hero__content">
-      <a routerLink="/catalogo" class="back-link navigation-button navigation-button--on-dark">Voltar ao catalogo</a>
+      <a routerLink="/catalogo" class="back-link navigation-button navigation-button--on-dark"
+        >Voltar ao catalogo</a
+      >
       <span class="section-label">Minha conta</span>
       <h1>Dados pessoais e endereco</h1>
       <p>Gerencie seus dados pessoais e acompanhe seus pedidos.</p>
@@ -38,12 +40,10 @@
                 <span class="section-label">Pedido #{{ order.id }}</span>
                 <h3>{{ formatOrderDate(order.dataPedido) }}</h3>
                 <p>{{ order.itens.length }} item(ns) - {{ order.paymentMethod }}</p>
-                <a class="order-link" [routerLink]="['/conta/pedido', order.id]">
-                  Ver detalhes
-                </a>
+                <a class="order-link" [routerLink]="['/conta/pedido', order.id]"> Ver detalhes </a>
               </div>
               <div class="order-card__summary">
-                <strong>{{ order.total | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</strong>
+                <strong>{{ order.total | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</strong>
                 <span>{{ paymentStatusLabel(order.paymentStatus) }}</span>
                 @if (order.paymentStatus === 'pending' && order.status === 'pending') {
                   <button
@@ -150,4 +150,3 @@
     </form>
   </section>
 </main>
-

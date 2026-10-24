@@ -3,7 +3,8 @@ param(
     [string]$FrontendUrl = 'http://localhost:4200',
     [string]$ApiProjectPath = '',
     [string]$AdminEmail = '',
-    [switch]$Headed
+    [switch]$Headed,
+    [switch]$DelayInitialCourses
 )
 $ErrorActionPreference = 'Stop'
 if (-not $ApiProjectPath) { $ApiProjectPath = Join-Path $PSScriptRoot '..\..\PIM4API' }
@@ -36,7 +37,7 @@ if (-not $password) {
 }
 if (-not $password) { throw 'Informe a senha do administrador local.' }
 
-$names = @('PIM4_E2E_FRONTEND_URL', 'PIM4_E2E_ADMIN_EMAIL', 'PIM4_E2E_ADMIN_PASSWORD', 'PIM4_E2E_WEBHOOK_SECRET')
+$names = @('PIM4_E2E_FRONTEND_URL', 'PIM4_E2E_ADMIN_EMAIL', 'PIM4_E2E_ADMIN_PASSWORD', 'PIM4_E2E_WEBHOOK_SECRET', 'PIM4_E2E_DELAY_INITIAL_COURSES')
 $previous = @{}
 foreach ($name in $names) { $previous[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
 try {
@@ -44,6 +45,7 @@ try {
     $env:PIM4_E2E_ADMIN_EMAIL = $AdminEmail
     $env:PIM4_E2E_ADMIN_PASSWORD = $password
     $env:PIM4_E2E_WEBHOOK_SECRET = $secret
+    if ($DelayInitialCourses) { $env:PIM4_E2E_DELAY_INITIAL_COURSES = '1' }
     Write-Host 'Teste LOCAL: cria curso, turma, aluno e pedido ficticios; confirma sem movimentar dinheiro.'
     Write-Host 'O curso sera arquivado ao finalizar. Historico do pedido e matricula de teste sera preservado.'
     Push-Location $frontRoot

@@ -4,7 +4,12 @@
       <span class="section-label">Pedidos</span>
       <h2>Gerenciar pedidos</h2>
     </div>
-    <button type="button" class="ghost-button" [disabled]="!filteredOrders().length" (click)="exportOrdersCsv()">
+    <button
+      type="button"
+      class="ghost-button"
+      [disabled]="!filteredOrders().length"
+      (click)="exportOrdersCsv()"
+    >
       Exportar CSV
     </button>
   </div>
@@ -22,7 +27,10 @@
 
     <label class="field">
       <span>Status do pedido</span>
-      <select [value]="orderStatusFilter()" (change)="setOrderStatusFilter($any($event.target).value)">
+      <select
+        [value]="orderStatusFilter()"
+        (change)="setOrderStatusFilter($any($event.target).value)"
+      >
         <option value="all">Todos</option>
         <option value="pending">Pendente</option>
         <option value="processing">Processando</option>
@@ -33,7 +41,10 @@
 
     <label class="field">
       <span>Status do pagamento</span>
-      <select [value]="paymentStatusFilter()" (change)="setPaymentStatusFilter($any($event.target).value)">
+      <select
+        [value]="paymentStatusFilter()"
+        (change)="setPaymentStatusFilter($any($event.target).value)"
+      >
         <option value="all">Todos</option>
         <option value="pending">Pendente</option>
         <option value="paid">Pago</option>
@@ -50,10 +61,16 @@
         <div>
           <strong>Pedido #{{ order.id }}</strong>
           <span>{{ order.usuario?.nome || 'Cliente' }} - {{ order.itens.length }} item(ns)</span>
-          <span>{{ orderStatusLabel(order.status) }} - Pagamento {{ paymentStatusLabel(order.paymentStatus) }}</span>
+          <span
+            >{{ orderStatusLabel(order.status) }} - Pagamento
+            {{ paymentStatusLabel(order.paymentStatus) }}</span
+          >
         </div>
         <strong>{{ formatPrice(order.total) }}</strong>
-        <select [value]="order.status" (change)="updateOrderStatus(order, $any($event.target).value)">
+        <select
+          [value]="order.status"
+          (change)="updateOrderStatus(order, $any($event.target).value)"
+        >
           <option value="pending">Pendente</option>
           <option value="processing">Processando</option>
           <option value="completed">Concluido</option>
@@ -62,9 +79,7 @@
         <div class="actions">
           <button type="button" (click)="openDetails(order)">Detalhes</button>
           @if (order.paymentStatus === 'paid') {
-            <button type="button" class="danger" (click)="refundOrder(order)">
-              Reembolsar
-            </button>
+            <button type="button" class="danger" (click)="refundOrder(order)">Reembolsar</button>
           }
         </div>
       </article>
@@ -87,16 +102,27 @@
         <div>
           <span class="section-label">Pedido</span>
           <h2 id="order-modal-title">Pedido #{{ order.id }}</h2>
-          <p>{{ order.usuario?.nome || 'Cliente' }} - {{ order.usuario?.email || 'E-mail nao informado' }}</p>
+          <p>
+            {{ order.usuario?.nome || 'Cliente' }} -
+            {{ order.usuario?.email || 'E-mail nao informado' }}
+          </p>
           <p>{{ formatDate(order.dataPedido) }}</p>
         </div>
-        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeDetails()">X</button>
+        <button type="button" class="icon-button" aria-label="Fechar" (click)="closeDetails()">
+          X
+        </button>
       </div>
 
       <div class="class-modal__summary">
-        <span><b>{{ orderStatusLabel(order.status) }}</b> pedido</span>
-        <span><b>{{ paymentStatusLabel(order.paymentStatus) }}</b> pagamento</span>
-        <span><b>{{ formatPrice(order.total) }}</b> total</span>
+        <span
+          ><b>{{ orderStatusLabel(order.status) }}</b> pedido</span
+        >
+        <span
+          ><b>{{ paymentStatusLabel(order.paymentStatus) }}</b> pagamento</span
+        >
+        <span
+          ><b>{{ formatPrice(order.total) }}</b> total</span
+        >
       </div>
 
       <div class="dashboard-grid order-detail-grid">

@@ -4,7 +4,12 @@
       <span class="section-label">Registro</span>
       <h2>Auditoria administrativa</h2>
     </div>
-    <button type="button" class="ghost-button" [disabled]="!filteredLogs().length" (click)="exportAuditCsv()">
+    <button
+      type="button"
+      class="ghost-button"
+      [disabled]="!filteredLogs().length"
+      (click)="exportAuditCsv()"
+    >
       Exportar CSV
     </button>
   </div>
@@ -45,7 +50,9 @@
     @for (log of filteredLogs(); track log.id) {
       <article class="table-row audit-row">
         <div class="audit-meta">
-          <strong>{{ auditActionLabel(log.action) }} - {{ auditEntityLabel(log.entityType) }}</strong>
+          <strong
+            >{{ auditActionLabel(log.action) }} - {{ auditEntityLabel(log.entityType) }}</strong
+          >
           <span>{{ log.userName || 'Sistema' }} - {{ formatAuditDate(log.createdAt) }}</span>
           <span>Entidade #{{ log.entityId }}</span>
         </div>

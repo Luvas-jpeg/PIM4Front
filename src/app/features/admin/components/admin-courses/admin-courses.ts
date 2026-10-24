@@ -31,9 +31,15 @@ export class AdminCourses {
 
   readonly form = this.formBuilder.group({
     nome: this.formBuilder.control('', [Validators.required]),
-    preco: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
+    preco: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0.01),
+    ]),
     deliveryMode: this.formBuilder.control<DeliveryMode>('presencial', [Validators.required]),
-    workloadHours: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0)]),
+    workloadHours: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0),
+    ]),
     description: this.formBuilder.control(''),
     image: this.formBuilder.control(''),
     category: this.formBuilder.control(''),
@@ -109,19 +115,17 @@ export class AdminCourses {
     this.saving.set(true);
 
     action.pipe(finalize(() => this.saving.set(false))).subscribe({
-      next: course => {
+      next: (course) => {
         const updated = editingId
-          ? this.courses.map(current => current.id === course.id ? course : current)
+          ? this.courses.map((current) => (current.id === course.id ? course : current))
           : [course, ...this.courses];
         this.coursesChange.emit(updated);
         this.resetForm();
         this.closeForm();
         this.notify.emit({ type: 'success', message: 'Curso salvo com sucesso.' });
       },
-      error: response => this.formError.set(this.requestErrorMessage(
-        response,
-        'Nao foi possivel salvar o curso.',
-      )),
+      error: (response) =>
+        this.formError.set(this.requestErrorMessage(response, 'Nao foi possivel salvar o curso.')),
     });
   }
 
@@ -131,10 +135,12 @@ export class AdminCourses {
       : this.courseService.restore(course.id);
 
     action.subscribe({
-      next: updatedCourse => {
-        this.coursesChange.emit(this.courses.map(current =>
-          current.id === updatedCourse.id ? updatedCourse : current
-        ));
+      next: (updatedCourse) => {
+        this.coursesChange.emit(
+          this.courses.map((current) =>
+            current.id === updatedCourse.id ? updatedCourse : current,
+          ),
+        );
         this.notify.emit({
           type: 'success',
           message: course.isActive
@@ -142,21 +148,26 @@ export class AdminCourses {
             : 'Curso restaurado e disponivel para o catalogo publico.',
         });
       },
-      error: response => this.notify.emit({
-        type: 'error',
-        message: this.requestErrorMessage(
-          response,
-          course.isActive
-            ? 'Nao foi possivel arquivar o curso.'
-            : 'Nao foi possivel restaurar o curso.',
-        ),
-      }),
+      error: (response) =>
+        this.notify.emit({
+          type: 'error',
+          message: this.requestErrorMessage(
+            response,
+            course.isActive
+              ? 'Nao foi possivel arquivar o curso.'
+              : 'Nao foi possivel restaurar o curso.',
+          ),
+        }),
     });
   }
 
-  private requestErrorMessage(response: { status?: number; error?: { message?: string } }, fallback: string): string {
+  private requestErrorMessage(
+    response: { status?: number; error?: { message?: string } },
+    fallback: string,
+  ): string {
     if (response.error?.message) return response.error.message;
-    if (response.status === 401) return 'Sua sessao expirou ou nao possui autorizacao de administrador. Entre novamente.';
+    if (response.status === 401)
+      return 'Sua sessao expirou ou nao possui autorizacao de administrador. Entre novamente.';
     if (response.status === 403) return 'Usuario autenticado sem permissao de administrador.';
     return fallback;
   }

@@ -1,0 +1,11 @@
+# Publicar a API antes e preencher a URL raiz HTTPS em API_UPSTREAM.
+services:
+  - type: web
+    name: pim4-web-demo
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: API_UPSTREAM
+        sync: false

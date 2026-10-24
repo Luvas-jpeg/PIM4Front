@@ -1,31 +1,23 @@
 <main class="auth-page">
   <section class="auth-hero">
     <div class="auth-hero__content">
-      <a routerLink="/catalogo" class="back-link">Voltar ao catalogo</a>
+      <a routerLink="/catalogo" class="back-link navigation-button navigation-button--on-dark"
+        >Voltar ao catalogo</a
+      >
       <span class="section-label">Conta MediShop</span>
       <h1>Acesse sua conta para finalizar a compra</h1>
-      <p>
-        Entre ou crie seu cadastro para acompanhar pedidos, cursos e compras.
-      </p>
+      <p>Entre ou crie seu cadastro para acompanhar pedidos, cursos e compras.</p>
     </div>
   </section>
 
   <section class="auth-content">
     <div class="auth-card">
       <div class="auth-tabs" aria-label="Escolha uma opcao">
-        <button
-          type="button"
-          [class.active]="mode() === 'login'"
-          (click)="setMode('login')"
-        >
+        <button type="button" [class.active]="mode() === 'login'" (click)="setMode('login')">
           Login
         </button>
 
-        <button
-          type="button"
-          [class.active]="mode() === 'register'"
-          (click)="setMode('register')"
-        >
+        <button type="button" [class.active]="mode() === 'register'" (click)="setMode('register')">
           Cadastro
         </button>
       </div>
@@ -44,11 +36,7 @@
 
           <label class="field">
             <span>Senha</span>
-            <input
-              type="password"
-              formControlName="senha"
-              autocomplete="current-password"
-            />
+            <input type="password" formControlName="senha" autocomplete="current-password" />
           </label>
 
           <button type="submit" class="submit-button" [disabled]="loading()">

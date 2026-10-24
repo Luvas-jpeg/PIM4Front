@@ -9,21 +9,39 @@ import { MyEnrollment } from '../../core/models/enrollment.models';
 
 describe('Student', () => {
   const enrollment: MyEnrollment = {
-    enrollmentId: 42, courseId: 8, classId: 1, orderId: 12,
-    courseName: 'Biossegurança', courseDescription: '', courseImage: '',
-    category: 'Saúde', deliveryMode: 'presencial', workloadHours: 8,
-    instructor: 'Ana', location: 'São Paulo', startDate: '2026-10-20T17:00:00Z',
-    endDate: null, classStatus: 'scheduled', enrollmentStatus: 'active',
-    enrolledAt: '2026-10-08T17:00:00Z', modules: [], assessments: [], assessmentAttempts: [],
+    enrollmentId: 42,
+    courseId: 8,
+    classId: 1,
+    orderId: 12,
+    courseName: 'Biossegurança',
+    courseDescription: '',
+    courseImage: '',
+    category: 'Saúde',
+    deliveryMode: 'presencial',
+    workloadHours: 8,
+    instructor: 'Ana',
+    location: 'São Paulo',
+    startDate: '2026-10-20T17:00:00Z',
+    endDate: null,
+    classStatus: 'scheduled',
+    enrollmentStatus: 'active',
+    enrolledAt: '2026-10-08T17:00:00Z',
+    modules: [],
+    assessments: [],
+    assessmentAttempts: [],
   };
   const service = { getMine: vi.fn() };
 
   beforeEach(async () => {
-    service.getMine.mockReset().mockReturnValue(of([
-      enrollment,
-      { ...enrollment, enrollmentId: 43, courseName: 'Sutura', enrollmentStatus: 'completed' },
-      { ...enrollment, enrollmentId: 44, enrollmentStatus: 'cancelled' },
-    ]));
+    service.getMine
+      .mockReset()
+      .mockReturnValue(
+        of([
+          enrollment,
+          { ...enrollment, enrollmentId: 43, courseName: 'Sutura', enrollmentStatus: 'completed' },
+          { ...enrollment, enrollmentId: 44, enrollmentStatus: 'cancelled' },
+        ]),
+      );
     await TestBed.configureTestingModule({
       imports: [Student],
       providers: [
@@ -37,7 +55,9 @@ describe('Student', () => {
   it('uses the enrollment id, rather than the course id, to open a course', () => {
     const fixture = TestBed.createComponent(Student);
     fixture.detectChanges();
-    const links = [...fixture.nativeElement.querySelectorAll('a')].map((link: any) => link.getAttribute('href'));
+    const links = [...fixture.nativeElement.querySelectorAll('a')].map((link: any) =>
+      link.getAttribute('href'),
+    );
     expect(links).toContain('/area-aluno/matricula/42');
     expect(links).toContain('/conta/pedido/12');
     expect(fixture.componentInstance.activeCount()).toBe(1);
@@ -50,11 +70,11 @@ describe('Student', () => {
     const component = fixture.componentInstance;
     component.status.set('active');
     component.search.set('ana');
-    expect(component.filteredEnrollments().map(item => item.enrollmentId)).toEqual([42]);
+    expect(component.filteredEnrollments().map((item) => item.enrollmentId)).toEqual([42]);
     component.search.set('Sutura');
     expect(component.filteredEnrollments()).toEqual([]);
     component.status.set('completed');
-    expect(component.filteredEnrollments().map(item => item.enrollmentId)).toEqual([43]);
+    expect(component.filteredEnrollments().map((item) => item.enrollmentId)).toEqual([43]);
   });
 
   it('ends loading on failure and allows a successful retry', () => {

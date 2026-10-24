@@ -1,38 +1,39 @@
 <main class="landing-page">
   <section class="store-hero">
     <div class="store-hero__content">
-      <span class="hero-kicker">MediShop | Formacao em saude</span>
-      <h1>Formacao que acompanha o seu proximo passo.</h1>
+      <span class="hero-kicker">Aprender para cuidar melhor</span>
+      <h1>Conhecimento que transforma<br />a sua <em>prática.</em></h1>
       <p>
-        Encontre cursos presenciais para aprender na pratica com instrutores
-        e turmas selecionadas.
+        Encontre cursos presenciais para aprender na prática com instrutores e turmas selecionadas.
       </p>
 
       <div class="hero-actions">
-        <a routerLink="/catalogo" class="primary-link">Explorar catalogo</a>
-        <a routerLink="/catalogo" class="secondary-link">Encontrar um curso</a>
+        <a routerLink="/catalogo" class="primary-link">Explorar catálogo</a>
+        <a routerLink="/area-aluno" class="secondary-link"
+          >Já sou aluno <span aria-hidden="true">↗</span></a
+        >
       </div>
 
       <div class="hero-proof">
-        <span>Compra segura</span>
+        <span>Formação em saúde</span>
         <span>Turmas presenciais</span>
-        <span>Suporte especializado</span>
+        <span>Acompanhe suas matrículas</span>
       </div>
     </div>
   </section>
 
-  <section class="store-section benefits" aria-label="Beneficios da loja">
+  <section class="store-section benefits" aria-label="Benefícios da loja">
     <article>
       <span class="benefit-icon">01</span>
       <div>
-        <h2>Escolha com confianca</h2>
-        <p>Catalogo organizado para facilitar sua decisao.</p>
+        <h2>Escolha com confiança</h2>
+        <p>Catálogo organizado para facilitar sua decisão.</p>
       </div>
     </article>
     <article>
       <span class="benefit-icon">02</span>
       <div>
-        <h2>Aprenda na pratica</h2>
+        <h2>Aprenda na prática</h2>
         <p>Cursos presenciais com instrutores experientes.</p>
       </div>
     </article>
@@ -48,7 +49,7 @@
   <section class="store-section categories">
     <div class="section-header">
       <div>
-        <span class="section-label">Encontre sua formacao</span>
+        <span class="section-label">Encontre sua formação</span>
         <h2>Escolha seu curso e acompanhe sua jornada</h2>
       </div>
     </div>
@@ -56,7 +57,7 @@
     <div #categoryGrid class="category-grid">
       <a routerLink="/catalogo" class="category-card category-card--courses">
         <span class="category-card__eyebrow">Cursos presenciais</span>
-        <strong>Aprenda na pratica</strong>
+        <strong>Aprenda na prática</strong>
         <span>Ver cursos <b aria-hidden="true">→</b></span>
       </a>
 
@@ -74,27 +75,37 @@
         <span class="section-label">Destaques</span>
         <h2>Cursos em destaque</h2>
       </div>
-      <a routerLink="/catalogo" class="text-link">Ver catalogo completo</a>
+      <a routerLink="/catalogo" class="text-link">Ver catálogo completo</a>
     </div>
 
     @if (loading()) {
       <div class="state">Carregando destaques...</div>
     } @else if (featuredCourses().length === 0) {
-      <div class="state">Nenhum destaque disponivel.</div>
+      <div class="state">Nenhum destaque disponível.</div>
     } @else {
       <div class="featured-grid">
         @for (course of featuredCourses(); track course.id) {
           <article class="featured-card">
             <div class="featured-card__media">
-              <img [src]="imageUrl(course)" [alt]="course.nome" loading="eager"
-                decoding="async" (error)="setFallbackImage($event)" />
+              <img
+                [src]="imageUrl(course)"
+                [alt]="course.nome"
+                loading="lazy"
+                decoding="async"
+                (error)="setFallbackImage($event)"
+              />
             </div>
             <div class="featured-card__body">
-              <span class="featured-card__type">
-                Presencial
-              </span>
-              <h3>{{ course.nome }}</h3>
-              <p>{{ course.description || 'Conheca os detalhes e faca sua inscricao pelo catalogo MediShop.' }}</p>
+              <span class="featured-card__type"> Presencial </span>
+              <h3>
+                <a [routerLink]="['/curso', course.id]">{{ course.nome }}</a>
+              </h3>
+              <p>
+                {{
+                  course.description ||
+                    'Conheça os detalhes e faça sua inscrição pelo catálogo MediShop.'
+                }}
+              </p>
               <div class="featured-card__footer">
                 <strong>{{ formatPrice(course.preco) }}</strong>
                 <a [routerLink]="['/curso', course.id]">Ver detalhes</a>
@@ -109,14 +120,14 @@
   <section #trustBand class="trust-band">
     <div>
       <span class="section-label">Sobre a MediShop</span>
-      <h2>Uma experiencia feita para a rotina da saude</h2>
+      <h2>Uma experiência feita para a rotina da saúde</h2>
       <p>
-        Reunimos cursos presenciais e turmas selecionadas para voce aprender
-        na pratica e evoluir profissionalmente.
+        Reunimos cursos presenciais e turmas selecionadas para você aprender na prática e evoluir
+        profissionalmente.
       </p>
     </div>
     <div class="trust-list">
-      <span><b>✓</b> Inscricao em cursos</span>
+      <span><b>✓</b> Inscrição em cursos</span>
       <span><b>✓</b> Turmas presenciais</span>
       <span><b>✓</b> Acompanhamento de pedidos</span>
     </div>
@@ -125,8 +136,8 @@
   <section class="cta-section">
     <div>
       <span class="section-label">Comece agora</span>
-      <h2>Encontre o proximo passo da sua jornada.</h2>
+      <h2>Encontre o próximo passo da sua jornada.</h2>
     </div>
-    <a routerLink="/catalogo" class="primary-link">Ir para o catalogo</a>
+    <a routerLink="/catalogo" class="primary-link">Ir para o catálogo</a>
   </section>
 </main>

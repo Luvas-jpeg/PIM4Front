@@ -49,24 +49,25 @@ describe('Home', () => {
   };
 
   beforeEach(async () => {
-    courseServiceMock.getCatalog.mockReturnValue(of({
-      items: courses,
-      page: 1,
-      pageSize: 9,
-      totalItems: courses.length,
-      totalPages: 1,
-    }));
-    courseServiceMock.getCatalogOptions.mockReturnValue(of({
-      categories: ['Treinamento'],
-      cities: ['Sao Paulo'],
-    }));
+    courseServiceMock.getCatalog.mockReturnValue(
+      of({
+        items: courses,
+        page: 1,
+        pageSize: 9,
+        totalItems: courses.length,
+        totalPages: 1,
+      }),
+    );
+    courseServiceMock.getCatalogOptions.mockReturnValue(
+      of({
+        categories: ['Treinamento'],
+        cities: ['Sao Paulo'],
+      }),
+    );
 
     await TestBed.configureTestingModule({
       imports: [Home],
-      providers: [
-        provideRouter([]),
-        { provide: CourseService, useValue: courseServiceMock },
-      ],
+      providers: [provideRouter([]), { provide: CourseService, useValue: courseServiceMock }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Home);
@@ -86,19 +87,31 @@ describe('Home', () => {
         ...courses[0],
         classes: [
           {
-            id: 11, courseId: courses[0].id, startDate: '2026-10-08T17:51:00Z',
-            local: 'Sao Paulo', instructor: 'Instrutor', capacity: 30,
-            availableSeats: 30, status: 'scheduled',
+            id: 11,
+            courseId: courses[0].id,
+            startDate: '2026-10-08T17:51:00Z',
+            local: 'Sao Paulo',
+            instructor: 'Instrutor',
+            capacity: 30,
+            availableSeats: 30,
+            status: 'scheduled',
           },
           {
-            id: 12, courseId: courses[0].id, startDate: '2026-10-08T20:00:00Z',
-            local: 'Sao Paulo', instructor: 'Instrutor', capacity: 30,
-            availableSeats: 30, status: 'scheduled',
+            id: 12,
+            courseId: courses[0].id,
+            startDate: '2026-10-08T20:00:00Z',
+            local: 'Sao Paulo',
+            instructor: 'Instrutor',
+            capacity: 30,
+            availableSeats: 30,
+            status: 'scheduled',
           },
         ],
       };
       expect(component.nextClass(currentCourse)?.id).toBe(12);
-      expect(component.nextClass({ ...currentCourse, classes: [currentCourse.classes[0]] })).toBeNull();
+      expect(
+        component.nextClass({ ...currentCourse, classes: [currentCourse.classes[0]] }),
+      ).toBeNull();
     } finally {
       clock.mockRestore();
     }
@@ -141,9 +154,7 @@ describe('Home', () => {
   });
 
   it('should set error when courses cannot be loaded', () => {
-    courseServiceMock.getCatalog.mockReturnValue(
-      throwError(() => new Error('API error')),
-    );
+    courseServiceMock.getCatalog.mockReturnValue(throwError(() => new Error('API error')));
 
     const errorFixture = TestBed.createComponent(Home);
     const errorComponent = errorFixture.componentInstance;
@@ -155,5 +166,3 @@ describe('Home', () => {
     expect(errorComponent.error()).toBe('Nao foi possivel carregar os cursos.');
   });
 });
-
-

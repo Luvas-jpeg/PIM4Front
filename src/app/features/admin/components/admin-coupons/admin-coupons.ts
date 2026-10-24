@@ -31,7 +31,10 @@ export class AdminCoupons {
 
   readonly form = this.formBuilder.group({
     code: this.formBuilder.control('', [Validators.required]),
-    discount: this.formBuilder.control<number | null>(null, [Validators.required, Validators.min(0.01)]),
+    discount: this.formBuilder.control<number | null>(null, [
+      Validators.required,
+      Validators.min(0.01),
+    ]),
     discountType: this.formBuilder.control<DiscountType>('percentage', [Validators.required]),
     startDate: this.formBuilder.control('', [Validators.required]),
     endDate: this.formBuilder.control('', [Validators.required]),
@@ -94,16 +97,17 @@ export class AdminCoupons {
     this.saving.set(true);
 
     action.pipe(finalize(() => this.saving.set(false))).subscribe({
-      next: coupon => {
+      next: (coupon) => {
         const updated = editingId
-          ? this.promoCodes.map(current => current.id === coupon.id ? coupon : current)
+          ? this.promoCodes.map((current) => (current.id === coupon.id ? coupon : current))
           : [coupon, ...this.promoCodes];
         this.promoCodesChange.emit(updated);
         this.resetForm();
         this.closeForm();
         this.notify.emit({ type: 'success', message: 'Cupom salvo com sucesso.' });
       },
-      error: response => this.formError.set(response.error?.message ?? 'Nao foi possivel salvar o cupom.'),
+      error: (response) =>
+        this.formError.set(response.error?.message ?? 'Nao foi possivel salvar o cupom.'),
     });
   }
 
@@ -125,10 +129,11 @@ export class AdminCoupons {
   deleteCoupon(id: number): void {
     this.promoCodeService.delete(id).subscribe({
       next: () => {
-        this.promoCodesChange.emit(this.promoCodes.filter(coupon => coupon.id !== id));
+        this.promoCodesChange.emit(this.promoCodes.filter((coupon) => coupon.id !== id));
         this.notify.emit({ type: 'success', message: 'Cupom removido.' });
       },
-      error: () => this.notify.emit({ type: 'error', message: 'Nao foi possivel remover o cupom.' }),
+      error: () =>
+        this.notify.emit({ type: 'error', message: 'Nao foi possivel remover o cupom.' }),
     });
   }
 }
