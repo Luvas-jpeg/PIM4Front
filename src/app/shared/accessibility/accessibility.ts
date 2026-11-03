@@ -4,10 +4,10 @@ import { VLibrasService } from '../../core/services/vlibras.service';
 @Component({
   selector: 'app-accessibility',
   template: `
-    <div>
+    <div class="accessibility">
       <button
         type="button"
-        class="navigation-button"
+        class="navigation-button accessibility__button"
         [disabled]="loading() || loaded()"
         (click)="activate()"
       >
@@ -19,8 +19,34 @@ import { VLibrasService } from '../../core/services/vlibras.service';
               : 'Ativar tradução em Libras'
         }}
       </button>
-      <p role="status" aria-live="polite">{{ message() }}</p>
+      <p class="accessibility__message" role="status" aria-live="polite">{{ message() }}</p>
     </div>
+  `,
+  styles: `
+    :host {
+      display: block;
+      min-width: 0;
+    }
+    .accessibility {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+    .accessibility__button {
+      justify-self: start;
+      max-width: 100%;
+      min-height: 44px;
+      padding: 10px 14px;
+      line-height: 1.4;
+      text-align: left;
+      white-space: normal;
+    }
+    .accessibility__message {
+      margin: 0;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
   `,
 })
 export class Accessibility {
