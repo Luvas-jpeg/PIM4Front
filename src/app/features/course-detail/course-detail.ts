@@ -1,3 +1,7 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, catchError, finalize, map, switchMap, tap } from 'rxjs';
+import { apiErrorMessage } from '../../core/http/api-error';
+import { CourseRecommendation } from '../../core/models/course.models';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -29,34 +33,70 @@ export class CourseDetail {
   readonly quantityError = signal<string | null>(null);
   readonly cartError = signal<string | null>(null);
 
+  readonly recommendations = signal<CourseRecommendation[]>([]);
+  readonly recommendationsLoading = signal(false);
+  readonly recommendationsError = signal<string | null>(null);
+
   constructor() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-
-    if (!Number.isInteger(id) || id <= 0) {
-      this.error.set('Curso invalido.');
-      this.loading.set(false);
-      return;
-    }
-
-    this.courseService.getById(id).subscribe({
-      next: (course) => {
-        this.course.set(course);
-        const now = Date.now();
-        const classes = course.classes.filter(
-          (item) =>
-            item.status === 'scheduled' &&
-            item.availableSeats > 0 &&
-            new Date(item.startDate).getTime() >= now,
-        );
-        this.classes.set(classes);
-        this.selectedClass.set(course.deliveryMode === 'ead' ? null : (classes[0] ?? null));
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set('Nao foi possivel carregar os detalhes do curso.');
-        this.loading.set(false);
-      },
-    });
+    this.route.paramMap
+      .pipe(
+        map((params) => Number(params.get('id'))),
+        switchMap((id) => {
+          this.course.set(null);
+          this.error.set(null);
+          this.loading.set(true);
+          this.recommendations.set([]);
+          this.recommendationsError.set(null);
+          this.recommendationsLoading.set(false);
+          this.quantity.set(1);
+          this.quantityError.set(null);
+          this.cartError.set(null);
+          this.selectedClass.set(null);
+          this.classes.set([]);
+          if (!Number.isInteger(id) || id <= 0) {
+            this.error.set('Curso inválido.');
+            this.loading.set(false);
+            return EMPTY;
+          }
+          return this.courseService.getById(id).pipe(
+            tap((course) => {
+              this.course.set(course);
+              const now = Date.now();
+              const classes = course.classes.filter(
+                (item) =>
+                  item.status === 'scheduled' &&
+                  item.availableSeats > 0 &&
+                  new Date(item.startDate).getTime() >= now,
+              );
+              this.classes.set(classes);
+              this.selectedClass.set(course.deliveryMode === 'ead' ? null : (classes[0] ?? null));
+              this.loading.set(false);
+              this.recommendationsLoading.set(true);
+            }),
+            switchMap(() =>
+              this.courseService.getRecommendations(id).pipe(
+                tap((result) => this.recommendations.set(result.items)),
+                catchError(() => {
+                  this.recommendationsError.set(
+                    'As sugestões estão indisponíveis no momento. Você pode continuar consultando este curso.',
+                  );
+                  return EMPTY;
+                }),
+                finalize(() => this.recommendationsLoading.set(false)),
+              ),
+            ),
+            catchError((response) => {
+              this.error.set(
+                apiErrorMessage(response, 'Não foi possível carregar os detalhes do curso.'),
+              );
+              this.loading.set(false);
+              return EMPTY;
+            }),
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe();
   }
 
   imageUrl(course: Course): string {

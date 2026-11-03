@@ -1,3 +1,4 @@
+<a class="skip-link" href="#conteudo-principal">Pular para o conteúdo principal</a>
 <header class="app-header" [class.app-header--hidden]="isHeaderHidden()">
   <nav class="app-header__content" aria-label="Navegacao principal">
     <a routerLink="/" class="brand">MediShop</a>
@@ -32,11 +33,14 @@
   </nav>
 </header>
 
-<router-outlet />
+<div id="conteudo-principal" tabindex="-1">
+  <router-outlet />
+</div>
 
 <footer class="app-footer">
   <div class="app-footer__content">
     <span>&copy; 2026 MediShop. Todos os direitos reservados.</span>
     <span>Cursos presenciais para profissionais da saude.</span>
+    <app-accessibility />
   </div>
 </footer>

@@ -10,6 +10,25 @@ export interface CourseClass {
   status: string;
 }
 
+export interface CourseRecommendation {
+  id: number;
+  nome: string;
+  category: string;
+  preco: number;
+  image: string;
+  similarity: number;
+}
+
+export interface CourseRecommendations {
+  status: 'ready' | 'insufficient-data' | 'source-unavailable' | 'model-unavailable';
+  algorithm: string;
+  modelVersion: string | null;
+  trainedAt: string | null;
+  trainingCourseCount: number;
+  clusterCount: number;
+  items: CourseRecommendation[];
+}
+
 export interface Course {
   id: number;
   nome: string;

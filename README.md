@@ -6,6 +6,8 @@ Site da plataforma MediShop em Angular. Reúne catálogo de cursos presenciais, 
 
 ## Índice
 
+Temas do semestre, implementação de Machine Learning e acessibilidade: [requisitos acadêmicos](docs/REQUISITOS-ACADEMICOS.md).
+
 - [Arquitetura e projetos](#arquitetura-e-projetos)
 - [Funcionalidades e regras](#funcionalidades-e-regras)
 - [Tecnologias e requisitos](#tecnologias-e-requisitos)

@@ -135,6 +135,33 @@
           </a>
         </div>
       </section>
+      @if (recommendationsLoading() || recommendations().length || recommendationsError()) {
+        <section
+          class="recommendations"
+          aria-labelledby="recommendations-title"
+          [attr.aria-busy]="recommendationsLoading()"
+        >
+          <h2 id="recommendations-title">Cursos semelhantes</h2>
+          @if (recommendationsLoading()) {
+            <p role="status">Carregando sugestões...</p>
+          } @else if (recommendationsError()) {
+            <p role="status">{{ recommendationsError() }}</p>
+          } @else {
+            <p>Explore outras formações com conteúdos relacionados a este curso.</p>
+            <ul>
+              @for (item of recommendations(); track item.id) {
+                <li>
+                  <span>{{ item.category }}</span>
+                  <h3>
+                    <a [routerLink]="['/curso', item.id]">{{ item.nome }}</a>
+                  </h3>
+                  <strong>{{ item.preco | currency: 'BRL' : 'symbol' : '1.2-2' : 'pt-BR' }}</strong>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
     }
   </div>
 </main>

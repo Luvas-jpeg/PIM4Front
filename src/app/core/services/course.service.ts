@@ -1,3 +1,4 @@
+import { CourseRecommendations } from '../models/course.models';
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -54,6 +55,10 @@ export class CourseService {
 
   getById(id: number): Observable<Course> {
     return this.http.get<Course>(`${API_URL}/courses/${id}`);
+  }
+
+  getRecommendations(id: number): Observable<CourseRecommendations> {
+    return this.http.get<CourseRecommendations>(`${API_URL}/courses/${id}/recommendations`);
   }
 
   create(request: CourseRequest): Observable<Course> {

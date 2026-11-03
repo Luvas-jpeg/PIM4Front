@@ -2,10 +2,11 @@ import { Component, HostListener, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { CartService } from './core/services/cart.service';
 import { AuthService } from './core/services/auth.service';
+import { Accessibility } from './shared/accessibility/accessibility';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, Accessibility],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

@@ -116,6 +116,19 @@ input[type='radio'] {
   font-size: 0.8125rem;
   line-height: 1.4;
 }
+.skip-link {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10000;
+  padding: 12px 18px;
+  background: #fff;
+  color: var(--color-primary);
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
 .field :is(input, select).ng-invalid:is(.ng-touched, .ng-dirty) {
   border-color: #a3132b;
 }

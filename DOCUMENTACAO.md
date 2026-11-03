@@ -2,6 +2,8 @@
 
 ## Visao geral
 
+Para Machine Learning, VLibras, relações étnico-raciais e afrodescendência, empreendedorismo em TI, Cloud Computing e DevOps, consulte [Integração dos temas do semestre](docs/REQUISITOS-ACADEMICOS.md), que distingue funcionalidades implementadas e propostas de evolução.
+
 Frontend Angular da plataforma MediShop, responsavel pela experiencia Web de
 cursos presenciais e suas turmas.
 
