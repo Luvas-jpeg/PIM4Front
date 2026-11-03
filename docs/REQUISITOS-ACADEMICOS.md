@@ -62,7 +62,7 @@ Endpoint público:
 GET /api/courses/{id}/recommendations
 ```
 
-A resposta contém `status`, `algorithm`, `modelVersion`, `trainedAt`, `trainingCourseCount`, `clusterCount` e `items`. `modelVersion` identifica o conjunto de entrada por um resumo de hash; não é nota de qualidade do modelo. A similaridade também não é uma probabilidade de compra ou medida de qualidade pedagógica.
+A resposta contém `status`, `algorithm`, `modelVersion`, `trainedAt`, `trainingCourseCount`, `clusterCount` e `items`. Quando não há sugestões, `emptyReason` distingue falta de candidatos com turmas disponíveis de falta de similaridade; `eligibleCourseCount` registra quantos outros cursos disponíveis foram avaliados. O frontend exibe um estado vazio explícito, pois `ready` não garante uma lista preenchida. `modelVersion` identifica o conjunto de entrada por um resumo de hash; não é nota de qualidade do modelo. A similaridade também não é uma probabilidade de compra ou medida de qualidade pedagógica.
 
 Estados previstos: `ready`, `insufficient-data`, `source-unavailable` e `model-unavailable`. Sem dados suficientes, não são inventadas sugestões. Uma falha no recomendador não impede consultar o curso ou comprar uma vaga.
 

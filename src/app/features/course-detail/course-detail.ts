@@ -1,7 +1,7 @@
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { EMPTY, catchError, finalize, map, switchMap, tap } from 'rxjs';
 import { apiErrorMessage } from '../../core/http/api-error';
-import { CourseRecommendation } from '../../core/models/course.models';
+import { CourseRecommendation, CourseRecommendations } from '../../core/models/course.models';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -36,6 +36,9 @@ export class CourseDetail {
   readonly recommendations = signal<CourseRecommendation[]>([]);
   readonly recommendationsLoading = signal(false);
   readonly recommendationsError = signal<string | null>(null);
+  readonly recommendationsMessage = signal(
+    'Nenhum curso semelhante com turma disponível foi encontrado no momento.',
+  );
 
   constructor() {
     this.route.paramMap
@@ -75,7 +78,10 @@ export class CourseDetail {
             }),
             switchMap(() =>
               this.courseService.getRecommendations(id).pipe(
-                tap((result) => this.recommendations.set(result.items)),
+                tap((result) => {
+                  this.recommendations.set(result.items);
+                  this.recommendationsMessage.set(this.emptyRecommendationsMessage(result));
+                }),
                 catchError(() => {
                   this.recommendationsError.set(
                     'As sugestões estão indisponíveis no momento. Você pode continuar consultando este curso.',
@@ -101,6 +107,22 @@ export class CourseDetail {
 
   imageUrl(course: Course): string {
     return course.image?.trim() || this.fallbackImageUrl;
+  }
+
+  private emptyRecommendationsMessage(result: CourseRecommendations): string {
+    switch (result.emptyReason ?? result.status) {
+      case 'insufficient-data':
+        return 'Ainda não há cursos suficientes no catálogo para gerar sugestões.';
+      case 'no-available-courses':
+        return 'No momento, não há outros cursos com turmas futuras, inscrições abertas e vagas para sugerir.';
+      case 'no-similar-courses':
+        return 'Há outros cursos disponíveis, mas não encontramos conteúdos suficientemente semelhantes a este.';
+      case 'source-unavailable':
+      case 'model-unavailable':
+        return 'As sugestões para este curso estão indisponíveis no momento.';
+      default:
+        return 'Nenhum curso semelhante com turma disponível foi encontrado no momento.';
+    }
   }
 
   setFallbackImage(event: Event): void {

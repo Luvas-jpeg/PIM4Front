@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import pt from '@angular/common/locales/pt';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -25,6 +27,7 @@ describe('Course recommendations', () => {
   const service = { getById: vi.fn(), getRecommendations: vi.fn() };
 
   beforeEach(async () => {
+    registerLocaleData(pt);
     params = new BehaviorSubject(convertToParamMap({ id: '1' }));
     service.getById.mockReset().mockImplementation((id: number) => of(course(id)));
     service.getRecommendations.mockReset().mockReturnValue(of({ items: [] }));
@@ -61,5 +64,57 @@ describe('Course recommendations', () => {
     expect(service.getById).not.toHaveBeenCalled();
     expect(service.getRecommendations).not.toHaveBeenCalled();
     expect(fixture.componentInstance.loading()).toBe(false);
+  });
+  it('shows the section and a useful empty state for the original ready response', () => {
+    service.getRecommendations.mockReturnValue(
+      of({
+        status: 'ready',
+        algorithm: 'mlnet-kmeans-tfidf',
+        trainingCourseCount: 4,
+        clusterCount: 2,
+        items: [],
+      }),
+    );
+    params.next(convertToParamMap({ id: '2' }));
+    fixture.detectChanges();
+    const section = fixture.nativeElement.querySelector('.recommendations');
+    expect(section.textContent).toContain('Cursos semelhantes');
+    expect(section.textContent).toContain('Nenhum curso semelhante');
+    expect(section.querySelector('a[href="/catalogo"]')).not.toBeNull();
+  });
+
+  it.each([
+    ['no-available-courses', 'turmas futuras'],
+    ['no-similar-courses', 'conteúdos suficientemente semelhantes'],
+    ['insufficient-data', 'cursos suficientes'],
+    ['model-unavailable', 'indisponíveis'],
+  ])('explains an empty response with reason %s', (emptyReason, message) => {
+    service.getRecommendations.mockReturnValue(of({ status: 'ready', emptyReason, items: [] }));
+    params.next(convertToParamMap({ id: '2' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.recommendations').textContent).toContain(message);
+  });
+
+  it('renders suggestion links when the API returns courses', () => {
+    service.getRecommendations.mockReturnValue(
+      of({
+        status: 'ready',
+        items: [
+          {
+            id: 3,
+            nome: 'Curso semelhante',
+            category: 'Saúde',
+            preco: 120,
+            image: '',
+            similarity: 0.8,
+          },
+        ],
+      }),
+    );
+    params.next(convertToParamMap({ id: '2' }));
+    fixture.detectChanges();
+    const section = fixture.nativeElement.querySelector('.recommendations');
+    expect(section.querySelector('a[href="/curso/3"]').textContent).toContain('Curso semelhante');
+    expect(section.textContent).not.toContain('Nenhum curso semelhante');
   });
 });

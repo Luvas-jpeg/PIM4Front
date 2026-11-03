@@ -26,6 +26,14 @@ export interface CourseRecommendations {
   trainedAt: string | null;
   trainingCourseCount: number;
   clusterCount: number;
+  emptyReason?:
+    | 'insufficient-data'
+    | 'source-unavailable'
+    | 'model-unavailable'
+    | 'no-available-courses'
+    | 'no-similar-courses'
+    | null;
+  eligibleCourseCount?: number;
   items: CourseRecommendation[];
 }
 
