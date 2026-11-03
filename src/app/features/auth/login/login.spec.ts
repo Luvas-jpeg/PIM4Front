@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Login } from './login';
@@ -21,7 +22,7 @@ describe('Login', () => {
       id: 1,
       nome: 'Cliente Teste',
       email: 'cliente@email.com',
-      cpf: '12345678901',
+      cpf: '52998224725',
       phone: '11999999999',
       street: '',
       number: '',
@@ -109,12 +110,45 @@ describe('Login', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/checkout');
   });
 
+  it('blocks invalid CPF before sending registration and shows the field message', async () => {
+    component.setMode('register');
+    component.registerForm.setValue({
+      nome: 'Cliente Teste',
+      email: 'cliente@email.com',
+      senha: 'SenhaSegura123',
+      cpf: '11111111111',
+      phone: '(11) 99999-9999',
+    });
+    component.submitRegister();
+    fixture.detectChanges();
+    expect(authServiceMock.register).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Informe um CPF válido');
+  });
+
+  it('normalizes formatted registration values without changing the password', () => {
+    component.registerForm.setValue({
+      nome: ' Cliente Teste ',
+      email: ' CLIENTE@EMAIL.COM ',
+      senha: 'SenhaSegura123 ',
+      cpf: '529.982.247-25',
+      phone: '+55 (11) 99999-9999',
+    });
+    component.submitRegister();
+    expect(authServiceMock.register).toHaveBeenCalledWith({
+      nome: 'Cliente Teste',
+      email: 'cliente@email.com',
+      senha: 'SenhaSegura123 ',
+      cpf: '52998224725',
+      phone: '11999999999',
+    });
+  });
+
   it('should register, login and navigate to return url', () => {
     component.registerForm.setValue({
       nome: 'Cliente Teste',
       email: 'cliente@email.com',
       senha: 'SenhaSegura123',
-      cpf: '12345678901',
+      cpf: '52998224725',
       phone: '11999999999',
     });
 
@@ -126,5 +160,28 @@ describe('Login', () => {
       senha: 'SenhaSegura123',
     });
     expect(router.navigateByUrl).toHaveBeenCalledWith('/checkout');
+  });
+  it('shows an invalid-credentials message without confusing it with session expiry', () => {
+    authServiceMock.login.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
+    component.loginForm.setValue({ email: 'cliente@email.com', senha: 'SenhaSegura123' });
+    component.submitLogin();
+    expect(component.error()).toContain('E-mail ou senha inválidos');
+    expect(component.loading()).toBe(false);
+  });
+
+  it('keeps a successful registration visible when automatic login fails', () => {
+    authServiceMock.login.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 429 })));
+    component.registerForm.setValue({
+      nome: 'Cliente Teste',
+      email: 'cliente@email.com',
+      senha: 'SenhaSegura123',
+      cpf: '52998224725',
+      phone: '11999999999',
+    });
+    component.submitRegister();
+    expect(component.success()).toContain('Conta criada');
+    expect(component.mode()).toBe('login');
+    expect(component.error()).toContain('Aguarde');
+    expect(component.loading()).toBe(false);
   });
 });

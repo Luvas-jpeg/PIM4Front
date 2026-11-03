@@ -216,6 +216,8 @@ Parâmetros e cobertura: [e2e/README.md](e2e/README.md). Confirmação manual al
 
 ## Build e publicação
 
+Para conferir o ambiente publicado, validar os formulários e simular a confirmação de um pedido fictício pela API, siga o [roteiro de validação no Render](docs/VALIDACAO-RENDER.md). O script de verificação faz somente consultas por padrão; a confirmação de pagamento exige uma opção explícita e confirmação no terminal.
+
 ```powershell
 npm run build
 ```

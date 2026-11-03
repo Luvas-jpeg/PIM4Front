@@ -10,25 +10,84 @@
   </section>
 
   <section class="order-detail-content">
-    @if (loading()) {
+    @if (loading() && !order()) {
       <section class="order-panel">
         <p>Carregando pedido...</p>
       </section>
-    } @else if (error()) {
-      <section class="order-panel feedback feedback--error">
-        {{ error() }}
+    } @else if (error() && !order()) {
+      <section class="order-panel feedback feedback--error" role="alert">
+        <p>{{ error() }}</p>
+        @if (canRetry()) {
+          <button type="button" class="navigation-button" (click)="reload()">
+            Tentar novamente
+          </button>
+        }
+        <a routerLink="/conta">Voltar para meus pedidos</a>
       </section>
     } @else if (order(); as currentOrder) {
+      @if (error()) {
+        <section class="order-panel feedback feedback--error" role="alert">
+          <p>{{ error() }} Os dados abaixo são da última consulta concluída.</p>
+        </section>
+      }
       <section class="order-panel order-summary">
         <div>
           <span class="section-label">Pedido #{{ currentOrder.id }}</span>
           <h2>{{ formatDate(currentOrder.dataPedido) }}</h2>
-          <p>Forma de pagamento: {{ currentOrder.paymentMethod }}</p>
+          <p>Forma de pagamento: {{ paymentMethodLabel(currentOrder.paymentMethod) }}</p>
         </div>
         <div class="order-statuses">
           <span>Status: {{ statusLabel(currentOrder.status) }}</span>
           <strong>Pagamento: {{ statusLabel(currentOrder.paymentStatus) }}</strong>
         </div>
+      </section>
+
+      <section class="order-panel" aria-live="polite" [attr.aria-busy]="loading()">
+        @switch (currentOrder.paymentStatus) {
+          @case ('pending') {
+            <h2>Aguardando pagamento</h2>
+            <p>
+              Seu pedido foi registrado. A matrícula será liberada após a confirmação do pagamento.
+            </p>
+          }
+          @case ('paid') {
+            <h2>Pagamento confirmado</h2>
+            <p>Consulte a matrícula e os detalhes da turma na área do aluno.</p>
+            <a routerLink="/area-aluno" class="navigation-button">Ir para meus cursos</a>
+          }
+          @case ('refused') {
+            <h2>Pagamento recusado</h2>
+            <p>
+              Este pagamento não foi aprovado. Consulte os cursos disponíveis antes de fazer um novo
+              pedido.
+            </p>
+            <a routerLink="/catalogo" class="navigation-button">Consultar cursos</a>
+          }
+          @case ('cancelled') {
+            <h2>Pagamento cancelado</h2>
+            <p>
+              Este pedido não aguarda mais pagamento. Para uma nova inscrição, consulte a
+              disponibilidade da turma.
+            </p>
+            <a routerLink="/catalogo" class="navigation-button">Consultar cursos</a>
+          }
+          @case ('refunded') {
+            <h2>Pedido com status de reembolso</h2>
+            <p>Entre em contato com o atendimento para acompanhar a devolução.</p>
+          }
+          @default {
+            <h2>Situação do pagamento</h2>
+            <p>{{ statusLabel(currentOrder.paymentStatus) }}</p>
+          }
+        }
+        <button
+          type="button"
+          class="navigation-button"
+          [disabled]="loading() || !canRetry()"
+          (click)="reload()"
+        >
+          {{ loading() ? 'Atualizando...' : 'Atualizar situação' }}
+        </button>
       </section>
 
       <section class="order-panel">

@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../core/http/api-error';
 import { DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -54,7 +55,13 @@ export class Student {
       )
       .subscribe({
         next: (items) => this.enrollments.set(items),
-        error: () => this.error.set('Não foi possível carregar suas matrículas. Tente novamente.'),
+        error: (response) =>
+          this.error.set(
+            apiErrorMessage(
+              response,
+              'Não foi possível carregar suas matrículas. Tente novamente.',
+            ),
+          ),
       });
   }
 

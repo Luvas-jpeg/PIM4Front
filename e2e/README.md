@@ -60,6 +60,7 @@ nem contorna a protecao da API.
 - Turma futura, com dez vagas, vinculada ao curso criado nesta execucao.
 - Cadastro real de um aluno ficticio e busca do curso no catalogo.
 - Selecao da turma, carrinho, checkout Pix e pedido com total de R$ 100.
+- Redirecionamento automatico do checkout aos detalhes do pedido, com aviso de pagamento pendente.
 - Pedido pendente sem acesso a nenhuma matricula do aluno novo.
 - Webhook com assinatura invalida rejeitado com HTTP 401.
 - Confirmacao assinada e repeticao do mesmo evento, mantendo uma unica matricula.

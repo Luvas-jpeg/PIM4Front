@@ -30,6 +30,13 @@
 
       @if (loadingOrders()) {
         <p class="muted">Carregando pedidos...</p>
+      } @else if (ordersError()) {
+        <div class="feedback feedback--error" role="alert">
+          <p>{{ ordersError() }}</p>
+          <button type="button" class="ghost-button" (click)="loadOrders()">
+            Tentar novamente
+          </button>
+        </div>
       } @else if (orders().length === 0) {
         <p class="muted">Voce ainda nao possui pedidos.</p>
       } @else {
@@ -62,7 +69,7 @@
       }
     </section>
 
-    <form class="account-panel" [formGroup]="form" (ngSubmit)="save()">
+    <form novalidate class="account-panel" [formGroup]="form" (ngSubmit)="save()">
       <div class="panel-header">
         <div>
           <span class="section-label">Perfil</span>
@@ -76,21 +83,30 @@
         <label class="field">
           <span>Nome completo</span>
           <input type="text" formControlName="nome" />
+          <app-field-error [control]="form.controls.nome" />
         </label>
 
         <label class="field">
           <span>Email</span>
           <input type="email" formControlName="email" />
+          <app-field-error [control]="form.controls.email" />
         </label>
 
         <label class="field">
           <span>CPF</span>
-          <input type="text" formControlName="cpf" />
+          <input
+            type="text"
+            formControlName="cpf"
+            inputmode="numeric"
+            placeholder="000.000.000-00"
+          />
+          <app-field-error [control]="form.controls.cpf" />
         </label>
 
         <label class="field">
           <span>Telefone</span>
-          <input type="tel" formControlName="phone" />
+          <input type="tel" formControlName="phone" placeholder="(11) 99999-9999" />
+          <app-field-error [control]="form.controls.phone" />
         </label>
       </div>
 
@@ -102,37 +118,50 @@
       <div class="form-grid">
         <label class="field">
           <span>CEP</span>
-          <input type="text" formControlName="zipCode" />
+          <input
+            type="text"
+            formControlName="zipCode"
+            inputmode="numeric"
+            autocomplete="postal-code"
+            placeholder="01001-000"
+          />
+          <app-field-error [control]="form.controls.zipCode" />
         </label>
 
         <label class="field">
           <span>Estado</span>
-          <input type="text" maxlength="2" formControlName="state" />
+          <input type="text" maxlength="2" formControlName="state" placeholder="SP" />
+          <app-field-error [control]="form.controls.state" />
         </label>
 
         <label class="field field--wide">
           <span>Rua</span>
           <input type="text" formControlName="street" />
+          <app-field-error [control]="form.controls.street" />
         </label>
 
         <label class="field">
           <span>Numero</span>
           <input type="text" formControlName="number" />
+          <app-field-error [control]="form.controls.number" />
         </label>
 
         <label class="field">
           <span>Complemento</span>
           <input type="text" formControlName="complement" />
+          <app-field-error [control]="form.controls.complement" />
         </label>
 
         <label class="field">
           <span>Bairro</span>
           <input type="text" formControlName="neighborhood" />
+          <app-field-error [control]="form.controls.neighborhood" />
         </label>
 
         <label class="field">
           <span>Cidade</span>
           <input type="text" formControlName="city" />
+          <app-field-error [control]="form.controls.city" />
         </label>
       </div>
 

@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpBackend, HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, defer, finalize, shareReplay, tap, throwError } from 'rxjs';
+import { Router } from '@angular/router';
 import {
   AuthResponse,
   LoginRequest,
@@ -13,6 +14,7 @@ import { API_URL } from '../config/api.config';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
   private readonly sessionHttp = new HttpClient(inject(HttpBackend));
   private readonly tokenKey = 'medishop_token';
   private readonly refreshTokenKey = 'medishop_refresh_token';
@@ -75,6 +77,15 @@ export class AuthService {
     localStorage.removeItem(this.userKey);
     this.user.set(null);
   }
+  expireSession(): void {
+    const returnUrl = this.router.url;
+    this.clearSession();
+    if (!returnUrl.startsWith('/login')) {
+      void this.router.navigate(['/login'], {
+        queryParams: { returnUrl, reason: 'session-expired' },
+      });
+    }
+  }
   get sessionVersion(): number {
     return this.generation;
   }
@@ -103,7 +114,7 @@ export class AuthService {
             error instanceof HttpErrorResponse &&
             [401, 403].includes(error.status)
           )
-            this.clearSession();
+            this.expireSession();
           return throwError(() => error);
         }),
         finalize(() => {

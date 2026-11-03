@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -6,6 +7,7 @@ import { authInterceptor } from '../interceptors/auth.interceptor';
 import { AuthResponse } from '../models/auth.models';
 
 describe('Auth session concurrency', () => {
+  const router = { url: '/checkout', navigate: vi.fn().mockResolvedValue(true) };
   let auth: AuthService, http: HttpClient, mock: HttpTestingController;
   const response: AuthResponse = {
     accessToken: 'new-access',
@@ -27,6 +29,7 @@ describe('Auth session concurrency', () => {
     },
   };
   beforeEach(() => {
+    router.navigate.mockClear();
     localStorage.clear();
     localStorage.setItem('medishop_token', 'old-access');
     localStorage.setItem('medishop_refresh_token', 'old-refresh');
@@ -34,6 +37,7 @@ describe('Auth session concurrency', () => {
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
+        { provide: Router, useValue: router },
       ],
     });
     auth = TestBed.inject(AuthService);
@@ -89,5 +93,61 @@ describe('Auth session concurrency', () => {
     old.flush({}, { status: 401, statusText: 'Unauthorized' });
     expect(failed).toBe(true);
     mock.expectNone('/api/Auth/refresh');
+  });
+  it('redirects an expired refresh to login with the original destination', () => {
+    http.get('/api/Orders/my').subscribe({ error: () => {} });
+    mock.expectOne('/api/Orders/my').flush({}, { status: 401, statusText: 'Unauthorized' });
+    mock.expectOne('/api/Auth/refresh').flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(auth.getToken()).toBeNull();
+    expect(auth.getRefreshToken()).toBeNull();
+    expect(router.navigate).toHaveBeenCalledExactlyOnceWith(['/login'], {
+      queryParams: { returnUrl: '/checkout', reason: 'session-expired' },
+    });
+  });
+
+  it('keeps the session on a network failure while renewing and does not repeat the write', () => {
+    http.post('/api/Orders', { itens: [] }).subscribe({ error: () => {} });
+    mock.expectOne('/api/Orders').flush({}, { status: 401, statusText: 'Unauthorized' });
+    mock.expectOne('/api/Auth/refresh').error(new ProgressEvent('error'));
+    expect(auth.getToken()).toBe('old-access');
+    expect(router.navigate).not.toHaveBeenCalled();
+    mock.expectNone('/api/Orders');
+  });
+
+  it('expires a rejected access token when no refresh token is available', () => {
+    localStorage.removeItem('medishop_refresh_token');
+    http.get('/api/Orders/my').subscribe({ error: () => {} });
+    mock.expectOne('/api/Orders/my').flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(auth.getToken()).toBeNull();
+    expect(router.navigate).toHaveBeenCalledTimes(1);
+    mock.expectNone('/api/Auth/refresh');
+  });
+
+  it('does not log out or refresh a user who receives a permission denial', () => {
+    http.get('/api/courses').subscribe({ error: () => {} });
+    mock.expectOne('/api/courses').flush({}, { status: 403, statusText: 'Forbidden' });
+    expect(auth.getToken()).toBe('old-access');
+    expect(router.navigate).not.toHaveBeenCalled();
+    mock.expectNone('/api/Auth/refresh');
+  });
+
+  it('stops after one retry if the renewed access token is also rejected', () => {
+    http.get('/api/Orders/my').subscribe({ error: () => {} });
+    mock.expectOne('/api/Orders/my').flush({}, { status: 401, statusText: 'Unauthorized' });
+    mock.expectOne('/api/Auth/refresh').flush(response);
+    mock.expectOne('/api/Orders/my').flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(auth.getToken()).toBeNull();
+    expect(router.navigate).toHaveBeenCalledTimes(1);
+    mock.expectNone('/api/Auth/refresh');
+  });
+
+  it('does not redirect or clear a new session when an older refresh fails', () => {
+    auth.refresh().subscribe({ error: () => {} });
+    const oldRefresh = mock.expectOne('/api/Auth/refresh');
+    auth.login({ email: 'outro@example.com', senha: 'Senha' }).subscribe();
+    mock.expectOne('/api/Auth/login').flush(response);
+    oldRefresh.flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(auth.getToken()).toBe('new-access');
+    expect(router.navigate).not.toHaveBeenCalled();
   });
 });

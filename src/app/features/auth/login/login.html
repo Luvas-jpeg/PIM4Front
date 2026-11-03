@@ -12,6 +12,11 @@
 
   <section class="auth-content">
     <div class="auth-card">
+      @if (sessionExpired && !success()) {
+        <p class="feedback" role="status">
+          Sua sessão expirou. Entre novamente para continuar de onde parou.
+        </p>
+      }
       <div class="auth-tabs" aria-label="Escolha uma opcao">
         <button type="button" [class.active]="mode() === 'login'" (click)="setMode('login')">
           Login
@@ -23,7 +28,7 @@
       </div>
 
       @if (mode() === 'login') {
-        <form [formGroup]="loginForm" (ngSubmit)="submitLogin()">
+        <form novalidate [formGroup]="loginForm" (ngSubmit)="submitLogin()">
           <div class="form-header">
             <span class="section-label">Entrar</span>
             <h2>Bem-vindo de volta</h2>
@@ -32,11 +37,13 @@
           <label class="field">
             <span>Email</span>
             <input type="email" formControlName="email" autocomplete="email" />
+            <app-field-error [control]="loginForm.controls.email" />
           </label>
 
           <label class="field">
             <span>Senha</span>
             <input type="password" formControlName="senha" autocomplete="current-password" />
+            <app-field-error [control]="loginForm.controls.senha" />
           </label>
 
           <button type="submit" class="submit-button" [disabled]="loading()">
@@ -44,7 +51,7 @@
           </button>
         </form>
       } @else {
-        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+        <form novalidate [formGroup]="registerForm" (ngSubmit)="submitRegister()">
           <div class="form-header">
             <span class="section-label">Cadastro</span>
             <h2>Criar conta</h2>
@@ -53,11 +60,13 @@
           <label class="field">
             <span>Nome completo</span>
             <input type="text" formControlName="nome" autocomplete="name" />
+            <app-field-error [control]="registerForm.controls.nome" />
           </label>
 
           <label class="field">
             <span>Email</span>
             <input type="email" formControlName="email" autocomplete="email" />
+            <app-field-error [control]="registerForm.controls.email" />
           </label>
 
           <label class="field">
@@ -69,18 +78,32 @@
               minlength="12"
               maxlength="128"
             />
+            <app-field-error [control]="registerForm.controls.senha" />
             <small>Use ao menos 12 caracteres, com letras maiusculas, minusculas e numeros.</small>
           </label>
 
           <div class="form-grid">
             <label class="field">
               <span>CPF</span>
-              <input type="text" formControlName="cpf" autocomplete="off" />
+              <input
+                type="text"
+                formControlName="cpf"
+                inputmode="numeric"
+                placeholder="000.000.000-00"
+                autocomplete="off"
+              />
+              <app-field-error [control]="registerForm.controls.cpf" />
             </label>
 
             <label class="field">
               <span>Telefone</span>
-              <input type="tel" formControlName="phone" autocomplete="tel" />
+              <input
+                type="tel"
+                formControlName="phone"
+                placeholder="(11) 99999-9999"
+                autocomplete="tel"
+              />
+              <app-field-error [control]="registerForm.controls.phone" />
             </label>
           </div>
 
@@ -91,7 +114,7 @@
       }
 
       @if (error()) {
-        <div class="feedback feedback--error">{{ error() }}</div>
+        <div class="feedback feedback--error" role="alert">{{ error() }}</div>
       }
 
       @if (success()) {

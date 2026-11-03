@@ -1,6 +1,14 @@
+import { apiErrorMessage } from '../../core/http/api-error';
+import { FieldError } from '../../shared/validation/field-error';
+import {
+  personalValidators,
+  addressValidators,
+  digits,
+  normalizePhone,
+} from '../../shared/validation/profile.validators';
 import { CurrencyPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { UpdateProfileRequest } from '../../core/models/auth.models';
@@ -10,7 +18,7 @@ import { OrderService } from '../../core/services/order.service';
 
 @Component({
   selector: 'app-account',
-  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink],
+  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, FieldError],
   templateUrl: './account.html',
   styleUrl: './account.scss',
 })
@@ -25,20 +33,21 @@ export class Account {
   readonly error = signal<string | null>(null);
   readonly success = signal<string | null>(null);
   readonly orders = signal<Order[]>([]);
-  readonly loadingOrders = signal(true);
+  readonly loadingOrders = signal(false);
+  readonly ordersError = signal<string | null>(null);
   readonly cancellingOrderId = signal<number | null>(null);
   readonly form = this.formBuilder.group({
-    nome: this.formBuilder.control('', [Validators.required]),
-    email: this.formBuilder.control('', [Validators.required, Validators.email]),
-    cpf: this.formBuilder.control('', [Validators.required, Validators.minLength(11)]),
-    phone: this.formBuilder.control('', [Validators.required]),
-    street: this.formBuilder.control('', [Validators.required]),
-    number: this.formBuilder.control('', [Validators.required]),
-    complement: this.formBuilder.control(''),
-    neighborhood: this.formBuilder.control('', [Validators.required]),
-    city: this.formBuilder.control('', [Validators.required]),
-    state: this.formBuilder.control('', [Validators.required, Validators.minLength(2)]),
-    zipCode: this.formBuilder.control('', [Validators.required, Validators.minLength(8)]),
+    nome: this.formBuilder.control('', personalValidators.nome),
+    email: this.formBuilder.control('', personalValidators.email),
+    cpf: this.formBuilder.control('', personalValidators.cpf),
+    phone: this.formBuilder.control('', personalValidators.phone),
+    street: this.formBuilder.control('', addressValidators.street),
+    number: this.formBuilder.control('', addressValidators.number),
+    complement: this.formBuilder.control('', addressValidators.complement),
+    neighborhood: this.formBuilder.control('', addressValidators.neighborhood),
+    city: this.formBuilder.control('', addressValidators.city),
+    state: this.formBuilder.control('', addressValidators.state),
+    zipCode: this.formBuilder.control('', addressValidators.zipCode),
   });
 
   constructor() {
@@ -68,7 +77,7 @@ export class Account {
           this.success.set(`Pedido #${order.id} cancelado.`);
         },
         error: (response) =>
-          this.error.set(response.error?.message ?? 'Nao foi possivel cancelar o pedido.'),
+          this.error.set(apiErrorMessage(response, 'Não foi possível cancelar o pedido.')),
       });
   }
 
@@ -84,18 +93,24 @@ export class Account {
     return labels[value ?? ''] ?? 'Nao informado';
   }
 
-  private loadOrders(): void {
+  loadOrders(): void {
+    if (this.loadingOrders()) return;
+    this.ordersError.set(null);
+    this.loadingOrders.set(true);
     this.orderService
       .getMyOrders()
       .pipe(finalize(() => this.loadingOrders.set(false)))
       .subscribe({
         next: (orders) => this.orders.set(orders),
-        error: () => this.error.set('Nao foi possivel carregar seu historico de pedidos.'),
-        complete: () => this.loadingOrders.set(false),
+        error: (response) =>
+          this.ordersError.set(
+            apiErrorMessage(response, 'Não foi possível carregar seu histórico de pedidos.'),
+          ),
       });
   }
 
   save(): void {
+    if (this.saving()) return;
     this.error.set(null);
     this.success.set(null);
 
@@ -113,7 +128,7 @@ export class Account {
       .subscribe({
         next: () => this.success.set('Dados atualizados com sucesso.'),
         error: (response) =>
-          this.error.set(response.error?.message ?? 'Nao foi possivel atualizar sua conta.'),
+          this.error.set(apiErrorMessage(response, 'Não foi possível atualizar sua conta.')),
       });
   }
 
@@ -149,9 +164,17 @@ export class Account {
 
     return {
       ...raw,
-      cpf: raw.cpf.replace(/\D/g, ''),
+      nome: raw.nome.trim(),
+      email: raw.email.trim().toLowerCase(),
+      cpf: digits(raw.cpf),
+      phone: normalizePhone(raw.phone),
+      street: raw.street.trim(),
+      number: raw.number.trim(),
+      complement: raw.complement.trim(),
+      neighborhood: raw.neighborhood.trim(),
+      city: raw.city.trim(),
       state: raw.state.trim().toUpperCase(),
-      zipCode: raw.zipCode.replace(/\D/g, ''),
+      zipCode: digits(raw.zipCode),
     };
   }
 }

@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router, provideRouter } from '@angular/router';
+import { of, Subject, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Checkout } from './checkout';
@@ -17,6 +18,7 @@ describe('Checkout', () => {
   let component: Checkout;
   let fixture: ComponentFixture<Checkout>;
   let cartService: CartService;
+  let router: Router;
 
   const orderServiceMock = {
     create: vi.fn(),
@@ -87,6 +89,8 @@ describe('Checkout', () => {
       ],
     }).compileComponents();
 
+    router = TestBed.inject(Router);
+    vi.spyOn(router, 'navigate').mockResolvedValue(true);
     cartService = TestBed.inject(CartService);
     fixture = TestBed.createComponent(Checkout);
     component = fixture.componentInstance;
@@ -161,6 +165,7 @@ describe('Checkout', () => {
     ]);
     expect(request.paymentMethod).toBe('pix');
     expect(cartService.items()).toEqual([]);
+    expect(router.navigate).toHaveBeenCalledWith(['/conta/pedido', 10]);
   });
 
   it('should send the selected class when submitting a course order', () => {
@@ -207,5 +212,65 @@ describe('Checkout', () => {
     expect(orderServiceMock.create.mock.calls[0][0].itens).toEqual([
       { courseId: 1, turmaId: null, quantidade: 1 },
     ]);
+  });
+  it('keeps cart contents and reuses the request key after a lost response', () => {
+    cartService.addCourse({ ...baseCourse, deliveryMode: 'presencial' }, courseClass);
+    orderServiceMock.create.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    component.submit();
+    expect(cartService.items()).toHaveLength(1);
+    expect(component.submitting()).toBe(false);
+    expect(component.error()).toContain('Meus pedidos');
+    expect(router.navigate).not.toHaveBeenCalled();
+    component.submit();
+    expect(orderServiceMock.create.mock.calls[0][1]).toBe(orderServiceMock.create.mock.calls[1][1]);
+  });
+
+  it('uses a new key if the user changes the order after an error', () => {
+    cartService.addCourse({ ...baseCourse, deliveryMode: 'presencial' }, courseClass);
+    orderServiceMock.create.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 503 })),
+    );
+    component.submit();
+    component.form.controls.paymentMethod.setValue('credit_card');
+    component.submit();
+    expect(orderServiceMock.create.mock.calls[0][1]).not.toBe(
+      orderServiceMock.create.mock.calls[1][1],
+    );
+  });
+
+  it('ignores a second submit while the first order request is pending', () => {
+    cartService.addCourse({ ...baseCourse, deliveryMode: 'presencial' }, courseClass);
+    const pending = new Subject<never>();
+    orderServiceMock.create.mockReturnValue(pending);
+    component.submit();
+    component.submit();
+    expect(orderServiceMock.create).toHaveBeenCalledTimes(1);
+    expect(component.submitting()).toBe(true);
+    pending.error(new HttpErrorResponse({ status: 400, error: { message: 'Turma sem vagas.' } }));
+    expect(component.error()).toBe('Turma sem vagas.');
+    expect(component.submitting()).toBe(false);
+    expect(cartService.items()).toHaveLength(1);
+  });
+
+  it('distinguishes a coupon connection failure from an invalid coupon', () => {
+    promoCodeServiceMock.validate.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 0 })),
+    );
+    component.form.controls.promoCode.setValue('MED10');
+    component.applyCoupon();
+    expect(component.promoMessage()).toContain('conexão');
+    expect(component.validatingCoupon()).toBe(false);
+  });
+
+  it('does not create an order while the coupon is still being checked', () => {
+    cartService.addCourse({ ...baseCourse, deliveryMode: 'presencial' }, courseClass);
+    const pending = new Subject<never>();
+    promoCodeServiceMock.validate.mockReturnValue(pending);
+    component.form.controls.promoCode.setValue('MED10');
+    component.applyCoupon();
+    component.submit();
+    expect(orderServiceMock.create).not.toHaveBeenCalled();
+    expect(component.error()).toContain('Aguarde');
+    pending.complete();
   });
 });

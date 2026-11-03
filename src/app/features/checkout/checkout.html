@@ -19,7 +19,7 @@
         <a routerLink="/catalogo" class="primary-link">Ver catalogo</a>
       </div>
     } @else {
-      <form class="checkout-layout" [formGroup]="form" (ngSubmit)="submit()">
+      <form novalidate class="checkout-layout" [formGroup]="form" (ngSubmit)="submit()">
         <div class="checkout-main">
           <section class="checkout-panel">
             <span class="section-label">Conta</span>
@@ -68,15 +68,29 @@
             <span class="section-label">Cupom</span>
 
             <div class="coupon-row">
-              <input type="text" formControlName="promoCode" placeholder="Digite seu cupom" />
+              <input
+                type="text"
+                formControlName="promoCode"
+                placeholder="Digite seu cupom"
+                [readOnly]="submitting() || validatingCoupon()"
+              />
 
-              <button type="button" [disabled]="validatingCoupon()" (click)="applyCoupon()">
+              <button
+                type="button"
+                [disabled]="validatingCoupon() || submitting()"
+                (click)="applyCoupon()"
+              >
                 {{ validatingCoupon() ? 'Validando...' : 'Aplicar' }}
               </button>
             </div>
 
             @if (promoCode()) {
-              <button type="button" class="remove-coupon" (click)="removeCoupon()">
+              <button
+                type="button"
+                class="remove-coupon"
+                [disabled]="submitting()"
+                (click)="removeCoupon()"
+              >
                 Remover cupom
               </button>
             }
@@ -87,7 +101,10 @@
           </section>
 
           @if (error()) {
-            <div class="feedback feedback--error">{{ error() }}</div>
+            <div class="feedback feedback--error" role="alert">
+              {{ error() }}
+              <a routerLink="/conta">Meus pedidos</a>
+            </div>
           }
 
           @if (success()) {
@@ -148,7 +165,12 @@
             <strong>{{ formatPrice(total()) }}</strong>
           </div>
 
-          <button type="submit" class="submit-button" [disabled]="submitting()">
+          <p>O pedido ficará aguardando a confirmação do pagamento para liberar sua matrícula.</p>
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="submitting() || validatingCoupon()"
+          >
             {{ submitting() ? 'Finalizando...' : 'Criar pedido' }}
           </button>
         </aside>
@@ -171,41 +193,54 @@
         </button>
       </div>
 
-      <form [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+      <form novalidate [formGroup]="addressForm" (ngSubmit)="saveAddress()">
         <div class="address-grid">
           <label class="field">
             <span>CEP</span>
-            <input type="text" formControlName="zipCode" />
+            <input
+              type="text"
+              formControlName="zipCode"
+              inputmode="numeric"
+              autocomplete="postal-code"
+              placeholder="01001-000"
+            />
+            <app-field-error [control]="addressForm.controls.zipCode" />
           </label>
 
           <label class="field">
             <span>Estado</span>
-            <input type="text" maxlength="2" formControlName="state" />
+            <input type="text" maxlength="2" formControlName="state" placeholder="SP" />
+            <app-field-error [control]="addressForm.controls.state" />
           </label>
 
           <label class="field field--wide">
             <span>Rua</span>
             <input type="text" formControlName="street" />
+            <app-field-error [control]="addressForm.controls.street" />
           </label>
 
           <label class="field">
             <span>Numero</span>
             <input type="text" formControlName="number" />
+            <app-field-error [control]="addressForm.controls.number" />
           </label>
 
           <label class="field">
             <span>Complemento</span>
             <input type="text" formControlName="complement" />
+            <app-field-error [control]="addressForm.controls.complement" />
           </label>
 
           <label class="field">
             <span>Bairro</span>
             <input type="text" formControlName="neighborhood" />
+            <app-field-error [control]="addressForm.controls.neighborhood" />
           </label>
 
           <label class="field">
             <span>Cidade</span>
             <input type="text" formControlName="city" />
+            <app-field-error [control]="addressForm.controls.city" />
           </label>
         </div>
 

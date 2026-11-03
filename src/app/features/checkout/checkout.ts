@@ -1,3 +1,5 @@
+import { FieldError } from '../../shared/validation/field-error';
+import { addressValidators, digits } from '../../shared/validation/profile.validators';
 import { Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -9,12 +11,13 @@ import { PromoCodeService } from '../../core/services/promo-code.service';
 import { CreateOrderRequest } from '../../core/models/order.models';
 import { PromoCode } from '../../core/models/promo-codes.models';
 import { UpdateProfileRequest, User } from '../../core/models/auth.models';
+import { apiErrorMessage } from '../../core/http/api-error';
 
 type PaymentMethod = 'credit_card' | 'debit_card' | 'pix';
 
 @Component({
   selector: 'app-checkout',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, FieldError],
   templateUrl: './checkout.html',
   styleUrl: './checkout.scss',
 })
@@ -25,6 +28,7 @@ export class Checkout {
   private readonly orderService = inject(OrderService);
   private readonly promoCodeService = inject(PromoCodeService);
   private readonly router = inject(Router);
+  private pendingAttempt?: { payload: string; key: string };
   private readonly currencyFormatter = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -76,13 +80,13 @@ export class Checkout {
   });
 
   readonly addressForm = this.formBuilder.group({
-    street: this.formBuilder.control('', [Validators.required]),
-    number: this.formBuilder.control('', [Validators.required]),
-    complement: this.formBuilder.control(''),
-    neighborhood: this.formBuilder.control('', [Validators.required]),
-    city: this.formBuilder.control('', [Validators.required]),
-    state: this.formBuilder.control('', [Validators.required, Validators.minLength(2)]),
-    zipCode: this.formBuilder.control('', [Validators.required, Validators.minLength(8)]),
+    street: this.formBuilder.control('', addressValidators.street),
+    number: this.formBuilder.control('', addressValidators.number),
+    complement: this.formBuilder.control('', addressValidators.complement),
+    neighborhood: this.formBuilder.control('', addressValidators.neighborhood),
+    city: this.formBuilder.control('', addressValidators.city),
+    state: this.formBuilder.control('', addressValidators.state),
+    zipCode: this.formBuilder.control('', addressValidators.zipCode),
   });
 
   readonly paymentMethod = this.form.controls.paymentMethod;
@@ -96,6 +100,7 @@ export class Checkout {
   }
 
   applyCoupon(): void {
+    if (this.submitting() || this.validatingCoupon()) return;
     const code = this.form.controls.promoCode.value.trim().toUpperCase();
 
     this.error.set(null);
@@ -119,13 +124,14 @@ export class Checkout {
           this.form.controls.promoCode.setValue(coupon.code);
           this.promoMessage.set(`Cupom ${coupon.code} aplicado.`);
         },
-        error: () => {
-          this.promoMessage.set('Cupom invalido ou indisponivel.');
+        error: (response) => {
+          this.promoMessage.set(apiErrorMessage(response, 'Cupom inválido ou indisponível.'));
         },
       });
   }
 
   removeCoupon(): void {
+    if (this.submitting()) return;
     this.promoCode.set(null);
     this.promoMessage.set(null);
     this.form.controls.promoCode.setValue('');
@@ -141,11 +147,12 @@ export class Checkout {
   }
 
   saveAddress(): void {
+    if (this.savingAddress()) return;
     this.error.set(null);
 
     if (this.addressForm.invalid) {
       this.addressForm.markAllAsTouched();
-      this.error.set('Preencha o endereco para calcular o frete.');
+      this.error.set('Revise os campos do endereço.');
       return;
     }
 
@@ -168,7 +175,7 @@ export class Checkout {
       neighborhood: address.neighborhood.trim(),
       city: address.city.trim(),
       state: address.state.trim().toUpperCase(),
-      zipCode: address.zipCode.replace(/\D/g, ''),
+      zipCode: digits(address.zipCode),
     };
 
     this.savingAddress.set(true);
@@ -179,14 +186,15 @@ export class Checkout {
       .subscribe({
         next: () => {
           this.addressModalOpen.set(false);
-          this.success.set('Endereco atualizado. Frete recalculado.');
+          this.success.set('Endereço atualizado.');
         },
         error: (response) =>
-          this.error.set(response.error?.message ?? 'Nao foi possivel salvar o endereco.'),
+          this.error.set(apiErrorMessage(response, 'Não foi possível salvar o endereço.')),
       });
   }
 
   submit(): void {
+    if (this.submitting()) return;
     this.error.set(null);
     this.success.set(null);
 
@@ -203,6 +211,10 @@ export class Checkout {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.error.set('Revise os dados de pagamento.');
+      return;
+    }
+    if (this.validatingCoupon()) {
+      this.error.set('Aguarde a validação do cupom antes de criar o pedido.');
       return;
     }
 
@@ -222,19 +234,32 @@ export class Checkout {
       promoCode: this.promoCode()?.code ?? '',
     };
 
+    // A lost response may mean the server already created the order. Reuse the
+    // key only for this account and the exact same request on a manual retry.
+    const payload = JSON.stringify({ userId: this.user()?.id, request });
+    if (this.pendingAttempt?.payload !== payload) {
+      this.pendingAttempt = { payload, key: crypto.randomUUID() };
+    }
+
     this.submitting.set(true);
 
     this.orderService
-      .create(request, crypto.randomUUID())
+      .create(request, this.pendingAttempt.key)
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
         next: (response) => {
+          this.pendingAttempt = undefined;
           this.cartService.clear();
           this.success.set(`${response.message} Pedido #${response.orderId}.`);
-          void this.router.navigate(['/']);
+          void this.router.navigate(['/conta/pedido', response.orderId]);
         },
         error: (response) => {
-          this.error.set(response.error?.message ?? 'Nao foi possivel criar o pedido.');
+          const message = apiErrorMessage(response, 'Não foi possível criar o pedido.');
+          this.error.set(
+            response.status === 0 || response.status >= 500
+              ? `${message} Confira “Meus pedidos” antes de tentar novamente; o pedido pode ter sido registrado.`
+              : message,
+          );
         },
       });
   }

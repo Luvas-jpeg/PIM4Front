@@ -110,6 +110,15 @@ input[type='checkbox'],
 input[type='radio'] {
   accent-color: var(--color-primary);
 }
+.field-error {
+  display: block;
+  color: #a3132b;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+.field :is(input, select).ng-invalid:is(.ng-touched, .ng-dirty) {
+  border-color: #a3132b;
+}
 :where(h1, h2, h3) {
   overflow-wrap: anywhere;
 }

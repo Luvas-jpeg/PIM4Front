@@ -202,8 +202,10 @@ test('curso e turma -> pedido pendente -> pagamento local -> matricula do aluno'
       orderId = order.orderId;
       expect(orderId).toBeGreaterThan(0);
       expect(order.total).toBe(100);
-      await expect(studentPage).toHaveURL(/\/$/);
-      await studentPage.goto(`/conta/pedido/${orderId}`);
+      await expect(studentPage).toHaveURL(new RegExp(`/conta/pedido/${orderId}$`));
+      await expect(
+        studentPage.getByRole('heading', { name: 'Aguardando pagamento' }),
+      ).toBeVisible();
       await expect(studentPage.locator('.order-statuses strong')).toHaveText('Pagamento: Pendente');
       await studentPage.goto('/area-aluno');
       await expect(studentPage.locator('.courses-panel')).toBeVisible();
