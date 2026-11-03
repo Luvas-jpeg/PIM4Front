@@ -5,6 +5,9 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main']
+  workflow_dispatch:
+  schedule:
+    - cron: '23 8 * * 1'
 
 permissions:
   contents: read
@@ -13,28 +16,88 @@ concurrency:
   group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test-and-build:
+    name: Frontend quality
     runs-on: ubuntu-latest
-
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          node-version: 24.x
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
           cache: npm
-
       - name: Install dependencies
         run: npm ci
-
       - name: Check formatting
         run: npm run format:check
-
-      - name: Run unit tests
-        run: npm test -- --watch=false --no-progress
-
+      - name: Run unit tests with JUnit report
+        run: npm run test:ci
       - name: Build production bundle
         run: npm run build
+      - name: Audit dependencies (high and critical block CI)
+        run: |
+          mkdir -p test-results
+          npm audit --audit-level=high --json | tee test-results/npm-audit.json
+      - name: Upload test and audit reports
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: frontend-reports
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload production bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: frontend-dist
+          path: dist/frontend/browser/
+          if-no-files-found: error
+          retention-days: 7
+
+  docker:
+    name: Frontend container
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+      - name: Build the deployment image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        with:
+          context: .
+          file: Dockerfile
+          load: true
+          push: false
+          tags: pim4-front:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Verify Nginx, Angular routes and API proxy
+        run: bash scripts/ci/smoke-frontend.sh pim4-front:ci
+
+  gate:
+    name: Frontend CI gate
+    if: always()
+    needs: [test-and-build, docker]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require all checks to pass
+        env:
+          QUALITY_RESULT: ${{ needs.test-and-build.result }}
+          CONTAINER_RESULT: ${{ needs.docker.result }}
+        run: |
+          test "$QUALITY_RESULT" = success
+          test "$CONTAINER_RESULT" = success

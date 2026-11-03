@@ -188,6 +188,8 @@ O admin compartilha estilos em `admin.scss` e `admin-layout.scss`. Botões de na
 
 ## Testes
 
+Pipelines, relatórios, proteção da branch e deploy após aprovação: [guia de CI/CD](docs/CI-CD.md).
+
 ### Testes do frontend
 
 ```powershell

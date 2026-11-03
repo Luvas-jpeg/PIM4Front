@@ -10,7 +10,8 @@
     "test:e2e": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-LocalEnrollmentFlow.ps1",
     "test:e2e:report": "playwright show-report",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:ci": "ng test --watch=false --no-progress --reporters=junit --output-file=test-results/unit-tests.xml"
   },
   "private": true,
   "packageManager": "npm@10.9.4",

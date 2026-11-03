@@ -3,6 +3,7 @@ services:
   - type: web
     name: pim4-web-demo
     runtime: docker
+    autoDeployTrigger: checksPass
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /
