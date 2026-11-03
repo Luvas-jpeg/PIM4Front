@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../../../core/http/api-error';
 import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -107,7 +108,7 @@ export class AdminCoupons {
         this.notify.emit({ type: 'success', message: 'Cupom salvo com sucesso.' });
       },
       error: (response) =>
-        this.formError.set(response.error?.message ?? 'Nao foi possivel salvar o cupom.'),
+        this.formError.set(apiErrorMessage(response, 'Nao foi possivel salvar o cupom.')),
     });
   }
 
@@ -132,8 +133,11 @@ export class AdminCoupons {
         this.promoCodesChange.emit(this.promoCodes.filter((coupon) => coupon.id !== id));
         this.notify.emit({ type: 'success', message: 'Cupom removido.' });
       },
-      error: () =>
-        this.notify.emit({ type: 'error', message: 'Nao foi possivel remover o cupom.' }),
+      error: (response) =>
+        this.notify.emit({
+          type: 'error',
+          message: apiErrorMessage(response, 'Nao foi possivel remover o cupom.'),
+        }),
     });
   }
 }

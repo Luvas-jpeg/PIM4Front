@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../../../core/http/api-error';
 import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -125,7 +126,7 @@ export class AdminCourses {
         this.notify.emit({ type: 'success', message: 'Curso salvo com sucesso.' });
       },
       error: (response) =>
-        this.formError.set(this.requestErrorMessage(response, 'Nao foi possivel salvar o curso.')),
+        this.formError.set(apiErrorMessage(response, 'Nao foi possivel salvar o curso.')),
     });
   }
 
@@ -151,7 +152,7 @@ export class AdminCourses {
       error: (response) =>
         this.notify.emit({
           type: 'error',
-          message: this.requestErrorMessage(
+          message: apiErrorMessage(
             response,
             course.isActive
               ? 'Nao foi possivel arquivar o curso.'
@@ -159,16 +160,5 @@ export class AdminCourses {
           ),
         }),
     });
-  }
-
-  private requestErrorMessage(
-    response: { status?: number; error?: { message?: string } },
-    fallback: string,
-  ): string {
-    if (response.error?.message) return response.error.message;
-    if (response.status === 401)
-      return 'Sua sessao expirou ou nao possui autorizacao de administrador. Entre novamente.';
-    if (response.status === 403) return 'Usuario autenticado sem permissao de administrador.';
-    return fallback;
   }
 }

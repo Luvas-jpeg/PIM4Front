@@ -32,4 +32,30 @@ describe('API error messages', () => {
     ).toBe('Falha.');
     expect(apiErrorMessage(new Error('internal'), 'Falha.')).toBe('Falha.');
   });
+
+  it('shows field validation errors returned by ASP.NET without generic titles', () => {
+    const error = new HttpErrorResponse({
+      status: 400,
+      error: {
+        title: 'One or more validation errors occurred.',
+        errors: { Status: ['Status inválido.'], Nome: ['Nome obrigatório.', 'Nome obrigatório.'] },
+      },
+    });
+    expect(apiErrorMessage(error, 'Falha.')).toBe('Status inválido. Nome obrigatório.');
+  });
+
+  it('does not expose field diagnostics for server failures or malformed validation values', () => {
+    expect(
+      apiErrorMessage(
+        new HttpErrorResponse({ status: 500, error: { errors: { Database: ['internal SQL'] } } }),
+        'Falha.',
+      ),
+    ).not.toContain('SQL');
+    expect(
+      apiErrorMessage(
+        new HttpErrorResponse({ status: 400, error: { errors: { bad: [null, {}, 123, ' '] } } }),
+        'Falha.',
+      ),
+    ).toBe('Falha.');
+  });
 });

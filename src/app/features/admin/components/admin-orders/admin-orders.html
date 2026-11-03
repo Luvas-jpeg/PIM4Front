@@ -67,10 +67,7 @@
           >
         </div>
         <strong>{{ formatPrice(order.total) }}</strong>
-        <select
-          [value]="order.status"
-          (change)="updateOrderStatus(order, $any($event.target).value)"
-        >
+        <select [value]="order.status" (change)="changeOrderStatus(order, $event)">
           <option value="pending">Pendente</option>
           <option value="processing">Processando</option>
           <option value="completed">Concluido</option>
@@ -195,6 +192,8 @@
         <h3>Eventos de pagamento</h3>
         @if (loadingWebhookEvents()) {
           <p class="muted">Carregando eventos...</p>
+        } @else if (webhookError()) {
+          <p class="feedback feedback--error" role="alert">{{ webhookError() }}</p>
         } @else {
           <div class="list">
             @for (event of webhookEvents(); track event.id) {

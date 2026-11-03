@@ -4,6 +4,8 @@ import { Order } from '../../../../core/models/order.models';
 import { OrderService } from '../../../../core/services/order.service';
 import { PaymentService } from '../../../../core/services/payment.service';
 import { AdminNotification } from '../../admin.types';
+import { apiErrorMessage } from '../../../../core/http/api-error';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-admin-orders',
@@ -32,6 +34,7 @@ export class AdminOrders {
   readonly selectedOrder = signal<Order | null>(null);
   readonly webhookEvents = signal<PaymentWebhookEvent[]>([]);
   readonly loadingWebhookEvents = signal(false);
+  readonly webhookError = signal<string | null>(null);
 
   readonly filteredOrders = computed(() => {
     const search = this.orderSearch().trim().toLowerCase();
@@ -123,9 +126,20 @@ export class AdminOrders {
         );
         this.notify.emit({ type: 'success', message: 'Status do pedido atualizado.' });
       },
-      error: () =>
-        this.notify.emit({ type: 'error', message: 'Nao foi possivel atualizar o pedido.' }),
+      error: (response) =>
+        this.notify.emit({
+          type: 'error',
+          message: apiErrorMessage(response, 'Não foi possível atualizar o pedido.'),
+        }),
     });
+  }
+
+  changeOrderStatus(order: Order, event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const status = select.value;
+    // Keep showing the confirmed state while the API validates the change.
+    select.value = order.status;
+    this.updateOrderStatus(order, status);
   }
 
   refundOrder(order: Order): void {
@@ -139,8 +153,11 @@ export class AdminOrders {
           message: 'Reembolso processado e matriculas canceladas.',
         });
       },
-      error: () =>
-        this.notify.emit({ type: 'error', message: 'Nao foi possivel processar o reembolso.' }),
+      error: (response) =>
+        this.notify.emit({
+          type: 'error',
+          message: apiErrorMessage(response, 'Não foi possível processar o reembolso.'),
+        }),
     });
   }
 
@@ -190,6 +207,7 @@ export class AdminOrders {
   closeDetails(): void {
     this.selectedOrder.set(null);
     this.webhookEvents.set([]);
+    this.webhookError.set(null);
   }
 
   itemTotal(orderItem: Order['itens'][number]): number {
@@ -199,15 +217,24 @@ export class AdminOrders {
   private loadWebhookEvents(orderId: number): void {
     this.loadingWebhookEvents.set(true);
     this.webhookEvents.set([]);
+    this.webhookError.set(null);
 
-    this.paymentService.getWebhookEvents(orderId).subscribe({
-      next: (events) => this.webhookEvents.set(events),
-      error: () =>
-        this.notify.emit({
-          type: 'error',
-          message: 'Nao foi possivel carregar os eventos de pagamento.',
-        }),
-      complete: () => this.loadingWebhookEvents.set(false),
-    });
+    this.paymentService
+      .getWebhookEvents(orderId)
+      .pipe(finalize(() => this.loadingWebhookEvents.set(false)))
+      .subscribe({
+        next: (events) => this.webhookEvents.set(events),
+        error: (response) => {
+          const message = apiErrorMessage(
+            response,
+            'Não foi possível carregar os eventos de pagamento.',
+          );
+          this.webhookError.set(message);
+          this.notify.emit({
+            type: 'error',
+            message,
+          });
+        },
+      });
   }
 }

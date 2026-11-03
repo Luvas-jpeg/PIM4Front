@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../core/http/api-error';
 import { Component, ViewEncapsulation, inject, signal } from '@angular/core';
 import { AuditLog } from '../../core/models/audit.models';
 import { Course } from '../../core/models/course.models';
@@ -97,27 +98,32 @@ export class Admin {
           this.courses.set([...latest, ...courses.filter((course) => !currentIds.has(course.id))]);
         }
       },
-      error: () => this.error.set('Nao foi possivel carregar cursos.'),
+      error: (response) =>
+        this.error.set(apiErrorMessage(response, 'Nao foi possivel carregar cursos.')),
     });
 
     this.orderService.getAll().subscribe({
       next: (orders) => this.orders.set(orders),
-      error: () => this.error.set('Nao foi possivel carregar pedidos.'),
+      error: (response) =>
+        this.error.set(apiErrorMessage(response, 'Nao foi possivel carregar pedidos.')),
     });
 
     this.promoCodeService.getAll().subscribe({
       next: (promoCodes) => this.promoCodes.set(promoCodes),
-      error: () => this.error.set('Nao foi possivel carregar cupons.'),
+      error: (response) =>
+        this.error.set(apiErrorMessage(response, 'Nao foi possivel carregar cupons.')),
     });
 
     this.studentService.getAll().subscribe({
       next: (students) => this.students.set(students),
-      error: () => this.error.set('Nao foi possivel carregar alunos.'),
+      error: (response) =>
+        this.error.set(apiErrorMessage(response, 'Nao foi possivel carregar alunos.')),
     });
 
     this.auditService.getAll().subscribe({
       next: (auditLogs) => this.auditLogs.set(auditLogs),
-      error: () => this.error.set('Nao foi possivel carregar a auditoria.'),
+      error: (response) =>
+        this.error.set(apiErrorMessage(response, 'Nao foi possivel carregar a auditoria.')),
     });
 
     this.loading.set(false);

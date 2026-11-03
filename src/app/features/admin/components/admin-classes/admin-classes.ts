@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../../../core/http/api-error';
 import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -110,7 +111,7 @@ export class AdminClasses {
         this.notify.emit({ type: 'success', message: 'Turma salva com sucesso.' });
       },
       error: (response) =>
-        this.formError.set(response.error?.message ?? 'Nao foi possivel salvar a turma.'),
+        this.formError.set(apiErrorMessage(response, 'Nao foi possivel salvar a turma.')),
     });
   }
 
@@ -120,10 +121,10 @@ export class AdminClasses {
     this.selectedStudents.set([]);
     this.courseService.getClassStudents(course.id, courseClass.id).subscribe({
       next: (students) => this.selectedStudents.set(students),
-      error: () =>
+      error: (response) =>
         this.notify.emit({
           type: 'error',
-          message: 'Nao foi possivel carregar os alunos da turma.',
+          message: apiErrorMessage(response, 'Nao foi possivel carregar os alunos da turma.'),
         }),
     });
   }
@@ -228,7 +229,7 @@ export class AdminClasses {
         error: (response) =>
           this.notify.emit({
             type: 'error',
-            message: response.error?.message ?? 'Nao foi possivel atualizar o status da matricula.',
+            message: apiErrorMessage(response, 'Nao foi possivel atualizar o status da matricula.'),
           }),
       });
   }
@@ -273,7 +274,7 @@ export class AdminClasses {
         error: (response) =>
           this.notify.emit({
             type: 'error',
-            message: response.error?.message ?? 'Nao foi possivel transferir o aluno.',
+            message: apiErrorMessage(response, 'Nao foi possivel transferir o aluno.'),
           }),
         complete: () => this.transferringStudentId.set(null),
       });

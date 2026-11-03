@@ -1,3 +1,4 @@
+import { apiErrorMessage } from '../../../../core/http/api-error';
 import {
   Component,
   EventEmitter,
@@ -177,7 +178,7 @@ export class AdminEadContent implements OnChanges {
         this.notify.emit({ type: 'success', message: 'Modulo EAD criado.' });
       },
       error: (response) =>
-        this.formError.set(response.error?.message ?? 'Nao foi possivel criar o modulo.'),
+        this.formError.set(apiErrorMessage(response, 'Nao foi possivel criar o modulo.')),
       complete: () => this.savingModule.set(false),
     });
   }
@@ -228,7 +229,7 @@ export class AdminEadContent implements OnChanges {
         this.notify.emit({ type: 'success', message: 'Aula EAD criada.' });
       },
       error: (response) =>
-        this.formError.set(response.error?.message ?? 'Nao foi possivel criar a aula.'),
+        this.formError.set(apiErrorMessage(response, 'Nao foi possivel criar a aula.')),
       complete: () => this.savingLesson.set(false),
     });
   }
@@ -274,7 +275,7 @@ export class AdminEadContent implements OnChanges {
         this.notify.emit({ type: 'success', message: 'Avaliacao EAD salva.' });
       },
       error: (response) =>
-        this.formError.set(response.error?.message ?? 'Nao foi possivel salvar a avaliacao.'),
+        this.formError.set(apiErrorMessage(response, 'Nao foi possivel salvar a avaliacao.')),
       complete: () => this.savingAssessment.set(false),
     });
   }
@@ -344,7 +345,7 @@ export class AdminEadContent implements OnChanges {
         this.notify.emit({ type: 'success', message: 'Questao adicionada.' });
       },
       error: (response) =>
-        this.formError.set(response.error?.message ?? 'Nao foi possivel criar a questao.'),
+        this.formError.set(apiErrorMessage(response, 'Nao foi possivel criar a questao.')),
       complete: () => this.savingQuestion.set(false),
     });
   }

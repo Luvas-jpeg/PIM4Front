@@ -12,5 +12,13 @@ export function apiErrorMessage(error: unknown, fallback: string): string {
   if (error.status >= 500)
     return 'O serviço está temporariamente indisponível. Tente novamente em instantes.';
   const message = error.error?.message;
-  return typeof message === 'string' && message.trim() ? message : fallback;
+  if (typeof message === 'string' && message.trim()) return message;
+  const errors = error.error?.errors;
+  if (errors && typeof errors === 'object' && !Array.isArray(errors)) {
+    const messages = Object.values(errors)
+      .flatMap((value) => (Array.isArray(value) ? value : [value]))
+      .filter((value): value is string => typeof value === 'string' && !!value.trim());
+    if (messages.length) return [...new Set(messages)].join(' ');
+  }
+  return fallback;
 }
