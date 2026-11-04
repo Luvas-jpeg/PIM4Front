@@ -2,7 +2,7 @@
 
 Site da plataforma MediShop em Angular. Reúne catálogo de cursos presenciais, seleção de turmas, carrinho, pedidos, área do aluno e administração. Consome o **PIM4API**; o navegador não acessa o banco diretamente.
 
-**Atualizado em 12/10/2026.** O ambiente local está implementado. Pagamento real e publicação online estão pendentes. A falha intermitente do E2E ao verificar a turma foi identificada e corrigida.
+**Documentação revisada em 04/11/2026.** A arquitetura e o modelo relacional estão descritos nos documentos técnicos abaixo. O responsável já exercitou o fluxo principal no Render; pagamento externo e homologação das novas versões continuam etapas próprias.
 
 ## Índice
 
@@ -20,6 +20,8 @@ Temas do semestre, implementação de Machine Learning e acessibilidade: [requis
 - [Pendências](#pendências)
 
 ## Arquitetura e projetos
+
+Consulte a [documentação técnica](DOCUMENTACAO.md), a [arquitetura completa](docs/ARQUITETURA.md) e o [banco de dados/DER](../PIM4API/docs/BANCO-DE-DADOS.md). Os diagramas e o dicionário foram conferidos com o modelo EF Core e o snapshot das migrations.
 
 Organização esperada:
 
@@ -49,7 +51,7 @@ A configuração central está em [api.config.ts](src/app/core/config/api.config
 | ----------------- | ------------------------------------------------------------ |
 | `npm start`       | [proxy.conf.json](proxy.conf.json) → `http://localhost:5278` |
 | Docker            | [nginx.conf](nginx.conf) → `http://api:8080`                 |
-| Hospedagem online | Encaminhamento/configuração ainda precisa ser definido       |
+| Hospedagem online | Nginx → `API_UPSTREAM` com a raiz HTTPS da API               |
 
 O contexto completo está em [FLUXO-DE-DESENVOLVIMENTO.md](../PIM4API/FLUXO-DE-DESENVOLVIMENTO.md). Esse arquivo também contém decisões históricas substituídas por registros posteriores. Este README descreve a configuração atual.
 
@@ -230,7 +232,7 @@ Arquivos para hospedagem estática: `dist/frontend/browser/`. O Dockerfile faz o
 
 A hospedagem precisa servir HTTPS, retornar `index.html` para rotas Angular e encaminhar `/api/` para a API publicada. Se a API ficar em outro domínio, será necessária uma adaptação explícita da configuração e das origens CORS.
 
-O nome Docker `api` do Nginx atual não funciona automaticamente em hospedagem estática ou serviços separados. O `render.yaml` do PIM4API prepara API e banco, **não publica este frontend**.
+Em serviços separados, configure `API_UPSTREAM` com a raiz HTTPS da API. Este frontend possui seu próprio `render.yaml`; o Blueprint do PIM4API descreve a API e o banco. A publicação com Nginx, proxy e containers está detalhada na [arquitetura](docs/ARQUITETURA.md).
 
 Há avisos conhecidos de orçamento SCSS. Confira o código de saída do build e resolva qualquer limite de erro antes de publicar.
 
@@ -252,7 +254,7 @@ Há avisos conhecidos de orçamento SCSS. Confira o código de saída do build e
 ## Pendências
 
 - Integrar e validar o pagamento real.
-- Publicar frontend/API/banco e repetir os fluxos online.
+- Repetir a homologação de frontend/API/banco após novas publicações.
 - Configurar operação, backups e validar compras concorrentes.
 - Finalizar distribuição/testes do desktop contra a API publicada.
 - Validar a primeira versão Flutter Android no aparelho e preparar distribuição.

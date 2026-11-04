@@ -1,334 +1,180 @@
-# Documentacao do Frontend
+# Documentação técnica — PIM4Front / MediShop
 
-## Visao geral
+O PIM4Front é o cliente web da plataforma MediShop, voltada à divulgação, inscrição e gestão de cursos presenciais na área da saúde. Esta documentação descreve o código atual e se integra à documentação do PIM4API, que concentra as regras de negócio e o acesso ao PostgreSQL.
 
-Para Machine Learning, VLibras, relações étnico-raciais e afrodescendência, empreendedorismo em TI, Cloud Computing e DevOps, consulte [Integração dos temas do semestre](docs/REQUISITOS-ACADEMICOS.md), que distingue funcionalidades implementadas e propostas de evolução.
+## Guia de leitura
 
-Frontend Angular da plataforma MediShop, responsavel pela experiencia Web de
-cursos presenciais e suas turmas.
+| Documento                                                 | Conteúdo                                                                                        |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [Arquitetura do sistema](docs/ARQUITETURA.md)             | Contexto, componentes, camadas, decisões, fluxo de compra e implantação                         |
+| [Banco de dados e DER](../PIM4API/docs/BANCO-DE-DADOS.md) | Modelo relacional completo, diagramas, chaves, cardinalidades, índices e dicionário das colunas |
+| [Arquitetura da API](../PIM4API/docs/ARQUITETURA.md)      | Organização do backend e responsabilidades dos serviços                                         |
+| [CI/CD](docs/CI-CD.md)                                    | Pipelines, verificações, artefatos e configuração do deploy                                     |
+| [Validação no Render](docs/VALIDACAO-RENDER.md)           | Homologação, erros e confirmação fictícia de pagamento                                          |
+| [Requisitos acadêmicos](docs/REQUISITOS-ACADEMICOS.md)    | ML, acessibilidade, relações étnico-raciais, empreendedorismo e computação em nuvem             |
+| [Execução e manutenção](README.md)                        | Comandos locais, configuração, testes e problemas comuns                                        |
 
-O projeto atende:
+Os links para PIM4API pressupõem que os dois repositórios estejam em pastas irmãs. Os arquivos históricos de auditoria mantêm a data e o contexto em que foram produzidos; os documentos acima descrevem a estrutura desta revisão.
 
-- catalogo publico de cursos;
-- carrinho de compras;
-- checkout;
-- cadastro e login;
-- gerenciamento de conta;
-- painel administrativo;
-- consumo da API .NET.
+## 1. Arquitetura definida
 
-## Tecnologias
+O sistema usa arquitetura **cliente-servidor**. O Angular é uma SPA, organizada por funcionalidades, e consome uma API REST/JSON em ASP.NET Core. A API é um monólito organizado em camadas lógicas de controllers/DTOs, serviços e persistência via EF Core. O banco é PostgreSQL.
 
-- Angular 21
-- TypeScript 5.9
-- RxJS
-- SCSS
-- Angular Reactive Forms
-- Angular Signals
-- Vitest
-- Lucide Angular
-
-## Estrutura principal
-
-```text
-src/
-  app/
-    core/
-      guards/
-      interceptors/
-      models/
-      services/
-    features/
-      account/
-      admin/
-      auth/
-      cart/
-      checkout/
-      home/
-      landing/
-    app.config.ts
-    app.routes.ts
-  main.ts
-  styles.scss
-public/
+```mermaid
+flowchart LR
+    Usuario[Visitante, aluno ou administrador] --> Angular[Frontend Angular]
+    Angular --> Proxy[Proxy /api]
+    Proxy --> Controllers[Controllers ASP.NET Core]
+    Controllers --> Negocio[Serviços de negócio]
+    Negocio --> EF[AppDbContext e Entity Framework Core]
+    EF --> Banco[(PostgreSQL)]
+    Desktop[Desktop administrativo WPF] --> Controllers
 ```
 
-### Core
+O frontend apresenta dados, valida formulários e controla a navegação. A API valida preços, vagas, permissões, pedidos e matrículas. O banco aplica as relações e restrições persistidas. O diagrama de implantação e a descrição dos limites de cada componente estão em [Arquitetura](docs/ARQUITETURA.md).
 
-Contem recursos compartilhados da aplicacao:
+## 2. Tecnologias e estrutura
 
-- `services`: comunicacao com a API e regras de estado;
-- `models`: contratos TypeScript;
-- `guards`: protecao das rotas autenticadas e administrativas;
-- `interceptors`: inclusao do token JWT nas requisicoes.
+| Tecnologia           | Uso                                                              |
+| -------------------- | ---------------------------------------------------------------- |
+| Angular e TypeScript | Componentes standalone, roteamento, formulários e contratos HTTP |
+| RxJS e Signals       | Requisições, estado, carregamento e atualização das telas        |
+| SCSS                 | Estilos globais e por componente                                 |
+| Vitest / Playwright  | Testes de componentes/serviços e cenário E2E local               |
+| Node.js 24           | Ambiente definido para build e CI                                |
+| Nginx                | Publicação dos arquivos Angular e proxy para a API               |
 
-### Features
+As versões exatas das dependências estão em `package.json` e `package-lock.json`.
 
-Cada funcionalidade possui seu componente, template, estilos e testes:
+```text
+src/app/
+├── core/
+│   ├── config/          # URL relativa /api
+│   ├── guards/          # navegação autenticada e administrativa
+│   ├── http/            # tradução das respostas de erro
+│   ├── interceptors/    # JWT e renovação da sessão
+│   ├── models/          # contratos TypeScript
+│   └── services/        # HTTP, sessão, carrinho e VLibras
+├── features/            # telas públicas, aluno e administração
+├── shared/              # validação, acessibilidade e componentes comuns
+├── app.routes.ts        # rotas e carregamento das telas
+├── app.config.ts        # providers do aplicativo
+└── app.html             # navegação, conteúdo e rodapé
+```
 
-- `landing`: pagina inicial;
-- `home`: catalogo de produtos e cursos;
-- `auth`: login e cadastro;
-- `cart`: carrinho persistido no navegador;
-- `checkout`: endereco, cupom, frete e criacao do pedido;
-- `account`: perfil e endereco;
-- `admin`: produtos, pedidos, alunos, cupons e indicadores.
+`features/home` implementa o catálogo; `course-detail` apresenta curso, turmas e sugestões; `auth` trata login/cadastro; `account` reúne perfil e histórico; `cart` e `checkout` tratam a seleção e o pedido; `order-detail` mostra o pagamento; `student` e `enrollment-detail` apresentam matrículas; `admin` reúne os módulos administrativos.
 
-## Executando localmente
+## 3. Integração com a API
 
-Na pasta do projeto:
+A configuração central é [api.config.ts](src/app/core/config/api.config.ts):
+
+```typescript
+export const API_URL = '/api';
+```
+
+O navegador usa caminhos relativos, como `/api/courses/catalog`. Durante `npm start`, `proxy.conf.json` encaminha as chamadas à API local. No container, o Nginx usa `API_UPSTREAM`, com padrão local `http://api:8080` e URL raiz HTTPS da API na hospedagem.
+
+| Recurso             | Contratos principais                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| Autenticação        | `/api/Auth/cadastrar`, `/api/Auth/login`, `/api/Auth/refresh`, `/api/Auth/revoke` e `/api/Auth/perfil` |
+| Catálogo            | `/api/courses/catalog`, `/api/courses/catalog/options` e `/api/courses/{id}`                           |
+| Recomendações       | `/api/courses/{id}/recommendations`                                                                    |
+| Turmas              | `/api/courses/{courseId}/classes` e operações administrativas vinculadas                               |
+| Pedidos             | `/api/Orders`, `/api/Orders/my` e `/api/Orders/{id}`                                                   |
+| Matrículas do aluno | `/api/me/courses` e `/api/me/enrollments/{id}`                                                         |
+| Administração       | `/api/courses`, `/api/Students`, `/api/PromoCodes` e `/api/audit`                                      |
+| Confirmação interna | `/api/payments/webhook`, com assinatura HMAC                                                           |
+
+Os controllers são a referência dos contratos implementados. Documentos antigos e o OpenAPI alvo estático podem conter propostas de recursos; o OpenAPI gerado pela aplicação em Development representa a versão em execução.
+
+## 4. Rotas e autorização
+
+| Rota                        | Acesso      | Responsabilidade                             |
+| --------------------------- | ----------- | -------------------------------------------- |
+| `/`                         | Público     | Apresentação                                 |
+| `/catalogo`                 | Público     | Busca e filtros de cursos                    |
+| `/curso/:id`                | Público     | Curso, seleção de turma e recomendações      |
+| `/login`                    | Público     | Login e cadastro                             |
+| `/carrinho`                 | Público     | Seleção persistida localmente                |
+| `/checkout`                 | Autenticado | Criação do pedido                            |
+| `/conta`                    | Autenticado | Perfil e histórico                           |
+| `/conta/pedido/:id`         | Autenticado | Detalhes e atualização da situação do pedido |
+| `/area-aluno`               | Autenticado | Matrículas                                   |
+| `/area-aluno/matricula/:id` | Autenticado | Detalhes e recursos da matrícula             |
+| `/admin`                    | Admin       | Gestão administrativa                        |
+
+`authGuard` e `adminGuard` controlam a navegação. A API exige JWT, role e vínculo do recurso com o usuário conforme a operação. O cadastro público cria uma conta Cliente. A rota antiga `/conta/matricula/:id` redireciona para a área do aluno; caminhos desconhecidos redirecionam para a página inicial.
+
+O `AuthService` guarda access token, refresh token e os dados retornados do usuário no Local Storage. O interceptor envia o JWT em chamadas da API e compartilha o refresh quando há requisições simultâneas. Uma renovação recusada encerra a sessão local e encaminha ao login com a página de retorno; falhas transitórias possuem mensagens próprias. O logout chama a revogação da sessão correspondente e limpa os dados locais.
+
+## 5. Modelo de dados e DER resumido
+
+Os tipos em `core/models` são contratos de transporte. O modelo físico, as FKs e as migrations são definidos no PIM4API. O núcleo relaciona contas, alunos, cursos, turmas, pedidos, itens e matrículas:
+
+```mermaid
+erDiagram
+    Users ||..o{ Orders : UsuarioId
+    Users |o..o{ Students : UserId
+    Courses ||..o{ CourseClasses : CourseId
+    Orders ||..o{ OrderItems : PedidoId
+    Courses |o..o{ OrderItems : CourseId
+    CourseClasses |o..o{ OrderItems : TurmaId
+    Students ||..o{ Enrollments : StudentId
+    Orders ||..o{ Enrollments : OrderId
+    Courses |o..o{ Enrollments : CourseId
+    CourseClasses |o..o{ Enrollments : ClassId
+    PromoCodes |o..o{ Orders : PromoCodeId
+    Orders ||..o{ PaymentWebhookEvents : OrderId
+```
+
+Cada pedido pertence a uma conta e reúne itens. A matrícula identifica o aluno, o pedido e, quando presentes, curso e turma. O evento de pagamento se vincula ao pedido. Referências opcionais aparecem com `|o`; `o{` representa zero ou muitos registros dependentes.
+
+Consulte [Banco de dados e DER](../PIM4API/docs/BANCO-DE-DADOS.md) para o modelo completo, incluindo autenticação, auditoria, interesses, conteúdo educacional e regras físicas de exclusão. Campos legados de apresentação não devem ser interpretados como FKs apenas pelo nome.
+
+## 6. Compra, pagamento e matrícula
+
+O usuário escolhe curso e turma, adiciona ao carrinho e cria o pedido. O frontend envia IDs, quantidade, forma de pagamento, parcelas e cupom. O backend consulta os valores válidos e reserva as vagas dentro da transação.
+
+As formas de pagamento usadas no contrato são `pix`, `credit_card` e `debit_card`. Há limite de uma vaga por curso para o próprio aluno, com possibilidade de vários cursos diferentes no mesmo pedido.
+
+Após a criação, o site abre os detalhes do pedido, que aguarda confirmação. Pedido pendente não concede matrícula. O webhook interno assinado processa o evento e gera a matrícula conforme as regras de estado/idempotência. A integração com cobrança e estorno de um provedor real continua pendente.
+
+Em falhas, o carrinho é preservado. Reenvios do mesmo pedido na mesma instância da tela reutilizam a chave de idempotência. Mudanças no pedido geram uma nova chave. A tela permite conferir o histórico e atualizar a situação do pagamento.
+
+## 7. Recomendações e acessibilidade
+
+A seção “Cursos semelhantes” consulta a API. O recomendador usa ML.NET/K-Means com os textos públicos do catálogo. Falhas ou listas vazias recebem uma explicação e não impedem consultar o curso. O modelo, seus limites e a avaliação de relevância estão documentados em [Requisitos acadêmicos](docs/REQUISITOS-ACADEMICOS.md) e [ML na API](../PIM4API/docs/MACHINE-LEARNING.md).
+
+O rodapé oferece a ativação do serviço externo VLibras. O aplicativo também possui indicadores de foco, rótulos, mensagens de validação e link para pular ao conteúdo principal. A inclusão desses recursos precisa ser complementada por avaliação de teclado, leitor de tela, contraste e tradução efetiva.
+
+## 8. Persistência no navegador
+
+| Informação        | Armazenamento                             |
+| ----------------- | ----------------------------------------- |
+| Access token      | `medishop_token` no Local Storage         |
+| Refresh token     | `medishop_refresh_token` no Local Storage |
+| Usuário da sessão | `medishop_user` no Local Storage          |
+| Carrinho          | `pim4_courses_cart_v2` no Local Storage   |
+
+Pedidos, matrículas, pagamentos, vagas e cupons têm como fonte a API e o PostgreSQL. A seleção no navegador não comprova reserva nem pagamento. Segredos do banco, JWT do servidor e webhook pertencem ao ambiente da API.
+
+## 9. Execução, testes e publicação
+
+Na pasta do frontend, com as dependências definidas no lockfile:
 
 ```bash
-npm install
+npm ci
 npm start
-```
-
-Abra:
-
-```text
-http://localhost:4200
-```
-
-Para gerar o build de producao:
-
-```bash
+npm run test:ci
 npm run build
 ```
 
-Para executar os testes:
+O CI verifica formatação, testes, build, dependências e a imagem Docker. O E2E completo usa o ambiente local descrito em [e2e/README.md](e2e/README.md). Um build aprovado não comprova o funcionamento de todas as integrações hospedadas; a homologação segue o [roteiro do Render](docs/VALIDACAO-RENDER.md).
 
-```bash
-npm test -- --watch=false
-```
+Migrations, backup e conexão do banco estão no PIM4API. As instruções completas de operação ficam nos READMEs dos repositórios e no [guia de CI/CD](docs/CI-CD.md).
 
-## Integracao com a API
+## 10. Escopo e próximas entregas
 
-Atualmente os servicos usam a URL:
+O fluxo comercial habilitado é de cursos presenciais. Há estruturas e código de módulos, aulas, progresso, avaliações e certificados EAD, cuja oferta comercial está desabilitada nesta versão.
 
-```text
-http://localhost:5278/api
-```
-
-Essa URL esta declarada nos servicos:
-
-- `AuthService`;
-- `CourseService`;
-- `OrderService`;
-- `PromoCodeService`;
-- `StudentService`.
-
-Antes do deploy, recomenda-se mover a URL para arquivos de ambiente do
-Angular, evitando valores fixos no codigo.
-
-## Rotas da aplicacao
-
-| Rota        | Acesso        | Funcao                      |
-| ----------- | ------------- | --------------------------- |
-| `/`         | Publico       | Landing page                |
-| `/catalogo` | Publico       | Catalogo de cursos e turmas |
-| `/login`    | Publico       | Login e cadastro            |
-| `/carrinho` | Publico       | Itens selecionados          |
-| `/checkout` | Autenticado   | Finalizacao da compra       |
-| `/conta`    | Autenticado   | Perfil e endereco           |
-| `/admin`    | Administrador | Painel administrativo       |
-
-Rotas autenticadas usam `authGuard`. A rota administrativa usa
-`adminGuard`, que exige usuario autenticado com role `Admin`.
-
-## Autenticacao
-
-O login utiliza:
-
-```http
-POST /api/Auth/login
-```
-
-Payload:
-
-```json
-{
-  "email": "usuario@example.com",
-  "senha": "senha-segura"
-}
-```
-
-Resposta esperada:
-
-```json
-{
-  "accessToken": "jwt",
-  "refreshToken": "refresh-token",
-  "expiresIn": 86400,
-  "user": {
-    "id": 1,
-    "nome": "Usuario",
-    "email": "usuario@example.com",
-    "role": "Cliente"
-  }
-}
-```
-
-O `AuthService` armazena:
-
-- access token em `medishop_token`;
-- refresh token em `medishop_refresh_token`;
-- usuario em `medishop_user`.
-
-O `authInterceptor` envia automaticamente:
-
-```http
-Authorization: Bearer <access-token>
-```
-
-## Servicos da API
-
-### AuthService
-
-```text
-login()
-register()
-updateProfile()
-logout()
-getToken()
-getRefreshToken()
-isAuthenticated()
-isAdmin()
-```
-
-### CourseService
-
-```text
-getCatalog()
-getCatalogOptions()
-getById()
-getClasses()
-create()
-update()
-```
-
-O catalogo publico usa:
-
-```http
-GET /api/courses/catalog
-GET /api/courses/catalog/options
-```
-
-### OrderService
-
-```text
-create()
-getMyOrders()
-getAll()
-updateStatus()
-```
-
-### PromoCodeService
-
-```text
-getAll()
-create()
-update()
-delete()
-validate()
-```
-
-### StudentService
-
-```text
-getAll()
-create()
-update()
-delete()
-```
-
-## Fluxo de compra
-
-```text
-catalogo
-  -> selecionar curso e turma
-  -> acessar checkout
-  -> validar cupom
-  -> selecionar forma de pagamento
-  -> criar pedido
-  -> acompanhar pagamento no backend
-  -> curso liberado apos webhook paid
-```
-
-As formas de pagamento usadas pelo frontend atualmente sao:
-
-```text
-credit
-debit
-pix
-```
-
-O backend atualmente espera:
-
-```text
-credit_card
-debit_card
-pix
-```
-
-Essa conversao precisa ser feita antes da integracao final do checkout com a
-API.
-
-## Persistencia local
-
-O navegador armazena:
-
-- sessao do usuario;
-- access token;
-- refresh token;
-- itens do carrinho.
-
-O carrinho e restaurado automaticamente quando o usuario retorna ao site.
-
-## Testes
-
-O frontend possui testes de componentes para:
-
-- aplicacao;
-- landing page;
-- catalogo;
-- carrinho;
-- checkout;
-- login;
-- conta;
-- painel administrativo.
-
-Comando recomendado:
-
-```bash
-npm test -- --watch=false
-```
-
-## Pontos pendentes
-
-- mover `API_URL` para configuracao de ambiente;
-- implementar renovacao automatica usando `/Auth/refresh`;
-- chamar `/Auth/logout` antes de limpar a sessao;
-- alinhar `credit` e `debit` com `credit_card` e `debit_card`;
-- consultar `/Orders/{id}/payment` depois da criacao do pedido;
-- criar telas para cursos liberados e progresso;
-- adicionar tratamento global para respostas `401`;
-- substituir textos de status locais por estados do backend;
-- revisar limites de tamanho dos arquivos SCSS no build de producao.
-
-## Compatibilidade com o backend
-
-O frontend usa as rotas atualmente implementadas pelo backend, como:
-
-```text
-/api/Auth
-/api/Products
-/api/Orders
-/api/PromoCodes
-/api/Students
-/api/me
-```
-
-O arquivo `backend/openapi.yaml` representa uma versao alvo e possui algumas
-rotas diferentes, como `/auth/register`, `/courses` e `/admin/courses`.
-Qualquer geracao futura de SDK deve ser feita somente depois de padronizar
-esse contrato.
+As próximas entregas incluem integração e homologação do pagamento real, e-mail e recuperação de senha, operação de backup/monitoramento na hospedagem e validação dos clientes desktop/mobile nos ambientes correspondentes. A documentação acadêmica registra propostas e evidências sem apresentar funcionalidades futuras como concluídas.
